@@ -1,0 +1,16 @@
+{
+  "name": "career_guidance",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "next lint"
+  },
+  "dependencies": {
+    "next": "^12.3.7",
+    "react": "^17.0.2",
+    "react-dom": "^17.0.2"
+  }
+}
