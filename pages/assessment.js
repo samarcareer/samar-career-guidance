@@ -44,7 +44,7 @@ export default function AssessmentWizard() {
       items: ["Petro chemical Engineering", "Petroleum Engineering", "Civil Engineering", "Mechanical Engineering", "Aeronautical Engineering", "Aerospace Engineering", "Agricultural Engineering", "Architecture Engineering", "Automobile Engineering", "Automation & Robotics Eng.", "Avionics Engineering", "Biomedical Engineering", "Bio technological Eng.", "Chemical Engineering", "Ceramics Engineering", "Computer Science Engi.", "Electronics & Comm.Engi.", "Electrical & Electronics Engi.", "Environmental Science Engi.", "Information Science Engi", "Industrial Engineering", "Industrial Production Engi.", "Instrumental Technology", "Marine Engineering", "Medical Electronics Engi.", "Mining Engineering", "Manufacturing Science Engi.", "Naval Architecture Engi.", "Nanotechnology Engi.", "Polymer Technology Engi.", "Silk Polymar Engi.", "Carpet Technology Engi.", "Textile engineering", "Robotics", "Genetic"]
     },
     polytechnic: {
-      en: "Polytechnic (10th Class)", ur: "پولی ٹیکنک (دسویں के बाद)",
+      en: "Polytechnic (10th Class)", ur: "پولی ٹیکنک (دسویں کے بعد)",
       items: ["Civil engineering", "Mechanical engineering", "Automobile engineering", "Computer science engi.", "Electronics and communication Engineering", "Electrical engineering", "Petro chemical engineering"]
     },
     newJobMgmt: {
@@ -105,8 +105,9 @@ export default function AssessmentWizard() {
     if (!email) {
       const inputEmail = prompt(lang === 'ur' ? "ڈیٹا محفوظ کرنے کے لیے ای میل درج کریں:" : "Please provide your Email to store validation data:");
       if (inputEmail && inputEmail.includes('@')) {
-        setEmail(inputEmail.trim().toLowerCase());
-        executeDbInsert(inputEmail.trim().toLowerCase(), selectedStream);
+        const cleanEmail = inputEmail.trim().toLowerCase();
+        setEmail(cleanEmail);
+        executeDbInsert(cleanEmail, selectedStream);
       } else {
         alert(lang === 'ur' ? "درست ای میل لازمی ہے!" : "Valid Email is required.");
       }
@@ -123,7 +124,27 @@ export default function AssessmentWizard() {
     }
     setSubmitting(true);
     try {
-      const { data, error } = await supabase
+      // CRITICAL FIX: Pre-entry / duplicate checks block
+      const { data: existingEntries, error: checkError } = await supabase
+        .from('user_assessments')
+        .select('email')
+        .eq('email', userEmail);
+
+      if (checkError) {
+        alert("Database Connection Error: " + checkError.message);
+        setSubmitting(false);
+        return;
+      }
+
+      if (existingEntries && existingEntries.length > 0) {
+        alert(lang === 'ur' ? "یہ ای میل پہلے سے موجود ہے! نئی انٹری کی اجازت نہیں ہے۔" : "Error: This email has already completed the assessment. Pre-entry blocked.");
+        router.push(`/profile?email=${encodeURIComponent(userEmail)}`);
+        setSubmitting(false);
+        return;
+      }
+
+      // Safe registration process
+      const { error: insertError } = await supabase
         .from('user_assessments')
         .insert([
           { 
@@ -133,8 +154,8 @@ export default function AssessmentWizard() {
           }
         ]);
 
-      if (error) {
-        alert("Database Connection Sync Error: " + error.message);
+      if (insertError) {
+        alert("Database Connection Sync Error: " + insertError.message);
       } else {
         alert(lang === 'ur' ? 'کامیابی! آپ کا کیریئر پروفائل اکاؤنٹ تیار ہو چکا ہے۔' : 'Success! Your tracking profile account has been created.');
         router.push(`/profile?email=${encodeURIComponent(userEmail)}`);
