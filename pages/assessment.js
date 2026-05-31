@@ -1,7 +1,9 @@
 import { useState } from 'react';
+import { useRouter } from 'next/router';
 import { supabase } from '../utils/supabase';
 
 export default function AssessmentWizard() {
+  const router = useRouter();
   const [lang, setLang] = useState('en');
   const [step, setStep] = useState(1);
   const [email, setEmail] = useState('');
@@ -106,8 +108,7 @@ export default function AssessmentWizard() {
         alert("Database Connection Sync Error: " + error.message);
       } else {
         alert(lang === 'ur' ? 'کامیابی! آپ کا کیریئر پروفائل اکاؤنٹ تیار ہو چکا ہے۔' : 'Success! Your tracking profile account has been created.');
-        // Code redirection to user tracking dashboard
-        window.location.href = `/profile?email=${encodeURIComponent(email.trim().toLowerCase())}`;
+        router.push(`/profile?email=${encodeURIComponent(email.trim().toLowerCase())}`);
       }
     } catch (err) {
       alert("Network Error: " + err.message);
@@ -146,7 +147,7 @@ export default function AssessmentWizard() {
               <small style={{ color: '#ff7a00', fontWeight: 'bold' }}>{t.founder}</small>
             </div>
           </div>
-          <button onClick={() => setLang(lang === 'en' ? 'ur' : 'en')} style={{ padding: '6px 14px', cursor: 'pointer', background: '#ff7a00', border: 'none', color: '#fff', borderRadius: '6px', font... }}>{lang === 'en' ? 'اردو' : 'English'}</button>
+          <button onClick={() => setLang(lang === 'en' ? 'ur' : 'en')} style={{ padding: '6px 14px', cursor: 'pointer', background: '#ff7a00', border: 'none', color: '#fff', borderRadius: '6px', fontWeight: 'bold', fontSize: '0.85rem' }}>{lang === 'en' ? 'اردو' : 'English'}</button>
         </header>
 
         <main style={{ minHeight: '320px', flex: 1 }}>
@@ -195,11 +196,9 @@ export default function AssessmentWizard() {
             {step > 1 && (
               <button onClick={() => setStep(step - 1)} style={{ padding: '10px 20px', background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.2)', color: '#cbd5e1', borderRadius: '6px', cursor: 'pointer', fontWeight: '600' }}>{t.backBtn}</button>
             )}
-            <a href="/" style={{ textDecoration: 'none' }}>
-              <button type="button" style={{ padding: '10px 20px', background: 'transparent', border: '1px solid #ef4444', color: '#ef4444', borderRadius: '6px', cursor: 'pointer', fontWeight: '600' }}>
-                {t.homeBtn}
-              </button>
-            </a>
+            <button type="button" onClick={() => router.push('/')} style={{ padding: '10px 20px', background: 'transparent', border: '1px solid #ef4444', color: '#ef4444', borderRadius: '6px', cursor: 'pointer', fontWeight: '600' }}>
+              {t.homeBtn}
+            </button>
           </div>
           
           {step < 3 ? (
