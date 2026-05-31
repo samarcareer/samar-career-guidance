@@ -16,7 +16,7 @@ export default function HomeLanding() {
       heroTitle: "Samar Career Guidance Platform",
       heroSub: "Discover the perfect career path with enterprise-grade data protection and analytical student profiling matrices.",
       btnStart: "Start Assessment Test",
-      btnLogin: "Student Login",
+      btnLogin: "Student Login Portal",
       navHome: "Home",
       navCategory: "Explore Categories",
       navContact: "Contact Us",
@@ -34,12 +34,12 @@ export default function HomeLanding() {
       heroTitle: "ثمر کیریئر رہنمائی پلیٹ فارم",
       heroSub: "انٹرپرائز گریڈ ڈیٹا پروٹیکشن اور اینالیٹیکل اسٹوڈنٹ پروفائلنگ میٹرکس کے ساتھ کامل تعلیمی راستے تلاش کریں۔",
       btnStart: "کیریئر اسیسمنٹ ٹیسٹ شروع کریں",
-      btnLogin: "اسٹوڈنٹ لاگ ان",
+      btnLogin: "اسٹوڈنٹ لاگ ان پورٹل",
       navHome: "ہوم پیج",
       navCategory: "تعلیمی زمرے",
       navContact: "رابطہ کریں",
       searchPlaceholder: "فوری طور پر کورسز تلاش کریں...",
-      footerNote: "© 2026 ثمر فاؤنڈیشن۔ انٹرپرائز گریڈ آرکیٹیکچر پروٹیکشن لاکڈ۔",
+      footerNote: "© 2026 ثمر فاؤنڈیشن۔  انٹرپرائز گریڈ آرکیٹیکچر پروٹیکشن لاکڈ۔",
       contactTitle: "پروفیشنل ہیلپ ڈیسک سے رابطہ کریں",
       contactDetails: "اینالیٹیکل میٹرکس گائیڈ لائنز کے لیے، براہ راست مینجمنٹ ڈیسک سے رابطہ کریں:",
       ownerLabel: "پلیٹ فارم کنٹرولر: امین خان (عمرین میڈیکل ڈیسک)",
@@ -51,19 +51,10 @@ export default function HomeLanding() {
   const urduFont = "'AlviNastaleeq', 'UrduFont', 'Tahoma', sans-serif";
   const englishFont = "'Segoe UI', Roboto, sans-serif";
 
-  const handleStudentLoginBypass = () => {
-    const emailPrompt = prompt(lang === 'ur' ? "پروفائل لاگ ان کے لیے اپنا ای میل درج کریں:" : "Enter your registered Email to track profile dashboard:");
-    if (emailPrompt && emailPrompt.includes('@')) {
-      router.push(`/profile?email=${encodeURIComponent(emailPrompt.trim().toLowerCase())}`);
-    } else if (emailPrompt) {
-      alert(lang === 'ur' ? "براہ کرم درست ای میل درج کریں!" : "Invalid Email verification token.");
-    }
-  };
-
   const handleSearchSubmit = (e) => {
     e.preventDefault();
     if (searchQuery.trim()) {
-      router.push(`/assessment?search=${encodeURIComponent(searchQuery.trim().toLowerCase())}`);
+      router.push(`/categories?search=${encodeURIComponent(searchQuery.trim().toLowerCase())}`);
     }
   };
 
@@ -83,50 +74,25 @@ export default function HomeLanding() {
     }}>
       
       <style dangerouslySetInnerHTML={{__html: `
-        @font-face {
-          font-family: 'AlviNastaleeq';
-          src: url('/alvi-nastaleeq.ttf') format('truetype');
-          font-display: swap;
-        }
-        @font-face {
-          font-family: 'UrduFont';
-          src: url('https://fonts.gstatic.com/ea/notonastaleequrdu/v5/NotoNastaleeqUrdu-Regular.woff2') format('woff2');
-          font-display: swap;
-        }
-        .marquee-container {
-          background: rgba(30, 41, 59, 0.6);
-          border-bottom: 1px solid rgba(255,255,255,0.05);
-          padding: 10px 0;
-          overflow: hidden;
-          white-space: nowrap;
-          width: 100%;
-        }
-        .marquee-text {
-          display: inline-block;
-          padding-left: 100%;
-          animation: marquee 25s linear infinite;
-          font-size: 0.9rem;
-          font-weight: 600;
-          color: #cbd5e1;
-        }
-        @keyframes marquee {
-          0% { transform: translate3d(0, 0, 0); }
-          100% { transform: translate3d(-100%, 0, 0); }
-        }
+        @font-face { font-family: 'AlviNastaleeq'; src: url('/alvi-nastaleeq.ttf') format('truetype'); font-display: swap; }
+        @font-face { font-family: 'UrduFont'; src: url('https://fonts.gstatic.com/ea/notonastaleequrdu/v5/NotoNastaleeqUrdu-Regular.woff2') format('woff2'); font-display: swap; }
+        .marquee-container { background: rgba(30, 41, 59, 0.6); border-bottom: 1px solid rgba(255,255,255,0.05); padding: 10px 0; overflow: hidden; white-space: nowrap; width: 100%; }
+        .marquee-text { display: inline-block; padding-left: 100%; animation: marquee 25s linear infinite; font-size: 0.9rem; font-weight: 600; color: #cbd5e1; }
+        @keyframes marquee { 0% { transform: translate3d(0, 0, 0); } 100% { transform: translate3d(-100%, 0, 0); } }
       `}} />
       
       <nav style={{ background: 'rgba(15, 23, 42, 0.85)', backdropFilter: 'blur(10px)', WebkitBackdropFilter: 'blur(10px)', borderBottom: '1px solid rgba(255,255,255,0.1)', position: 'sticky', top: 0, zIndex: 100, padding: '15px 30px' }}>
         <div style={{ maxWidth: '1240px', margin: '0 auto', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '15px' }}>
           
           <div style={{ display: 'flex', alignItems: 'center', gap: '12px', cursor: 'pointer' }} onClick={() => router.push('/')}>
-            <img src="/logo.jpg" alt="Logo" style={{ width: '42px', height: '42px', borderRadius: '6px', border: '1px solid rgba(255,255,255,0.1)' }} />
+            <img src="/logo.jpg" alt="Logo" style={{ width: '42px', height: '42px', borderRadius: '6px' }} />
             <div>
               <h1 style={{ margin: 0, color: '#38bdf8', fontSize: '1.25rem', fontWeight: '800' }}>{t.brand}</h1>
               <small style={{ color: '#ff7a00', fontWeight: 'bold', display: 'block', marginTop: '-1px' }}>{t.founder}</small>
             </div>
           </div>
 
-          <form onSubmit={handleSearchSubmit} style={{ flex: '1', maxWidth: '400px', minWidth: '200px', margin: '0 15px' }}>
+          <form onSubmit={handleSearchSubmit} style={{ flex: '1', maxWidth: '350px', minWidth: '200px', margin: '0 15px' }}>
             <input 
               type="text" 
               value={searchQuery}
@@ -145,10 +111,10 @@ export default function HomeLanding() {
               </button>
               {showCategoryMenu && (
                 <div style={{ position: 'absolute', top: '35px', left: lang === 'ur' ? 'auto' : '0', right: lang === 'ur' ? '0' : 'auto', background: '#1e293b', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '6px', width: '240px', boxShadow: '0 10px 20px rgba(0,0,0,0.4)', zIndex: 200, padding: '5px 0' }}>
-                  <button onClick={() => { router.push('/assessment'); setShowCategoryMenu(false); }} style={{ display: 'block', width: '100%', padding: '10px 15px', background: 'transparent', border: 'none', color: '#cbd5e1', fontWeight: '600', cursor: 'pointer', fontSize: '0.9rem', textAlign: lang === 'ur' ? 'right' : 'left' }}>🧪 Science Stems</button>
-                  <button onClick={() => { router.push('/assessment'); setShowCategoryMenu(false); }} style={{ display: 'block', width: '100%', padding: '10px 15px', background: 'transparent', border: 'none', color: '#cbd5e1', fontWeight: '600', cursor: 'pointer', fontSize: '0.9rem', textAlign: lang === 'ur' ? 'right' : 'left' }}>📊 Commerce Hub</button>
-                  <button onClick={() => { router.push('/assessment'); setShowCategoryMenu(false); }} style={{ display: 'block', width: '100%', padding: '10px 15px', background: 'transparent', border: 'none', color: '#cbd5e1', fontWeight: '600', cursor: 'pointer', fontSize: '0.9rem', textAlign: lang === 'ur' ? 'right' : 'left' }}>🩺 Paramedical & Medical</button>
-                  <button onClick={() => { router.push('/assessment'); setShowCategoryMenu(false); }} style={{ display: 'block', width: '100%', padding: '10px 15px', background: 'transparent', border: 'none', color: '#cbd5e1', fontWeight: '600', cursor: 'pointer', fontSize: '0.9rem', textAlign: lang === 'ur' ? 'right' : 'left' }}>⚙️ Engineering Tech</button>
+                  <button onClick={() => { router.push('/categories?stream=science'); setShowCategoryMenu(false); }} style={{ display: 'block', width: '100%', padding: '10px 15px', background: 'transparent', border: 'none', color: '#cbd5e1', fontWeight: '600', cursor: 'pointer', fontSize: '0.9rem', textAlign: lang === 'ur' ? 'right' : 'left' }}>🧪 Science Stems</button>
+                  <button onClick={() => { router.push('/categories?stream=commerce'); setShowCategoryMenu(false); }} style={{ display: 'block', width: '100%', padding: '10px 15px', background: 'transparent', border: 'none', color: '#cbd5e1', fontWeight: '600', cursor: 'pointer', fontSize: '0.9rem', textAlign: lang === 'ur' ? 'right' : 'left' }}>📊 Commerce Hub</button>
+                  <button onClick={() => { router.push('/categories?stream=paramedical'); setShowCategoryMenu(false); }} style={{ display: 'block', width: '100%', padding: '10px 15px', background: 'transparent', border: 'none', color: '#cbd5e1', fontWeight: '600', cursor: 'pointer', fontSize: '0.9rem', textAlign: lang === 'ur' ? 'right' : 'left' }}>🩺 Paramedical & Medical</button>
+                  <button onClick={() => { router.push('/categories?stream=btech'); setShowCategoryMenu(false); }} style={{ display: 'block', width: '100%', padding: '10px 15px', background: 'transparent', border: 'none', color: '#cbd5e1', fontWeight: '600', cursor: 'pointer', fontSize: '0.9rem', textAlign: lang === 'ur' ? 'right' : 'left' }}>⚙️ Engineering Tech</button>
                 </div>
               )}
             </div>
@@ -157,7 +123,7 @@ export default function HomeLanding() {
           </div>
 
           <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-            <button onClick={handleStudentLoginBypass} style={{ padding: '8px 16px', background: 'transparent', border: '1px solid #38bdf8', color: '#38bdf8', borderRadius: '6px', fontWeight: 'bold', cursor: 'pointer', fontSize: '0.9rem' }}>{t.btnLogin}</button>
+            <button onClick={() => router.push('/login')} style={{ padding: '8px 16px', background: 'transparent', border: '1px solid #38bdf8', color: '#38bdf8', borderRadius: '6px', fontWeight: 'bold', cursor: 'pointer', fontSize: '0.9rem' }}>{t.btnLogin}</button>
             <button onClick={() => setLang(lang === 'en' ? 'ur' : 'en')} style={{ padding: '6px 14px', background: '#ff7a00', border: 'none', color: '#fff', borderRadius: '6px', fontWeight: 'bold', fontSize: '0.85rem', cursor: 'pointer' }}>{lang === 'en' ? 'اردو' : 'English'}</button>
           </div>
 
@@ -170,7 +136,7 @@ export default function HomeLanding() {
         </div>
       </div>
 
-      <main style={{ flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center', padding: '60px 20px', textAlign: 'center', maxWidth: '1000px', margin: '0 auto' }}>
+      <main style={{ flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center', padding: '80px 20px', textAlign: 'center', maxWidth: '1000px', margin: '0 auto' }}>
         <h2 style={{ fontSize: '3.6rem', fontWeight: '900', color: '#fff', margin: '0 0 20px 0', letterSpacing: '-0.5px', lineHeight: '1.2' }}>
           {t.heroTitle}
         </h2>
