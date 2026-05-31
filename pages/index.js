@@ -63,7 +63,7 @@ export default function HomeLanding() {
   const handleSearchSubmit = (e) => {
     e.preventDefault();
     if (searchQuery.trim()) {
-      router.push(`/assessment?search=${encodeURIComponent(searchQuery.trim())}`);
+      router.push(`/assessment?search=${encodeURIComponent(searchQuery.trim().toLowerCase())}`);
     }
   };
 
@@ -82,12 +82,10 @@ export default function HomeLanding() {
       overflowX: 'hidden'
     }}>
       
-      {/* Dynamic Font-Face Injector to force Nastaleeq Detection */}
       <style dangerouslySetInnerHTML={{__html: `
         @font-face {
           font-family: 'AlviNastaleeq';
-          src: url('/alvi-nastaleeq.ttf') format('truetype'),
-               url('/fonts/alvi-nastaleeq.ttf') format('truetype');
+          src: url('/alvi-nastaleeq.ttf') format('truetype');
           font-display: swap;
         }
         @font-face {
@@ -117,11 +115,9 @@ export default function HomeLanding() {
         }
       `}} />
       
-      {/* GLASSMORPHIC FIXED HEADER MODULE */}
       <nav style={{ background: 'rgba(15, 23, 42, 0.85)', backdropFilter: 'blur(10px)', WebkitBackdropFilter: 'blur(10px)', borderBottom: '1px solid rgba(255,255,255,0.1)', position: 'sticky', top: 0, zIndex: 100, padding: '15px 30px' }}>
         <div style={{ maxWidth: '1240px', margin: '0 auto', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '15px' }}>
           
-          {/* Brand & Logo Layout */}
           <div style={{ display: 'flex', alignItems: 'center', gap: '12px', cursor: 'pointer' }} onClick={() => router.push('/')}>
             <img src="/logo.jpg" alt="Logo" style={{ width: '42px', height: '42px', borderRadius: '6px', border: '1px solid rgba(255,255,255,0.1)' }} />
             <div>
@@ -130,18 +126,16 @@ export default function HomeLanding() {
             </div>
           </div>
 
-          {/* CRITICAL SEARCH BAR COMPONENT */}
           <form onSubmit={handleSearchSubmit} style={{ flex: '1', maxWidth: '400px', minWidth: '200px', margin: '0 15px' }}>
             <input 
               type="text" 
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               placeholder={t.searchPlaceholder} 
-              style={{ width: '100%', padding: '10px 16px', borderRadius: '20px', border: '1px solid rgba(255,255,255,0.15)', background: 'rgba(255,255,255,0.05)', color: '#fff', fontSize: '0.9rem', outline: 'none', boxSizing: 'border-box', transition: '0.2s' }}
+              style={{ width: '100%', padding: '10px 16px', borderRadius: '20px', border: '1px solid rgba(255,255,255,0.15)', background: 'rgba(255,255,255,0.05)', color: '#fff', fontSize: '0.9rem', outline: 'none', boxSizing: 'border-box' }}
             />
           </form>
 
-          {/* Navigation Links Layer */}
           <div style={{ display: 'flex', alignItems: 'center', gap: '25px', position: 'relative' }}>
             <button onClick={() => router.push('/')} style={{ color: '#38bdf8', fontWeight: '700', background: 'transparent', border: 'none', cursor: 'pointer', fontSize: '0.95rem' }}>{t.navHome}</button>
             
@@ -162,7 +156,6 @@ export default function HomeLanding() {
             <button onClick={() => setShowContactModal(true)} style={{ color: '#94a3b8', fontWeight: '700', background: 'transparent', border: 'none', cursor: 'pointer', fontSize: '0.95rem' }}>{t.navContact}</button>
           </div>
 
-          {/* Actions & Language Switches */}
           <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
             <button onClick={handleStudentLoginBypass} style={{ padding: '8px 16px', background: 'transparent', border: '1px solid #38bdf8', color: '#38bdf8', borderRadius: '6px', fontWeight: 'bold', cursor: 'pointer', fontSize: '0.9rem' }}>{t.btnLogin}</button>
             <button onClick={() => setLang(lang === 'en' ? 'ur' : 'en')} style={{ padding: '6px 14px', background: '#ff7a00', border: 'none', color: '#fff', borderRadius: '6px', fontWeight: 'bold', fontSize: '0.85rem', cursor: 'pointer' }}>{lang === 'en' ? 'اردو' : 'English'}</button>
@@ -171,14 +164,12 @@ export default function HomeLanding() {
         </div>
       </nav>
 
-      {/* INFINITE LOOPING MARQUEE TICKER (MOVING TEXT FIXED) */}
       <div className="marquee-container">
         <div className="marquee-text" style={{ paddingLeft: lang === 'ur' ? '0' : '100%', paddingRight: lang === 'ur' ? '100%' : '0', animationDirection: lang === 'ur' ? 'reverse' : 'normal' }}>
           {t.alertText}
         </div>
       </div>
 
-      {/* CENTRAL HERO HOUSING ZONE */}
       <main style={{ flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center', padding: '60px 20px', textAlign: 'center', maxWidth: '1000px', margin: '0 auto' }}>
         <h2 style={{ fontSize: '3.6rem', fontWeight: '900', color: '#fff', margin: '0 0 20px 0', letterSpacing: '-0.5px', lineHeight: '1.2' }}>
           {t.heroTitle}
@@ -186,12 +177,11 @@ export default function HomeLanding() {
         <p style={{ fontSize: '1.25rem', color: '#94a3b8', maxWidth: '700px', margin: '0 0 40px 0', lineHeight: '1.6', fontWeight: '500' }}>
           {t.heroSub}
         </p>
-        <button onClick={() => router.push('/assessment')} style={{ padding: '16px 44px', background: '#00b074', border: 'none', color: '#fff', borderRadius: '8px', fontSize: '1.15rem', fontWeight: 'bold', cursor: 'pointer', boxShadow: '0 10px 25px rgba(0, 176, 116, 0.3)', transition: '0.2s' }}>
+        <button onClick={() => router.push('/assessment')} style={{ padding: '16px 44px', background: '#00b074', border: 'none', color: '#fff', borderRadius: '8px', fontSize: '1.15rem', fontWeight: 'bold', cursor: 'pointer', boxShadow: '0 10px 25px rgba(0, 176, 116, 0.3)' }}>
           {t.btnStart}
         </button>
       </main>
 
-      {/* CONTACT DRAWER MODAL CONFIG */}
       {showContactModal && (
         <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.75)', backdropFilter: 'blur(4px)', WebkitBackdropFilter: 'blur(4px)', display: 'flex', justifyContent: 'center', alignItems: 'center', zIndex: 1000, padding: '15px' }}>
           <div style={{ background: '#1e293b', border: '1px solid rgba(255,255,255,0.15)', borderRadius: '12px', padding: '30px', maxWidth: '500px', width: '100%', boxShadow: '0 20px 40px rgba(0,0,0,0.5)', position: 'relative', textAlign: lang === 'ur' ? 'right' : 'left' }}>
@@ -206,7 +196,6 @@ export default function HomeLanding() {
         </div>
       )}
 
-      {/* FOOTER CONTAINER */}
       <footer style={{ background: '#090d16', borderTop: '1px solid rgba(255,255,255,0.05)', padding: '20px', textAlign: 'center', fontSize: '0.8rem', color: '#475569', fontWeight: '700' }}>
         {t.footerNote}
       </footer>
