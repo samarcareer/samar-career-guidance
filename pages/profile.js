@@ -1,4 +1,4 @@
-﻿import { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/router';
 import { supabase } from '../utils/supabase';
 
@@ -10,7 +10,6 @@ export default function StudentProfile() {
   const [studentData, setStudentData] = useState(null);
   const [streamDetails, setStreamDetails] = useState(null);
 
-  // Deep Analytics Data - Har category ki details jo student ko show hogi
   const careerKnowledgeBank = {
     science: {
       title: "Science & Technology Framework",
@@ -98,7 +97,6 @@ export default function StudentProfile() {
           const currentStudent = data[0];
           setStudentData(currentStudent);
 
-          // Stream match karke metadata information load karna
           const streamKey = currentStudent.interest_area;
           if (careerKnowledgeBank[streamKey]) {
             setStreamDetails(careerKnowledgeBank[streamKey]);
@@ -143,7 +141,6 @@ export default function StudentProfile() {
       color: '#f8fafc'
     }}>
       
-      {/* Top Brand Banner Header */}
       <header style={{ maxWidth: '1000px', margin: '0 auto 30px auto', display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid rgba(255,255,255,0.1)', paddingBottom: '15px' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
           <img src="/logo.jpg" alt="Samar Logo" style={{ width: '45px', height: '45px', borderRadius: '6px' }} />
@@ -155,19 +152,15 @@ export default function StudentProfile() {
         <button onClick={() => router.push('/')} style={{ padding: '8px 18px', background: 'transparent', border: '1px solid #38bdf8', color: '#38bdf8', borderRadius: '6px', fontWeight: 'bold', cursor: 'pointer', transition: '0.2s' }}>Back to Home</button>
       </header>
 
-      {/* Main Grid Layout Container */}
       <div style={{ maxWidth: '1000px', margin: '0 auto', display: 'grid', gridTemplateColumns: '1fr', gap: '30px' }}>
         
-        {/* ROW 1: Student Identity Verified Card */}
         <section style={{ background: 'rgba(15, 23, 42, 0.85)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '12px', padding: '30px', boxShadow: '0 10px 25px rgba(0,0,0,0.3)', display: 'flex', flexWrap: 'wrap', gap: '25px', alignItems: 'center' }}>
           
-          {/* Avatar Area with Verification Badge */}
-          <div style={{ position: 'relative', width: '110px', height: '110px', backgroundColor: '#1e293b', borderRadius: '50%', display: 'flex', justifyContent: 'center', alignItems: 'center', border: '3px solid #38bdf8', padding: '4px' }}>
-            <span style={{ fontSize: '2.5rem' }}>🎓</span>
-            <div style={{ position: 'absolute', bottom: '0', right: '5px', backgroundColor: '#10b981', color: '#fff', fontSize: '0.7rem', fontWeight: 'bold', padding: '3px 7px', borderRadius: '10px', border: '2px solid #0f172a' }}>VERIFIED</div>
+          <div style={{ position: 'relative', width: '110px', height: '110px', backgroundColor: '#1e293b', borderRadius: '50%', display: 'flex', justifyContent: 'center', alignItems: 'center', border: '3px solid #38bdf8', overflow: 'hidden' }}>
+            <img src="/logo.jpg" alt="Student Photo" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+            <div style={{ position: 'absolute', bottom: '0', width: '100%', backgroundColor: 'rgba(16, 185, 129, 0.9)', color: '#fff', fontSize: '0.65rem', fontWeight: 'bold', padding: '2px 0', textAlign: 'center' }}>VERIFIED</div>
           </div>
 
-          {/* Core Profile Parameters Metadata */}
           <div style={{ flex: 1, minWidth: '250px' }}>
             <span style={{ fontSize: '0.8rem', background: 'rgba(56, 189, 248, 0.15)', color: '#38bdf8', padding: '4px 10px', borderRadius: '4px', fontWeight: 'bold' }}>STUDENT ACCOUNT PROFILE</span>
             <h2 style={{ fontSize: '1.7rem', color: '#fff', margin: '10px 0 5px 0', fontWeight: '800' }}>{studentData.email.split('@')[0].toUpperCase()}</h2>
@@ -176,7 +169,6 @@ export default function StudentProfile() {
           </div>
         </section>
 
-        {/* ROW 2: Core Course Stream Analysis Report */}
         <section style={{ background: 'rgba(15, 23, 42, 0.85)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '12px', padding: '35px', boxShadow: '0 10px 25px rgba(0,0,0,0.3)' }}>
           <div style={{ borderBottom: '1px solid rgba(255,255,255,0.1)', paddingBottom: '15px', marginBottom: '25px' }}>
             <small style={{ color: '#ff7a00', fontWeight: 'bold', textTransform: 'uppercase', letterSpacing: '1px' }}>Your Roadmap Matrix</small>
@@ -191,7 +183,6 @@ export default function StudentProfile() {
             </div>
           </div>
 
-          {/* Dynamic Information Display Engine Block */}
           {streamDetails ? (
             <div>
               <div style={{ marginBottom: '25px' }}>
@@ -222,7 +213,6 @@ export default function StudentProfile() {
           )}
         </section>
 
-        {/* ROW 3: Educational Retention & Info Message */}
         <section style={{ textAlign: 'center', padding: '20px', background: 'rgba(16, 185, 129, 0.05)', border: '1px dashed rgba(16, 185, 129, 0.3)', borderRadius: '8px' }}>
           <p style={{ color: '#10b981', margin: 0, fontSize: '0.9rem', fontWeight: 'bold' }}>
             💡 Smart Career Tip: Is page ki URL link ko safe rakhein ya bookmark kar lein, taaki aap kabhi bhi apni details aur tracking check kar sakein!
