@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/router';
 import { supabase } from '../utils/supabase';
 
@@ -60,7 +60,7 @@ export default function AssessmentWizard() {
   const content = {
     en: {
       brand: "Samar Career Guidance",
-      founder: "Founder: Ashfaque Umar",
+      founder: "Founder: Dr. Ashfaque Umar",
       title: "Secure Academic Assessment Wizard",
       emailLabel: "Enter Email to Bind Secure Session Token:",
       chooseStream: "Select an Educational Stream to Explore:",
@@ -71,7 +71,7 @@ export default function AssessmentWizard() {
     },
     ur: {
       brand: "ثمر کیریئر رہنمائی",
-      founder: "بانی: اشفاق عمر",
+      founder: "بانی: ڈاکٹر اشفاق عمر",
       title: "محفوظ کیریئر اسیسمنٹ وزرڈ",
       emailLabel: "سیشن ٹوکن محفوظ کرنے کے لیے ای میل درج کریں:",
       chooseStream: "تعلیمی شعبہ (Stream) منتخب کریں:",
@@ -86,20 +86,52 @@ export default function AssessmentWizard() {
   const urduFont = "'AlviNastaleeq', 'Tahoma', sans-serif";
   const englishFont = "'Segoe UI', sans-serif";
 
+  // URL search query auto-detection logic
+  useEffect(() => {
+    if (router.isReady && router.query.search) {
+      const query = decodeURIComponent(router.query.search).toLowerCase();
+      
+      // Look for a matching stream by course items
+      for (const [streamKey, streamVal] of Object.entries(streams)) {
+        const matches = streamVal.items.some(item => item.toLowerCase().includes(query));
+        if (matches) {
+          setSelectedStream(streamKey);
+          setStep(3); // Jump straight to results step if search item hits
+          break;
+        }
+      }
+    }
+  }, [router.isReady, router.query.search]);
+
   const handleSubmit = async () => {
-    if (!email || !selectedStream) {
-      alert(lang === 'ur' ? 'براہ کرم سیشن کی تفصیلات مکمل کریں!' : 'Please complete all details.');
+    // If no email exists, force the user back to step 1 safely to input token
+    if (!email) {
+      const inputEmail = prompt(lang === 'ur' ? "ڈیٹا محفوظ کرنے کے لیے ای میل درج کریں:" : "Please provide your Email to store validation data:");
+      if (inputEmail && inputEmail.includes('@')) {
+        setEmail(inputEmail.trim().toLowerCase());
+        executeDbInsert(inputEmail.trim().toLowerCase(), selectedStream);
+      } else {
+        alert(lang === 'ur' ? "درست ای میل لازمی ہے!" : "Valid Email is required.");
+      }
+      return;
+    }
+
+    executeDbInsert(email.trim().toLowerCase(), selectedStream);
+  };
+
+  const executeDbInsert = async (userEmail, targetStream) => {
+    if (!userEmail || !targetStream) {
+      alert("Validation criteria mismatch.");
       return;
     }
     setSubmitting(true);
-    
     try {
       const { data, error } = await supabase
         .from('user_assessments')
         .insert([
           { 
-            email: email.trim().toLowerCase(), 
-            interest_area: selectedStream, 
+            email: userEmail, 
+            interest_area: targetStream, 
             preferred_language: lang 
           }
         ]);
@@ -108,7 +140,7 @@ export default function AssessmentWizard() {
         alert("Database Connection Sync Error: " + error.message);
       } else {
         alert(lang === 'ur' ? 'کامیابی! آپ کا کیریئر پروفائل اکاؤنٹ تیار ہو چکا ہے۔' : 'Success! Your tracking profile account has been created.');
-        router.push(`/profile?email=${encodeURIComponent(email.trim().toLowerCase())}`);
+        router.push(`/profile?email=${encodeURIComponent(userEmail)}`);
       }
     } catch (err) {
       alert("Network Error: " + err.message);
