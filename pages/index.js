@@ -7,7 +7,6 @@ export default function HomeLanding() {
   const [showContactModal, setShowContactModal] = useState(false);
   const [showCategoryMenu, setShowCategoryMenu] = useState(false);
 
-  // Translations Object for Google AdSense Approval Standard Elements
   const uiContent = {
     en: {
       brand: "Samar Career Guidance",
@@ -49,7 +48,6 @@ export default function HomeLanding() {
   const urduFont = "'AlviNastaleeq', 'Tahoma', sans-serif";
   const englishFont = "'Segoe UI', sans-serif";
 
-  // Mock Login Framework using URL parameters for verification tracking
   const handleStudentLoginBypass = () => {
     const emailPrompt = prompt(lang === 'ur' ? "پروفائل لاگ ان کے لیے اپنا ای میل درج کریں:" : "Enter your registered Email to track profile dashboard:");
     if (emailPrompt && emailPrompt.includes('@')) {
@@ -77,15 +75,13 @@ export default function HomeLanding() {
         @font-face { font-family: 'AlviNastaleeq'; src: url('/alvi-nastaleeq.ttf') format('truetype'); }
         .nav-link { color: #94a3b8; font-weight: 700; background: transparent; border: none; cursor: pointer; font-size: 0.95rem; transition: 0.2s; text-decoration: none; }
         .nav-link:hover { color: #38bdf8; }
-        .dropdown-item { display: block; width: 100%; padding: 10px 15px; text-align: left; background: transparent; border: none; color: #cbd5e1; font-weight: 600; cursor: pointer; font-size: 0.9rem; }
+        .dropdown-item { display: block; width: 100%; padding: 10px 15px; text-align: left; background: transparent; border: none; color: #cbd5e1; font-weight: 600; cursor: pointer; font-size: 0.9rem; width: 100%; }
         .dropdown-item:hover { background: rgba(56, 189, 248, 0.1); color: #38bdf8; }
       `}</style>
 
-      {/* FIXED GLASSMORPHIC NAVBAR NAVIGATION LAYER */}
       <nav style={{ background: 'rgba(15, 23, 42, 0.85)', backdropFilter: 'blur(8px)', WebkitBackdropFilter: 'blur(8px)', borderBottom: '1px solid rgba(255,255,255,0.1)', sticky: 'top', zIndex: 100, padding: '15px 30px' }}>
         <div style={{ maxWidth: '1200px', margin: '0 auto', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '15px' }}>
           
-          {/* Brand Engine Identity */}
           <div style={{ display: 'flex', alignItems: 'center', gap: '10px', cursor: 'pointer' }} onClick={() => router.push('/')}>
             <img src="/logo.jpg" alt="Logo" style={{ width: '40px', height: '40px', borderRadius: '6px' }} />
             <div>
@@ -94,11 +90,9 @@ export default function HomeLanding() {
             </div>
           </div>
 
-          {/* Dynamic Centered Menu Links */}
           <div style={{ display: 'flex', alignItems: 'center', gap: '25px', position: 'relative' }}>
             <button onClick={() => router.push('/')} className="nav-link">{t.navHome}</button>
             
-            {/* Category Dropdown Controller */}
             <div style={{ position: 'relative' }}>
               <button onClick={() => setShowCategoryMenu(!showCategoryMenu)} className="nav-link">
                 {t.navCategory} ▾
@@ -116,7 +110,6 @@ export default function HomeLanding() {
             <button onClick={() => setShowContactModal(true)} className="nav-link">{t.navContact}</button>
           </div>
 
-          {/* Configuration Trigger Nodes */}
           <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
             <button onClick={handleStudentLoginBypass} style={{ padding: '8px 16px', background: 'transparent', border: '1px solid #38bdf8', color: '#38bdf8', borderRadius: '6px', fontWeight: 'bold', cursor: 'pointer', fontSize: '0.9rem' }}>{t.btnLogin}</button>
             <button onClick={() => setLang(lang === 'en' ? 'ur' : 'en')} style={{ padding: '6px 12px', background: '#ff7a00', border: 'none', color: '#fff', borderRadius: '4px', fontWeight: 'bold', fontSize: '0.8rem', cursor: 'pointer' }}>{lang === 'en' ? 'اردو' : 'English'}</button>
@@ -125,14 +118,12 @@ export default function HomeLanding() {
         </div>
       </nav>
 
-      {/* Alert Header Ticker ticker banner */}
       <div style={{ background: 'rgba(30, 41, 59, 0.5)', borderBottom: '1px solid rgba(255,255,255,0.05)', padding: '10px 20px', textAlign: 'center', fontSize: '0.85rem', fontWeight: '600', color: '#cbd5e1' }}>
         {t.alertText}
       </div>
 
-      {/* MAIN HERO CENTRIC ZONE */}
       <main style={{ flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center', padding: '60px 20px', textAlign: 'center', maxWidth: '900px', margin: '0 auto' }}>
-        <h2 style={{ fontSize: '3rem', mdFontSize: '4rem', fontWeight: '900', color: '#fff', margin: '0 0 20px 0', letterSpacing: '-0.5px', lineHeight: '1.15' }}>
+        <h2 style={{ fontSize: '3rem', fontWeight: '900', color: '#fff', margin: '0 0 20px 0', letterSpacing: '-0.5px', lineHeight: '1.15' }}>
           {t.heroTitle}
         </h2>
         <p style={{ fontSize: '1.2rem', color: '#94a3b8', maxWidth: '650px', margin: '0 0 40px 0', lineHeight: '1.6', fontWeight: '500' }}>
@@ -143,7 +134,6 @@ export default function HomeLanding() {
         </button>
       </main>
 
-      {/* CONTACT INFO SHEET DIALOG MODAL ENGINE */}
       {showContactModal && (
         <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.75)', backdropFilter: 'blur(4px)', WebkitBackdropFilter: 'blur(4px)', display: 'flex', justifyContent: 'center', alignItems: 'center', zIndex: 1000, padding: '15px' }}>
           <div style={{ background: '#1e293b', border: '1px solid rgba(255,255,255,0.15)', borderRadius: '12px', padding: '30px', maxWidth: '500px', width: '100%', boxShadow: '0 20px 40px rgba(0,0,0,0.5)', position: 'relative', textAlign: lang === 'ur' ? 'right' : 'left' }}>
@@ -158,7 +148,6 @@ export default function HomeLanding() {
         </div>
       )}
 
-      {/* FOOTER BAR */}
       <footer style={{ background: '#090d16', borderTop: '1px solid rgba(255,255,255,0.05)', padding: '20px', textAlign: 'center', fontSize: '0.8rem', color: '#475569', fontWeight: '700' }}>
         {t.footerNote}
       </footer>
