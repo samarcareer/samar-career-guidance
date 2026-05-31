@@ -71,17 +71,12 @@ export default function HomeLanding() {
       flexDirection: 'column',
       overflowX: 'hidden'
     }}>
-      <style jsx global>{`
-        @font-face { font-family: 'AlviNastaleeq'; src: url('/alvi-nastaleeq.ttf') format('truetype'); }
-        .nav-link { color: #94a3b8; font-weight: 700; background: transparent; border: none; cursor: pointer; font-size: 0.95rem; transition: 0.2s; text-decoration: none; }
-        .nav-link:hover { color: #38bdf8; }
-        .dropdown-item { display: block; width: 100%; padding: 10px 15px; text-align: left; background: transparent; border: none; color: #cbd5e1; font-weight: 600; cursor: pointer; font-size: 0.9rem; width: 100%; }
-        .dropdown-item:hover { background: rgba(56, 189, 248, 0.1); color: #38bdf8; }
-      `}</style>
-
-      <nav style={{ background: 'rgba(15, 23, 42, 0.85)', backdropFilter: 'blur(8px)', WebkitBackdropFilter: 'blur(8px)', borderBottom: '1px solid rgba(255,255,255,0.1)', sticky: 'top', zIndex: 100, padding: '15px 30px' }}>
+      
+      {/* FIXED GLASSMORPHIC NAVBAR LAYER */}
+      <nav style={{ background: 'rgba(15, 23, 42, 0.85)', backdropFilter: 'blur(8px)', WebkitBackdropFilter: 'blur(8px)', borderBottom: '1px solid rgba(255,255,255,0.1)', position: 'sticky', top: 0, zIndex: 100, padding: '15px 30px' }}>
         <div style={{ maxWidth: '1200px', margin: '0 auto', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '15px' }}>
           
+          {/* Brand Identity */}
           <div style={{ display: 'flex', alignItems: 'center', gap: '10px', cursor: 'pointer' }} onClick={() => router.push('/')}>
             <img src="/logo.jpg" alt="Logo" style={{ width: '40px', height: '40px', borderRadius: '6px' }} />
             <div>
@@ -90,26 +85,33 @@ export default function HomeLanding() {
             </div>
           </div>
 
+          {/* Centered Navigation Menu Items */}
           <div style={{ display: 'flex', alignItems: 'center', gap: '25px', position: 'relative' }}>
-            <button onClick={() => router.push('/')} className="nav-link">{t.navHome}</button>
+            <button onClick={() => router.push('/')} style={{ color: '#38bdf8', fontWeight: '700', background: 'transparent', border: 'none', cursor: 'pointer', fontSize: '0.95rem' }}>
+              {t.navHome}
+            </button>
             
+            {/* Dropdown Container */}
             <div style={{ position: 'relative' }}>
-              <button onClick={() => setShowCategoryMenu(!showCategoryMenu)} className="nav-link">
+              <button onClick={() => setShowCategoryMenu(!showCategoryMenu)} style={{ color: '#94a3b8', fontWeight: '700', background: 'transparent', border: 'none', cursor: 'pointer', fontSize: '0.95rem' }}>
                 {t.navCategory} ▾
               </button>
               {showCategoryMenu && (
-                <div style={{ position: 'absolute', top: '35px', left: lang === 'ur' ? 'auto' : '0', right: lang === 'ur' ? '0' : 'auto', background: '#1e293b', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '6px', width: '220px', boxShadow: '0 10px 20px rgba(0,0,0,0.4)', zIndex: 200, padding: '5px 0' }}>
-                  <button onClick={() => { router.push('/assessment'); setShowCategoryMenu(false); }} className="dropdown-item" style={{ textAlign: lang === 'ur' ? 'right' : 'left' }}>🧪 Science Stems</button>
-                  <button onClick={() => { router.push('/assessment'); setShowCategoryMenu(false); }} className="dropdown-item" style={{ textAlign: lang === 'ur' ? 'right' : 'left' }}>📊 Commerce Hub</button>
-                  <button onClick={() => { router.push('/assessment'); setShowCategoryMenu(false); }} className="dropdown-item" style={{ textAlign: lang === 'ur' ? 'right' : 'left' }}>🩺 Paramedical & Medical</button>
-                  <button onClick={() => { router.push('/assessment'); setShowCategoryMenu(false); }} className="dropdown-item" style={{ textAlign: lang === 'ur' ? 'right' : 'left' }}>⚙️ Engineering Tech</button>
+                <div style={{ position: 'absolute', top: '35px', left: lang === 'ur' ? 'auto' : '0', right: lang === 'ur' ? '0' : 'auto', background: '#1e293b', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '6px', width: '240px', boxShadow: '0 10px 20px rgba(0,0,0,0.4)', zIndex: 200, padding: '5px 0' }}>
+                  <button onClick={() => { router.push('/assessment'); setShowCategoryMenu(false); }} style={{ display: 'block', width: '100%', padding: '10px 15px', background: 'transparent', border: 'none', color: '#cbd5e1', fontWeight: '600', cursor: 'pointer', fontSize: '0.9rem', textAlign: lang === 'ur' ? 'right' : 'left' }}>🧪 Science Stems</button>
+                  <button onClick={() => { router.push('/assessment'); setShowCategoryMenu(false); }} style={{ display: 'block', width: '100%', padding: '10px 15px', background: 'transparent', border: 'none', color: '#cbd5e1', fontWeight: '600', cursor: 'pointer', fontSize: '0.9rem', textAlign: lang === 'ur' ? 'right' : 'left' }}>📊 Commerce Hub</button>
+                  <button onClick={() => { router.push('/assessment'); setShowCategoryMenu(false); }} style={{ display: 'block', width: '100%', padding: '10px 15px', background: 'transparent', border: 'none', color: '#cbd5e1', fontWeight: '600', cursor: 'pointer', fontSize: '0.9rem', textAlign: lang === 'ur' ? 'right' : 'left' }}>🩺 Paramedical & Medical</button>
+                  <button onClick={() => { router.push('/assessment'); setShowCategoryMenu(false); }} style={{ display: 'block', width: '100%', padding: '10px 15px', background: 'transparent', border: 'none', color: '#cbd5e1', fontWeight: '600', cursor: 'pointer', fontSize: '0.9rem', textAlign: lang === 'ur' ? 'right' : 'left' }}>⚙️ Engineering Tech</button>
                 </div>
               )}
             </div>
 
-            <button onClick={() => setShowContactModal(true)} className="nav-link">{t.navContact}</button>
+            <button onClick={() => setShowContactModal(true)} style={{ color: '#94a3b8', fontWeight: '700', background: 'transparent', border: 'none', cursor: 'pointer', fontSize: '0.95rem' }}>
+              {t.navContact}
+            </button>
           </div>
 
+          {/* Quick Action Elements */}
           <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
             <button onClick={handleStudentLoginBypass} style={{ padding: '8px 16px', background: 'transparent', border: '1px solid #38bdf8', color: '#38bdf8', borderRadius: '6px', fontWeight: 'bold', cursor: 'pointer', fontSize: '0.9rem' }}>{t.btnLogin}</button>
             <button onClick={() => setLang(lang === 'en' ? 'ur' : 'en')} style={{ padding: '6px 12px', background: '#ff7a00', border: 'none', color: '#fff', borderRadius: '4px', fontWeight: 'bold', fontSize: '0.8rem', cursor: 'pointer' }}>{lang === 'en' ? 'اردو' : 'English'}</button>
@@ -118,25 +120,28 @@ export default function HomeLanding() {
         </div>
       </nav>
 
+      {/* Ticker alert layer banner */}
       <div style={{ background: 'rgba(30, 41, 59, 0.5)', borderBottom: '1px solid rgba(255,255,255,0.05)', padding: '10px 20px', textAlign: 'center', fontSize: '0.85rem', fontWeight: '600', color: '#cbd5e1' }}>
         {t.alertText}
       </div>
 
-      <main style={{ flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center', padding: '60px 20px', textAlign: 'center', maxWidth: '900px', margin: '0 auto' }}>
-        <h2 style={{ fontSize: '3rem', fontWeight: '900', color: '#fff', margin: '0 0 20px 0', letterSpacing: '-0.5px', lineHeight: '1.15' }}>
+      {/* HERO CENTRIC MAIN AREA */}
+      <main style={{ flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center', padding: '80px 20px', textAlign: 'center', maxWidth: '900px', margin: '0 auto' }}>
+        <h2 style={{ fontSize: '3.5rem', fontWeight: '900', color: '#fff', margin: '0 0 20px 0', letterSpacing: '-0.5px', lineHeight: '1.15' }}>
           {t.heroTitle}
         </h2>
-        <p style={{ fontSize: '1.2rem', color: '#94a3b8', maxWidth: '650px', margin: '0 0 40px 0', lineHeight: '1.6', fontWeight: '500' }}>
+        <p style={{ fontSize: '1.25rem', color: '#94a3b8', maxWidth: '650px', margin: '0 0 40px 0', lineHeight: '1.6', fontWeight: '500' }}>
           {t.heroSub}
         </p>
-        <button onClick={() => router.push('/assessment')} style={{ padding: '16px 36px', background: '#00b074', border: 'none', color: '#fff', borderRadius: '8px', fontSize: '1.15rem', fontWeight: 'bold', cursor: 'pointer', boxShadow: '0 10px 25px rgba(0, 176, 116, 0.3)', transition: '0.2s' }}>
+        <button onClick={() => router.push('/assessment')} style={{ padding: '16px 40px', background: '#00b074', border: 'none', color: '#fff', borderRadius: '8px', fontSize: '1.15rem', fontWeight: 'bold', cursor: 'pointer', boxShadow: '0 10px 25px rgba(0, 176, 116, 0.3)' }}>
           {t.btnStart}
         </button>
       </main>
 
+      {/* CONTACT DIALOG WINDOW MODAL */}
       {showContactModal && (
         <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.75)', backdropFilter: 'blur(4px)', WebkitBackdropFilter: 'blur(4px)', display: 'flex', justifyContent: 'center', alignItems: 'center', zIndex: 1000, padding: '15px' }}>
-          <div style={{ background: '#1e293b', border: '1px solid rgba(255,255,255,0.15)', borderRadius: '12px', padding: '30px', maxWidth: '500px', width: '100%', boxShadow: '0 20px 40px rgba(0,0,0,0.5)', position: 'relative', textAlign: lang === 'ur' ? 'right' : 'left' }}>
+          <div style={{ background: '#1e293b', border: '1px solid rgba(255,255,255,0.15)', borderRadius: '12px', padding: '30px', maxWidth: '500px', width: '100%', boxShadow: '0 20px 40px rgba(0,0,0,0.5)', relative: true, textAlign: lang === 'ur' ? 'right' : 'left' }}>
             <h4 style={{ margin: '0 0 15px 0', color: '#38bdf8', fontSize: '1.3rem', fontWeight: '800' }}>{t.contactTitle}</h4>
             <p style={{ color: '#94a3b8', fontSize: '0.95rem', lineHeight: '1.5', margin: '0 0 20px 0' }}>{t.contactDetails}</p>
             <div style={{ background: 'rgba(15, 23, 42, 0.4)', padding: '15px', borderRadius: '6px', borderLeft: lang === 'en' ? '4px solid #ff7a00' : 'none', borderRight: lang === 'ur' ? '4px solid #ff7a00' : 'none', marginBottom: '25px' }}>
@@ -148,6 +153,7 @@ export default function HomeLanding() {
         </div>
       )}
 
+      {/* FOOTER BAR ENGINE */}
       <footer style={{ background: '#090d16', borderTop: '1px solid rgba(255,255,255,0.05)', padding: '20px', textAlign: 'center', fontSize: '0.8rem', color: '#475569', fontWeight: '700' }}>
         {t.footerNote}
       </footer>
