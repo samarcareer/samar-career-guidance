@@ -44,7 +44,7 @@ export default function AssessmentWizard() {
       items: ["Petro chemical Engineering", "Petroleum Engineering", "Civil Engineering", "Mechanical Engineering", "Aeronautical Engineering", "Aerospace Engineering", "Agricultural Engineering", "Architecture Engineering", "Automobile Engineering", "Automation & Robotics Eng.", "Avionics Engineering", "Biomedical Engineering", "Bio technological Eng.", "Chemical Engineering", "Ceramics Engineering", "Computer Science Engi.", "Electronics & Comm.Engi.", "Electrical & Electronics Engi.", "Environmental Science Engi.", "Information Science Engi", "Industrial Engineering", "Industrial Production Engi.", "Instrumental Technology", "Marine Engineering", "Medical Electronics Engi.", "Mining Engineering", "Manufacturing Science Engi.", "Naval Architecture Engi.", "Nanotechnology Engi.", "Polymer Technology Engi.", "Silk Polymar Engi.", "Carpet Technology Engi.", "Textile engineering", "Robotics", "Genetic"]
     },
     polytechnic: {
-      en: "Polytechnic (10th Class)", ur: "پولی ٹیکنک (دسویں کے بعد)",
+      en: "Polytechnic (10th Class)", ur: "پولی ٹیکنک (دسویں के बाद)",
       items: ["Civil engineering", "Mechanical engineering", "Automobile engineering", "Computer science engi.", "Electronics and communication Engineering", "Electrical engineering", "Petro chemical engineering"]
     },
     newJobMgmt: {
@@ -86,17 +86,15 @@ export default function AssessmentWizard() {
   const urduFont = "'AlviNastaleeq', 'Tahoma', sans-serif";
   const englishFont = "'Segoe UI', sans-serif";
 
-  // URL search query auto-detection logic
   useEffect(() => {
     if (router.isReady && router.query.search) {
       const query = decodeURIComponent(router.query.search).toLowerCase();
       
-      // Look for a matching stream by course items
       for (const [streamKey, streamVal] of Object.entries(streams)) {
         const matches = streamVal.items.some(item => item.toLowerCase().includes(query));
         if (matches) {
           setSelectedStream(streamKey);
-          setStep(3); // Jump straight to results step if search item hits
+          setStep(3);
           break;
         }
       }
@@ -104,7 +102,6 @@ export default function AssessmentWizard() {
   }, [router.isReady, router.query.search]);
 
   const handleSubmit = async () => {
-    // If no email exists, force the user back to step 1 safely to input token
     if (!email) {
       const inputEmail = prompt(lang === 'ur' ? "ڈیٹا محفوظ کرنے کے لیے ای میل درج کریں:" : "Please provide your Email to store validation data:");
       if (inputEmail && inputEmail.includes('@')) {
