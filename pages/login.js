@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { useRouter } from 'next/router';
 import { supabase } from '../utils/supabase';
 
@@ -11,30 +11,6 @@ export default function StudentLoginPortal() {
   const [collegeName, setCollegeName] = useState('');
   const [streamInterest, setStreamInterest] = useState('science');
   const [loading, setLoading] = useState(false);
-  
-  // Animated Counter State
-  const [visitors, setVisitors] = useState(0);
-
-  useEffect(() => {
-    // Count-Up Animation Logic for smooth premium feel
-    const animateCounter = (target, setter, duration) => {
-      let start = 0;
-      const increment = target / (duration / 16); // Target 60fps
-      const timer = setInterval(() => {
-        start += increment;
-        if (start >= target) {
-          setter(target);
-          clearInterval(timer);
-        } else {
-          setter(Math.floor(start));
-        }
-      }, 16);
-    };
-
-    // Triggering the animation on load 
-    animateCounter(645, setVisitors, 2000); 
-
-  }, []);
 
   const handlePortalAction = async (e) => {
     e.preventDefault();
@@ -55,68 +31,47 @@ export default function StudentLoginPortal() {
   };
 
   return (
-    <div style={{ width: '100%', backgroundColor: '#0f172a', minHeight: '100vh', display: 'flex', flexDirection: 'column', fontFamily: "'Segoe UI', sans-serif" }}>
-      
-      {/* Main Form Section - Centered */}
-      <div style={{ flex: 1, display: 'flex', justifyContent: 'center', alignItems: 'center', padding: '40px 5%' }}>
-        <div style={{ maxWidth: '600px', width: '100%', background: 'rgba(15, 23, 42, 0.85)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '16px', padding: '50px', boxShadow: '0 25px 50px rgba(0,0,0,0.5)' }}>
-          
-          <div style={{ textAlign: 'center', marginBottom: '40px' }}>
-            <img src="/logo.jpg" alt="Logo" style={{ width: '60px', height: '60px', borderRadius: '10px', marginBottom: '15px' }} />
-            <h2 style={{ color: '#fff', margin: 0, fontWeight: 800, fontSize: '2rem' }}>Samar Student Hub</h2>
-            <p style={{ color: '#94a3b8', margin: '10px 0 0 0', fontSize: '1.1rem' }}>{isRegister ? "Create detailed verified tracking credentials" : "Access your active tracking career charts"}</p>
+    <div style={{ width: '100%', backgroundColor: '#0f172a', minHeight: '100vh', display: 'flex', justifyContent: 'center', alignItems: 'center', fontFamily: "'Segoe UI', sans-serif", padding: '40px 5%' }}>
+      <div style={{ maxWidth: '600px', width: '100%', background: 'rgba(15, 23, 42, 0.85)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '16px', padding: '50px', boxShadow: '0 25px 50px rgba(0,0,0,0.5)' }}>
+        
+        <div style={{ textAlign: 'center', marginBottom: '40px' }}>
+          <img src="/logo.jpg" alt="Logo" style={{ width: '60px', height: '60px', borderRadius: '10px', marginBottom: '15px' }} />
+          <h2 style={{ color: '#fff', margin: 0, fontWeight: 800, fontSize: '2rem' }}>Samar Student Hub</h2>
+          <p style={{ color: '#94a3b8', margin: '10px 0 0 0', fontSize: '1.1rem' }}>{isRegister ? "Create detailed verified tracking credentials" : "Access your active tracking career charts"}</p>
+        </div>
+
+        <form onSubmit={handlePortalAction} style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+          <div>
+            <label style={{ display: 'block', color: '#94a3b8', fontWeight: '600', fontSize: '1rem', marginBottom: '8px' }}>Student Email Token (Required):</label>
+            <input type="email" required value={email} onChange={(e) => setEmail(e.target.value)} style={{ width: '100%', padding: '16px', borderRadius: '8px', background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.15)', color: '#fff', fontSize: '1.1rem', outline: 'none' }} />
           </div>
 
-          <form onSubmit={handlePortalAction} style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
-            <div>
-              <label style={{ display: 'block', color: '#94a3b8', fontWeight: '600', fontSize: '1rem', marginBottom: '8px' }}>Student Email Token (Required):</label>
-              <input type="email" required value={email} onChange={(e) => setEmail(e.target.value)} style={{ width: '100%', padding: '16px', borderRadius: '8px', background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.15)', color: '#fff', fontSize: '1.1rem', outline: 'none' }} />
-            </div>
+          {isRegister && (
+            <>
+              <div><label style={{ display: 'block', color: '#94a3b8', fontWeight: '600', fontSize: '1rem', marginBottom: '8px' }}>Full Name:</label><input type="text" required value={fullName} onChange={(e) => setFullName(e.target.value)} style={{ width: '100%', padding: '16px', borderRadius: '8px', background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.15)', color: '#fff', fontSize: '1.1rem', outline: 'none' }} /></div>
+              <div><label style={{ display: 'block', color: '#94a3b8', fontWeight: '600', fontSize: '1rem', marginBottom: '8px' }}>Active WhatsApp Contact Line:</label><input type="tel" required value={contactNo} onChange={(e) => setContactNo(e.target.value)} style={{ width: '100%', padding: '16px', borderRadius: '8px', background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.15)', color: '#fff', fontSize: '1.1rem', outline: 'none' }} /></div>
+              <div><label style={{ display: 'block', color: '#94a3b8', fontWeight: '600', fontSize: '1rem', marginBottom: '8px' }}>Current Institute / School Name:</label><input type="text" required value={collegeName} onChange={(e) => setCollegeName(e.target.value)} style={{ width: '100%', padding: '16px', borderRadius: '8px', background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.15)', color: '#fff', fontSize: '1.1rem', outline: 'none' }} /></div>
+              <div>
+                <label style={{ display: 'block', color: '#94a3b8', fontWeight: '600', fontSize: '1rem', marginBottom: '8px' }}>Academic Stream Hub Target:</label>
+                <select value={streamInterest} onChange={(e) => setStreamInterest(e.target.value)} style={{ width: '100%', padding: '16px', borderRadius: '8px', background: '#1e293b', border: '1px solid rgba(255,255,255,0.15)', color: '#fff', fontSize: '1.1rem', outline: 'none' }}>
+                  <option value="science">Science Matrix</option><option value="commerce">Commerce Hub</option><option value="paramedical">Paramedical Field</option><option value="btech">B.Tech Engineering</option>
+                </select>
+              </div>
+            </>
+          )}
 
-            {isRegister && (
-              <>
-                <div><label style={{ display: 'block', color: '#94a3b8', fontWeight: '600', fontSize: '1rem', marginBottom: '8px' }}>Full Name:</label><input type="text" required value={fullName} onChange={(e) => setFullName(e.target.value)} style={{ width: '100%', padding: '16px', borderRadius: '8px', background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.15)', color: '#fff', fontSize: '1.1rem', outline: 'none' }} /></div>
-                <div><label style={{ display: 'block', color: '#94a3b8', fontWeight: '600', fontSize: '1rem', marginBottom: '8px' }}>Active WhatsApp Contact Line:</label><input type="tel" required value={contactNo} onChange={(e) => setContactNo(e.target.value)} style={{ width: '100%', padding: '16px', borderRadius: '8px', background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.15)', color: '#fff', fontSize: '1.1rem', outline: 'none' }} /></div>
-                <div><label style={{ display: 'block', color: '#94a3b8', fontWeight: '600', fontSize: '1rem', marginBottom: '8px' }}>Current Institute / School Name:</label><input type="text" required value={collegeName} onChange={(e) => setCollegeName(e.target.value)} style={{ width: '100%', padding: '16px', borderRadius: '8px', background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.15)', color: '#fff', fontSize: '1.1rem', outline: 'none' }} /></div>
-                <div>
-                  <label style={{ display: 'block', color: '#94a3b8', fontWeight: '600', fontSize: '1rem', marginBottom: '8px' }}>Academic Stream Hub Target:</label>
-                  <select value={streamInterest} onChange={(e) => setStreamInterest(e.target.value)} style={{ width: '100%', padding: '16px', borderRadius: '8px', background: '#1e293b', border: '1px solid rgba(255,255,255,0.15)', color: '#fff', fontSize: '1.1rem', outline: 'none' }}>
-                    <option value="science">Science Matrix</option><option value="commerce">Commerce Hub</option><option value="paramedical">Paramedical Field</option><option value="btech">B.Tech Engineering</option>
-                  </select>
-                </div>
-              </>
-            )}
+          <button type="submit" disabled={loading} style={{ width: '100%', padding: '18px', background: '#38bdf8', border: 'none', color: '#0f172a', fontWeight: 'bold', fontSize: '1.2rem', borderRadius: '8px', cursor: 'pointer', marginTop: '15px' }}>
+            {loading ? "Processing Sync..." : isRegister ? "Complete Detailed Sign Up" : "Secure Log In"}
+          </button>
+        </form>
 
-            <button type="submit" disabled={loading} style={{ width: '100%', padding: '18px', background: '#38bdf8', border: 'none', color: '#0f172a', fontWeight: 'bold', fontSize: '1.2rem', borderRadius: '8px', cursor: 'pointer', marginTop: '15px' }}>
-              {loading ? "Processing Sync..." : isRegister ? "Complete Detailed Sign Up" : "Secure Log In"}
-            </button>
-          </form>
-
-          <div style={{ marginTop: '30px', textAlign: 'center', borderTop: '1px solid rgba(255,255,255,0.1)', paddingTop: '25px' }}>
-            <button onClick={() => setIsRegister(!isRegister)} style={{ background: 'transparent', border: 'none', color: '#ff7a00', fontWeight: 'bold', cursor: 'pointer', fontSize: '1rem' }}>
-              {isRegister ? "Already registered parameters? Log In Here" : "New student token? Create Detailed Form Profile Here"}
-            </button>
-            <button onClick={() => router.push('/')} style={{ display: 'block', margin: '20px auto 0 auto', background: 'transparent', border: 'none', color: '#94a3b8', fontSize: '1rem', cursor: 'pointer' }}>Cancel & Return Home</button>
-          </div>
+        <div style={{ marginTop: '30px', textAlign: 'center', borderTop: '1px solid rgba(255,255,255,0.1)', paddingTop: '25px' }}>
+          <button onClick={() => setIsRegister(!isRegister)} style={{ background: 'transparent', border: 'none', color: '#ff7a00', fontWeight: 'bold', cursor: 'pointer', fontSize: '1rem' }}>
+            {isRegister ? "Already registered parameters? Log In Here" : "New student token? Create Detailed Form Profile Here"}
+          </button>
+          <button onClick={() => router.push('/')} style={{ display: 'block', margin: '20px auto 0 auto', background: 'transparent', border: 'none', color: '#94a3b8', fontSize: '1rem', cursor: 'pointer' }}>Cancel & Return Home</button>
         </div>
       </div>
-
-      {/* New Footer with Live Animated Counter */}
-      <footer style={{ width: '100%', background: 'rgba(30, 64, 175, 0.4)', backdropFilter: 'blur(10px)', borderTop: '1px solid rgba(56, 189, 248, 0.2)', padding: '30px 20px', textAlign: 'center', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '15px' }}>
-        
-        <div style={{ background: 'rgba(56, 189, 248, 0.1)', border: '1px solid rgba(56, 189, 248, 0.3)', padding: '15px 30px', borderRadius: '12px', display: 'inline-block', boxShadow: '0 10px 25px rgba(0,0,0,0.2)' }}>
-            <p style={{ margin: 0, color: '#93c5fd', fontSize: '0.9rem', fontWeight: 'bold', textTransform: 'uppercase', letterSpacing: '1.5px' }}>Live Platform Visitors</p>
-            <h3 style={{ margin: '5px 0 0 0', color: '#38bdf8', fontSize: '2.2rem', fontWeight: '900', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}>
-              <i className='bx bx-user-pin'></i>
-              {visitors.toLocaleString()}
-            </h3>
-        </div>
-
-        <p style={{ margin: 0, fontSize: '0.85rem', color: '#94a3b8', fontWeight: '600', marginTop: '10px' }}>
-          © 2026 Samar Foundation. Enterprise-Grade Architecture Layer Protection Locked.
-        </p>
-      </footer>
-
     </div>
   );
 }
