@@ -1,6 +1,21 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/router';
 import { supabase } from '../utils/supabase';
+
+// Data objects moved outside to prevent Vercel Build Errors
+const streams = {
+  science: { en: "Science Courses (3 Years)", ur: "سائنس کورسز (3 سالہ)", items: ["Bsc Physics", "Bsc Chemistry", "Bsc Botany", "Bsc Zoology", "Bsc Computer science", "Bsc Mathematics", "Bsc PCM", "Bsc CBZ", "Bsc Forestry", "Bsc Dietician & Nutritionist", "Bsc Home Science", "Bsc Agriculture Science", "Bsc Horticulture", "Bsc Sericulture", "Bsc Oceanography", "Bsc Melsorology", "Bsc Arthopology", "Bsc Forensic Science", "Bsc Food technology", "Bsc Diary Technology", "Bsc Hotel Management", "Bsc Fashion Design", "Bsc Mass Communication", "Bsc Electronic Media", "Bsc Multimedia", "Bsc 3D Animation"] },
+  commerce: { en: "Commerce Courses", ur: "کامرس کورسز", items: ["CA Chartered Account", "CMA Cost Management Account", "CS Company Secretary (Foundation)", "B.Com Regular", "B.Com Taxation & Tax Procedure", "B.Com Travel & Tourism", "B.Com Bank Management", "B.Com Professional", "BBA / BBM Regular", "BFM Bachelor of Financial Management", "BMS", "BAF"] },
+  humanities: { en: "Humanities Courses", ur: "آرٹس اور ہیومینٹیز", items: ["Advertising", "BS General", "Criminology", "Economics", "Fine Arts", "Foreign languages", "Home Science", "Interior Design", "Journalism", "Library Science", "Physical Education", "Political Science", "Psychology", "Social Work", "Sociology", "Travel and Tourism"] },
+  management: { en: "Management Courses", ur: "مینجمنٹ کورسز", items: ["Business Management", "Bank Management", "Event Management", "Hospital Management", "Hotel Management", "Human Resources Management", "Logistics Management"] },
+  law: { en: "Law Courses (3/5 Years)", ur: "قانون کے کورسز (3/5 سالہ)", items: ["LLB", "BA + LLB", "B.Com + LLB", "BBM + LLB", "BBA + LLB"] },
+  medical: { en: "Medical Courses", ur: "میڈیکل کورسز", items: ["MBBS", "BUMS Unani", "BHMS Homeopathy", "BAMS Ayurveda", "BSMS Sidha", "BNYS Naturopathy", "BDS Dental", "BVSc Veterinary"] },
+  paramedical: { en: "Paramedical Courses", ur: "پیرامیڈیکل کورسز", items: ["Nursing", "Pharm D", "B.Pharm", "D.Pharm", "M. Pharm", "Anesthesia technical", "Cardiac Care technical", "Perfusion technology", "Cathllab technology", "Clinical Optometry", "Dental Hygiene", "Dental Mechanic", "Dental Technician", "Health Inspector", "Medical imaging & Tech", "Medical Lab technician", "Medical Records tech", "Medical X Ray Technician", "Nuclear Medicine Tech", "Occupational Therapist", "Operation theater Tech", "Ophthalmic Assistant", "PHYSIOTHERAPY", "Radiographic Assistant", "Radiotherapy Technician", "Rehabilitation Therapy", "Respiratory Therapy Tech", "Blood Transfusion Tech", "Bsc Renal Dialysis"] },
+  btech: { en: "B.Tech Engineering (4 Years)", ur: "بی ٹیک انجینئرنگ (4 سالہ)", items: ["Petro chemical Engineering", "Petroleum Engineering", "Civil Engineering", "Mechanical Engineering", "Aeronautical Engineering", "Aerospace Engineering", "Agricultural Engineering", "Architecture Engineering", "Automobile Engineering", "Automation & Robotics Eng.", "Avionics Engineering", "Biomedical Engineering", "Bio technological Eng.", "Chemical Engineering", "Ceramics Engineering", "Computer Science Engi.", "Electronics & Comm.Engi.", "Electrical & Electronics Engi.", "Environmental Science Engi.", "Information Science Engi", "Industrial Engineering", "Industrial Production Engi.", "Instrumental Technology", "Marine Engineering", "Medical Electronics Engi.", "Mining Engineering", "Manufacturing Science Engi.", "Naval Architecture Engi.", "Nanotechnology Engi.", "Polymer Technology Engi.", "Silk Polymar Engi.", "Carpet Technology Engi.", "Textile engineering", "Robotics", "Genetic"] },
+  polytechnic: { en: "Polytechnic (10th Class)", ur: "پولی ٹیکنک (دسویں کے بعد)", items: ["Civil engineering", "Mechanical engineering", "Automobile engineering", "Computer science engi.", "Electronics and communication Engineering", "Electrical engineering", "Petro chemical engineering"] },
+  newJobMgmt: { en: "New Job Opportunity Courses (2/3/5 Years)", ur: "جدید ملازمت کے مواقع والے کورسز", items: ["BBA / BBM", "BBA Aviation", "BBA Air Cargo Management", "BBA Aeronautical", "BBA Retail Marketing", "BBA Customer Care Management", "BBA Airline & Airport Management", "BBA Cargo Management", "BBA Office Management", "BBA Store Management", "BBA Mall Management", "BBA Logistics", "BCA SAP", "BCA Cloud Computing", "MBA Logistics", "MBA Aviation", "MBA HR", "MBA Management"] },
+  architecture: { en: "Architecture (5 Years + 2)", ur: "آرکیٹیکچر کورسز", items: ["B.Arch (NATA is Compulsory)", "M.Arch"] }
+};
 
 export default function AssessmentWizard() {
   const router = useRouter();
@@ -9,20 +24,6 @@ export default function AssessmentWizard() {
   const [email, setEmail] = useState('');
   const [selectedStream, setSelectedStream] = useState('');
   const [submitting, setSubmitting] = useState(false);
-
-  const streams = {
-    science: { en: "Science Courses (3 Years)", ur: "سائنس کورسز (3 سالہ)", items: ["Bsc Physics", "Bsc Chemistry", "Bsc Botany", "Bsc Zoology", "Bsc Computer science", "Bsc Mathematics", "Bsc PCM", "Bsc CBZ", "Bsc Forestry", "Bsc Dietician & Nutritionist", "Bsc Home Science", "Bsc Agriculture Science", "Bsc Horticulture", "Bsc Sericulture", "Bsc Oceanography", "Bsc Melsorology", "Bsc Arthopology", "Bsc Forensic Science", "Bsc Food technology", "Bsc Diary Technology", "Bsc Hotel Management", "Bsc Fashion Design", "Bsc Mass Communication", "Bsc Electronic Media", "Bsc Multimedia", "Bsc 3D Animation"] },
-    commerce: { en: "Commerce Courses", ur: "کامرس کورسز", items: ["CA Chartered Account", "CMA Cost Management Account", "CS Company Secretary (Foundation)", "B.Com Regular", "B.Com Taxation & Tax Procedure", "B.Com Travel & Tourism", "B.Com Bank Management", "B.Com Professional", "BBA / BBM Regular", "BFM Bachelor of Financial Management", "BMS", "BAF"] },
-    humanities: { en: "Humanities Courses", ur: "آرٹس اور ہیومینٹیز", items: ["Advertising", "BS General", "Criminology", "Economics", "Fine Arts", "Foreign languages", "Home Science", "Interior Design", "Journalism", "Library Science", "Physical Education", "Political Science", "Psychology", "Social Work", "Sociology", "Travel and Tourism"] },
-    management: { en: "Management Courses", ur: "مینجمنٹ کورسز", items: ["Business Management", "Bank Management", "Event Management", "Hospital Management", "Hotel Management", "Human Resources Management", "Logistics Management"] },
-    law: { en: "Law Courses (3/5 Years)", ur: "قانون کے کورسز (3/5 سالہ)", items: ["LLB", "BA + LLB", "B.Com + LLB", "BBM + LLB", "BBA + LLB"] },
-    medical: { en: "Medical Courses", ur: "میڈیکل کورسز", items: ["MBBS", "BUMS Unani", "BHMS Homeopathy", "BAMS Ayurveda", "BSMS Sidha", "BNYS Naturopathy", "BDS Dental", "BVSc Veterinary"] },
-    paramedical: { en: "Paramedical Courses", ur: "پیرامیڈیکل کورسز", items: ["Nursing", "Pharm D", "B.Pharm", "D.Pharm", "M. Pharm", "Anesthesia technical", "Cardiac Care technical", "Perfusion technology", "Cathllab technology", "Clinical Optometry", "Dental Hygiene", "Dental Mechanic", "Dental Technician", "Health Inspector", "Medical imaging & Tech", "Medical Lab technician", "Medical Records tech", "Medical X Ray Technician", "Nuclear Medicine Tech", "Occupational Therapist", "Operation theater Tech", "Ophthalmic Assistant", "PHYSIOTHERAPY", "Radiographic Assistant", "Radiotherapy Technician", "Rehabilitation Therapy", "Respiratory Therapy Tech", "Blood Transfusion Tech", "Bsc Renal Dialysis"] },
-    btech: { en: "B.Tech Engineering (4 Years)", ur: "بی ٹیک انجینئرنگ (4 سالہ)", items: ["Petro chemical Engineering", "Petroleum Engineering", "Civil Engineering", "Mechanical Engineering", "Aeronautical Engineering", "Aerospace Engineering", "Agricultural Engineering", "Architecture Engineering", "Automobile Engineering", "Automation & Robotics Eng.", "Avionics Engineering", "Biomedical Engineering", "Bio technological Eng.", "Chemical Engineering", "Ceramics Engineering", "Computer Science Engi.", "Electronics & Comm.Engi.", "Electrical & Electronics Engi.", "Environmental Science Engi.", "Information Science Engi", "Industrial Engineering", "Industrial Production Engi.", "Instrumental Technology", "Marine Engineering", "Medical Electronics Engi.", "Mining Engineering", "Manufacturing Science Engi.", "Naval Architecture Engi.", "Nanotechnology Engi.", "Polymer Technology Engi.", "Silk Polymar Engi.", "Carpet Technology Engi.", "Textile engineering", "Robotics", "Genetic"] },
-    polytechnic: { en: "Polytechnic (10th Class)", ur: "پولی ٹیکنک (دسویں کے بعد)", items: ["Civil engineering", "Mechanical engineering", "Automobile engineering", "Computer science engi.", "Electronics and communication Engineering", "Electrical engineering", "Petro chemical engineering"] },
-    newJobMgmt: { en: "New Job Opportunity Courses (2/3/5 Years)", ur: "جدید ملازمت کے مواقع والے کورسز", items: ["BBA / BBM", "BBA Aviation", "BBA Air Cargo Management", "BBA Aeronautical", "BBA Retail Marketing", "BBA Customer Care Management", "BBA Airline & Airport Management", "BBA Cargo Management", "BBA Office Management", "BBA Store Management", "BBA Mall Management", "BBA Logistics", "BCA SAP", "BCA Cloud Computing", "MBA Logistics", "MBA Aviation", "MBA HR", "MBA Management"] },
-    architecture: { en: "Architecture (5 Years + 2)", ur: "آرکیٹیکچر کورسز", items: ["B.Arch (NATA is Compulsory)", "M.Arch"] }
-  };
 
   const t = {
     brand: "Samar Career Guidance",
@@ -36,12 +37,27 @@ export default function AssessmentWizard() {
     finishBtn: lang === 'ur' ? "پروفائل اکاؤنٹ بنائیں" : "Submit & Create Account Profile"
   };
 
+  useEffect(() => {
+    if (router.isReady && router.query.search) {
+      const query = decodeURIComponent(router.query.search).toLowerCase();
+      for (const [streamKey, streamVal] of Object.entries(streams)) {
+        const matches = streamVal.items.some(item => item.toLowerCase().includes(query));
+        if (matches) {
+          setSelectedStream(streamKey);
+          setStep(3);
+          break;
+        }
+      }
+    }
+  }, [router.isReady, router.query.search]);
+
   const handleSubmit = async () => {
     if (!email) {
       const inputEmail = prompt(lang === 'ur' ? "ڈیٹا محفوظ کرنے کے لیے ای میل درج کریں:" : "Please provide your Email to store validation data:");
       if (inputEmail && inputEmail.includes('@')) {
-        setEmail(inputEmail.trim().toLowerCase());
-        executeDbInsert(inputEmail.trim().toLowerCase(), selectedStream);
+        const cleanEmail = inputEmail.trim().toLowerCase();
+        setEmail(cleanEmail);
+        executeDbInsert(cleanEmail, selectedStream);
       } else {
         alert(lang === 'ur' ? "درست ای میل لازمی ہے!" : "Valid Email is required.");
       }
@@ -99,7 +115,7 @@ export default function AssessmentWizard() {
             <div style={{ maxWidth: '600px', margin: '0 auto', paddingTop: '40px' }}>
               <h2 style={{ fontSize: '2rem', color: '#fff', marginBottom: '30px' }}>{t.title}</h2>
               <label style={{ display: 'block', marginBottom: '15px', color: '#94a3b8', fontSize: '1.1rem' }}>{t.emailLabel}</label>
-              <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="student@example.com" style={{ width: '100%', padding: '16px 20px', borderRadius: '8px', background: 'rgba(255,255,255,0.05)', color: '#fff', border: '1px solid rgba(255,255,255,0.2)', fontSize: '1.1rem', outline: 'none' }} />
+              <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} style={{ width: '100%', padding: '16px 20px', borderRadius: '8px', background: 'rgba(255,255,255,0.05)', color: '#fff', border: '1px solid rgba(255,255,255,0.2)', fontSize: '1.1rem', outline: 'none' }} />
             </div>
           )}
 
