@@ -9,8 +9,8 @@ export default function HomeLanding() {
   const [showCategoryMenu, setShowCategoryMenu] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   
-  // 3D Book State Logic (Fixed to 4 Pages to avoid blank screens)
-  const totalPages = 4; 
+  // 3D Book State Logic (Exactly 3 Pages for Perfect Open/Close Mechanics)
+  const totalPages = 3; 
   const maxLoc = totalPages + 1;
   const [currentLoc, setCurrentLoc] = useState(1);
   const [isMobile, setIsMobile] = useState(false);
@@ -31,14 +31,14 @@ export default function HomeLanding() {
   };
 
   const restartBook = () => {
-    setCurrentLoc(1);
+    setCurrentLoc(1); // Resets to Page 1 (Front Cover)
   };
 
   const getBookTransform = () => {
     if (isMobile) return 'none';
-    if (currentLoc === 1) return 'translateX(0%)';
-    if (currentLoc === maxLoc) return 'translateX(100%)';
-    return 'translateX(50%)';
+    if (currentLoc === 1) return 'translateX(0%)'; // Book Closed (Front Cover Centered)
+    if (currentLoc === maxLoc) return 'translateX(100%)'; // Book Closed (Back Cover Centered)
+    return 'translateX(50%)'; // Book Open (Both Pages Centered)
   };
 
   const getZIndex = (pageNumber) => {
@@ -150,7 +150,6 @@ export default function HomeLanding() {
           align-items: center;
           width: 100%;
           padding: 40px 10px;
-          /* Soft Scale-In Animation */
           animation: scaleInBook 1.2s cubic-bezier(0.16, 1, 0.3, 1) forwards;
           opacity: 0;
           transform: scale(0.92);
@@ -252,7 +251,7 @@ export default function HomeLanding() {
         <div className="book-container">
           <div className="book" style={{ transform: getBookTransform() }}>
             
-            {/* PAGE 1: COVER PAGE */}
+            {/* PAGE 1: COVER PAGE & KNOWLEDGE BANK */}
             <div className={`page ${1 < currentLoc ? 'flipped' : ''}`} style={{ zIndex: getZIndex(1) }}>
               <div className="front cover-page" style={{ textAlign: 'center', justifyContent: 'center' }}>
                 <div className="avatar-circle"><i className='bx bxs-book-reader'></i></div>
@@ -286,7 +285,7 @@ export default function HomeLanding() {
               </div>
             </div>
 
-            {/* PAGE 2: EXPLORE & FEATURES */}
+            {/* PAGE 2: ADVANCED ENGINEERING & PLATFORM FEATURES */}
             <div className={`page ${2 < currentLoc ? 'flipped' : ''}`} style={{ zIndex: getZIndex(2) }}>
               <div className="front standard-page">
                 <h2>Advanced Engineering</h2>
@@ -325,7 +324,7 @@ export default function HomeLanding() {
               </div>
             </div>
 
-            {/* PAGE 3: ACTION PAGE & FINISH BUTTON */}
+            {/* PAGE 3: ACTION PAGE & THE FINAL CLOSED BACK COVER */}
             <div className={`page ${3 < currentLoc ? 'flipped' : ''}`} style={{ zIndex: getZIndex(3) }}>
               <div className="front standard-page" style={{ justifyContent: 'center', textAlign: 'center' }}>
                 <i className='bx bxs-rocket' style={{ fontSize: '5rem', color: '#3b82f6', marginBottom: '20px' }}></i>
@@ -338,31 +337,25 @@ export default function HomeLanding() {
                 <div className="page-footer-nav" style={{ position: 'absolute', bottom: '35px', left: '35px', width: 'calc(100% - 70px)' }}>
                   <button className="nav-btn" onClick={prevPage}><i className='bx bx-left-arrow-alt'></i> Review Book</button>
                   
-                  {/* FINISH BUTTON TO FLIP TO RESTART PAGE */}
+                  {/* FINISH BUTTON FLIPS THE BOOK CLOSED */}
                   <button className="nav-btn" onClick={nextPage} style={{ color: '#10b981' }}>Finish <i className='bx bx-check-circle'></i></button>
                 </div>
               </div>
 
-              {/* RESTART PAGE ONLY - OPENS AFTER CLICKING FINISH */}
-              <div className="back standard-page" style={{ justifyContent: 'center', textAlign: 'center' }}>
-                <i className='bx bx-check-shield' style={{ fontSize: '5rem', color: '#10b981', marginBottom: '20px' }}></i>
-                <h2 style={{ border: 'none', fontSize: '2.2rem' }}>Tour Completed</h2>
-                <p style={{ color: '#94a3b8', marginBottom: '30px' }}>You have successfully navigated the platform guide.</p>
+              {/* THIS IS THE PHYSICAL BACK COVER (SHOWN WHEN BOOK CLOSES) */}
+              <div className="back standard-page" style={{ justifyContent: 'center', textAlign: 'center', background: 'rgba(30, 58, 138, 0.8)' }}>
+                <i className='bx bx-check-shield' style={{ fontSize: '4.5rem', color: '#38bdf8', marginBottom: '15px' }}></i>
+                <h2 style={{ border: 'none', fontSize: '2.2rem', margin: '0 0 10px 0' }}>Tour Completed</h2>
+                <p style={{ color: '#93c5fd', marginBottom: '30px' }}>You have successfully navigated the platform guide.</p>
                 
-                {/* ONLY RESTART BUTTON ON THIS PAGE */}
-                <button className="btn btn-primary" onClick={restartBook} style={{ padding: '16px 20px', fontSize: '1.1rem', background: '#3b82f6' }}>
+                <img src="/logo.jpg" alt="Samar Foundation Logo" style={{ width: '70px', height: '70px', borderRadius: '12px', margin: '0 auto 15px auto', display: 'block', boxShadow: '0 4px 15px rgba(0,0,0,0.3)' }} />
+                <p style={{ color: '#e2e8f0', fontWeight: 'bold', fontSize: '1rem', marginBottom: '35px' }}>Powered By Samar Foundation</p>
+                
+                {/* THE ONLY BUTTON ON THE CLOSED BOOK */}
+                <button className="btn btn-primary" onClick={restartBook} style={{ padding: '16px 20px', fontSize: '1.1rem', background: '#3b82f6', width: 'auto', display: 'inline-flex', alignSelf: 'center' }}>
                    Restart Book <i className='bx bx-reset' style={{ fontSize: '1.3rem' }}></i>
                 </button>
               </div>
-            </div>
-
-            {/* PAGE 4: PHYSICAL BACK COVER (Avoids blank screen bug) */}
-            <div className={`page ${4 < currentLoc ? 'flipped' : ''}`} style={{ zIndex: getZIndex(4) }}>
-              <div className="front standard-page" style={{ justifyContent: 'center', textAlign: 'center', background: 'rgba(30, 41, 59, 0.4)' }}>
-                 <img src="/logo.jpg" alt="Logo" style={{ width: '80px', height: '80px', borderRadius: '12px', opacity: '0.5', marginBottom: '15px' }} />
-                 <p style={{ color: '#64748b', fontWeight: 'bold' }}>Powered By Samar Foundation</p>
-              </div>
-              <div className="back"></div>
             </div>
 
           </div>
