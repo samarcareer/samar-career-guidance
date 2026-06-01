@@ -9,8 +9,8 @@ export default function HomeLanding() {
   const [showCategoryMenu, setShowCategoryMenu] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   
-  // 3D Book State Logic
-  const totalPages = 3; 
+  // 3D Book State Logic (Fixed to 4 Pages to avoid blank screens)
+  const totalPages = 4; 
   const maxLoc = totalPages + 1;
   const [currentLoc, setCurrentLoc] = useState(1);
   const [isMobile, setIsMobile] = useState(false);
@@ -184,6 +184,8 @@ export default function HomeLanding() {
         .btn { padding: 14px 20px; border-radius: 8px; font-weight: bold; cursor: pointer; transition: 0.3s; border: none; font-size: 1rem; text-align: center; width: 100%; margin-top: 15px; display: flex; justify-content: center; align-items: center; gap: 8px; }
         .btn-primary { background: #3b82f6; color: #fff; box-shadow: 0 4px 15px rgba(59, 130, 246, 0.4); }
         .btn-primary:hover { background: #2563eb; }
+        .btn-secondary { background: transparent; color: var(--accent); border: 2px solid var(--accent); }
+        .btn-secondary:hover { background: var(--accent); color: #0f172a; }
 
         .page-footer-nav { margin-top: auto; display: flex; justify-content: space-between; width: 100%; border-top: 1px solid rgba(255,255,255,0.1); padding-top: 15px; }
         .nav-btn { background: transparent; border: none; color: var(--accent); font-weight: bold; cursor: pointer; font-size: 1rem; transition: 0.2s; display: flex; align-items: center; gap: 5px; }
@@ -279,7 +281,6 @@ export default function HomeLanding() {
                   <p>MBBS, Pharmacy, Lab Technology, and Radiology fields.</p>
                 </div>
                 <div className="page-footer-nav">
-                  <button className="nav-btn" onClick={prevPage}><i className='bx bx-left-arrow-alt'></i> Back</button>
                   <button className="nav-btn" onClick={nextPage}>Next Page <i className='bx bx-right-arrow-alt'></i></button>
                 </div>
               </div>
@@ -288,6 +289,22 @@ export default function HomeLanding() {
             {/* PAGE 2: EXPLORE & FEATURES */}
             <div className={`page ${2 < currentLoc ? 'flipped' : ''}`} style={{ zIndex: getZIndex(2) }}>
               <div className="front standard-page">
+                <h2>Advanced Engineering</h2>
+                <div style={{ background: 'rgba(59, 130, 246, 0.1)', border: '1px solid #3b82f6', borderRadius: '8px', padding: '15px', marginBottom: '15px' }}>
+                  <h3 style={{ color: '#fff', fontSize: '1.1rem', margin: '0 0 5px 0' }}><i className='bx bx-chip'></i> B.Tech (4 Years)</h3>
+                  <p style={{ color: '#94a3b8', fontSize: '0.9rem', margin: 0 }}>Computer Science, Robotics, Civil, Aerospace, and Mechanical Engineering.</p>
+                </div>
+                <div style={{ background: 'rgba(59, 130, 246, 0.1)', border: '1px solid #3b82f6', borderRadius: '8px', padding: '15px' }}>
+                  <h3 style={{ color: '#fff', fontSize: '1.1rem', margin: '0 0 5px 0' }}><i className='bx bx-briefcase'></i> New Job Opportunities</h3>
+                  <p style={{ color: '#94a3b8', fontSize: '0.9rem', margin: 0 }}>BBA Aviation, Cargo Management, SAP Cloud Computing, and Logistics.</p>
+                </div>
+                <div className="page-footer-nav">
+                  <button className="nav-btn" onClick={prevPage}><i className='bx bx-left-arrow-alt'></i> Back</button>
+                  <button className="nav-btn" onClick={nextPage}>Next <i className='bx bx-right-arrow-alt'></i></button>
+                </div>
+              </div>
+              
+              <div className="back standard-page">
                 <h2>Platform Features</h2>
                 <div className="timeline-item">
                   <h3><i className='bx bx-lock-alt'></i> Secure Assessment</h3>
@@ -303,28 +320,47 @@ export default function HomeLanding() {
                 </div>
                 <div className="page-footer-nav">
                   <button className="nav-btn" onClick={prevPage}><i className='bx bx-left-arrow-alt'></i> Back</button>
-                  <button className="nav-btn" onClick={nextPage}>Finish <i className='bx bx-check-circle'></i></button>
+                  <button className="nav-btn" onClick={nextPage}>Next <i className='bx bx-right-arrow-alt'></i></button>
                 </div>
-              </div>
-              
-              <div className="back standard-page" style={{ justifyContent: 'center', textAlign: 'center' }}>
-                <i className='bx bx-check-shield' style={{ fontSize: '5rem', color: '#60a5fa', marginBottom: '20px' }}></i>
-                <h2 style={{ border: 'none' }}>Tour Completed</h2>
-                <p style={{ color: '#94a3b8' }}>You have successfully navigated the platform guide.</p>
               </div>
             </div>
 
-            {/* PAGE 3: END/ACTION PAGE */}
+            {/* PAGE 3: ACTION PAGE & FINISH BUTTON */}
             <div className={`page ${3 < currentLoc ? 'flipped' : ''}`} style={{ zIndex: getZIndex(3) }}>
               <div className="front standard-page" style={{ justifyContent: 'center', textAlign: 'center' }}>
                 <i className='bx bxs-rocket' style={{ fontSize: '5rem', color: '#3b82f6', marginBottom: '20px' }}></i>
                 <h2 style={{ border: 'none', fontSize: '2rem' }}>Ready to Begin?</h2>
-                <p style={{ color: '#94a3b8', marginBottom: '30px' }}>Join the ultimate career roadmap system today.</p>
+                <p style={{ color: '#94a3b8', marginBottom: '20px' }}>Join the ultimate career roadmap system today.</p>
+                
+                <button className="btn btn-primary" onClick={() => router.push('/assessment')} style={{ marginBottom: '15px' }}>Take The Career Test</button>
+                <button className="btn btn-secondary" onClick={() => router.push('/categories')}>Explore Categories</button>
+                
+                <div className="page-footer-nav" style={{ position: 'absolute', bottom: '35px', left: '35px', width: 'calc(100% - 70px)' }}>
+                  <button className="nav-btn" onClick={prevPage}><i className='bx bx-left-arrow-alt'></i> Review Book</button>
+                  
+                  {/* FINISH BUTTON TO FLIP TO RESTART PAGE */}
+                  <button className="nav-btn" onClick={nextPage} style={{ color: '#10b981' }}>Finish <i className='bx bx-check-circle'></i></button>
+                </div>
+              </div>
+
+              {/* RESTART PAGE ONLY - OPENS AFTER CLICKING FINISH */}
+              <div className="back standard-page" style={{ justifyContent: 'center', textAlign: 'center' }}>
+                <i className='bx bx-check-shield' style={{ fontSize: '5rem', color: '#10b981', marginBottom: '20px' }}></i>
+                <h2 style={{ border: 'none', fontSize: '2.2rem' }}>Tour Completed</h2>
+                <p style={{ color: '#94a3b8', marginBottom: '30px' }}>You have successfully navigated the platform guide.</p>
                 
                 {/* ONLY RESTART BUTTON ON THIS PAGE */}
-                <button className="btn btn-primary" onClick={restartBook} style={{ padding: '16px 20px', fontSize: '1.1rem' }}>
+                <button className="btn btn-primary" onClick={restartBook} style={{ padding: '16px 20px', fontSize: '1.1rem', background: '#3b82f6' }}>
                    Restart Book <i className='bx bx-reset' style={{ fontSize: '1.3rem' }}></i>
                 </button>
+              </div>
+            </div>
+
+            {/* PAGE 4: PHYSICAL BACK COVER (Avoids blank screen bug) */}
+            <div className={`page ${4 < currentLoc ? 'flipped' : ''}`} style={{ zIndex: getZIndex(4) }}>
+              <div className="front standard-page" style={{ justifyContent: 'center', textAlign: 'center', background: 'rgba(30, 41, 59, 0.4)' }}>
+                 <img src="/logo.jpg" alt="Logo" style={{ width: '80px', height: '80px', borderRadius: '12px', opacity: '0.5', marginBottom: '15px' }} />
+                 <p style={{ color: '#64748b', fontWeight: 'bold' }}>Powered By Samar Foundation</p>
               </div>
               <div className="back"></div>
             </div>
