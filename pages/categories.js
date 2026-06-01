@@ -1,17 +1,18 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/router';
 
+// Data object moved outside to prevent Vercel Build Errors
+const database = {
+  science: { title: "Science & Technology Domain", scope: "Research, Advanced Data Science, Labs, Agriculture systems aur professional engineering branches.", duration: "3 to 4 Years Degree Modules", items: ["Bsc Physics", "Bsc Chemistry", "Bsc Botany", "Bsc Zoology", "Bsc Computer science", "Bsc Mathematics", "Bsc PCM", "Bsc CBZ", "Bsc Forensic Science", "Bsc Food technology"] },
+  commerce: { title: "Commerce & Strategic Finance Hub", scope: "Corporate accounting, banking, management systems, taxation laws aur professional financial audits.", duration: "3 Years Standard Graduation Route", items: ["CA Chartered Account", "CMA Cost Management Account", "CS Company Secretary", "B.Com Regular", "B.Com Taxation", "BBA / BBM Regular", "BFM Financial Management"] },
+  paramedical: { title: "Paramedical & Healthcare Allied Science", scope: "Clinical pharmacy solutions, pathology laboratory expertise, radiology metrics, medical scanning aur nursing fields.", duration: "2 to 4 Years (Diploma / Degrees)", items: ["Nursing", "Pharm D", "B.Pharm", "D.Pharm", "Anesthesia technical", "Cardiac Care technical", "Clinical Optometry", "Medical Lab technician", "PHYSIOTHERAPY"] },
+  btech: { title: "Advanced Engineering Framework", scope: "Software development pipelines, robotic architectures, automation engineering, infrastructure mapping, system configurations.", duration: "4 Years Professional Engineering Degree", items: ["Computer Science Engi.", "Electronics & Comm.Engi.", "Mechanical Engineering", "Civil Engineering", "Automation & Robotics Eng.", "Biomedical Engineering"] }
+};
+
 export default function CourseCategories() {
   const router = useRouter();
   const { stream, search } = router.query;
   const [activeTab, setActiveTab] = useState('science');
-
-  const database = {
-    science: { title: "Science & Technology Domain", scope: "Research, Advanced Data Science, Labs, Agriculture systems aur professional engineering branches.", duration: "3 to 4 Years Degree Modules", items: ["Bsc Physics", "Bsc Chemistry", "Bsc Botany", "Bsc Zoology", "Bsc Computer science", "Bsc Mathematics", "Bsc PCM", "Bsc CBZ", "Bsc Forensic Science", "Bsc Food technology"] },
-    commerce: { title: "Commerce & Strategic Finance Hub", scope: "Corporate accounting, banking, management systems, taxation laws aur professional financial audits.", duration: "3 Years Standard Graduation Route", items: ["CA Chartered Account", "CMA Cost Management Account", "CS Company Secretary", "B.Com Regular", "B.Com Taxation", "BBA / BBM Regular", "BFM Financial Management"] },
-    paramedical: { title: "Paramedical & Healthcare Allied Science", scope: "Clinical pharmacy solutions, pathology laboratory expertise, radiology metrics, medical scanning aur nursing fields.", duration: "2 to 4 Years (Diploma / Degrees)", items: ["Nursing", "Pharm D", "B.Pharm", "D.Pharm", "Anesthesia technical", "Cardiac Care technical", "Clinical Optometry", "Medical Lab technician", "PHYSIOTHERAPY"] },
-    btech: { title: "Advanced Engineering Framework", scope: "Software development pipelines, robotic architectures, automation engineering, infrastructure mapping, system configurations.", duration: "4 Years Professional Engineering Degree", items: ["Computer Science Engi.", "Electronics & Comm.Engi.", "Mechanical Engineering", "Civil Engineering", "Automation & Robotics Eng.", "Biomedical Engineering"] }
-  };
 
   useEffect(() => {
     if (stream && database[stream]) setActiveTab(stream);
@@ -45,7 +46,7 @@ export default function CourseCategories() {
 
         <div style={{ width: '100%', background: 'rgba(15, 23, 42, 0.8)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '16px', padding: '50px', boxShadow: '0 20px 40px rgba(0,0,0,0.4)' }}>
           <h3 style={{ color: '#38bdf8', margin: '0 0 20px 0', fontSize: '2.2rem', fontWeight: 800 }}>{database[activeTab].title}</h3>
-          <p style={{ color: '#cbd5e1', lineHeight: '1.8', margin: '0 0 25px 0', fontSize: '1.1rem' }}><strong style={{ color: '#ff7a00' }}>Scope Scope:</strong> {database[activeTab].scope}</p>
+          <p style={{ color: '#cbd5e1', lineHeight: '1.8', margin: '0 0 25px 0', fontSize: '1.1rem' }}><strong style={{ color: '#ff7a00' }}>Scope:</strong> {database[activeTab].scope}</p>
           <p style={{ color: '#cbd5e1', margin: '0 0 40px 0', fontSize: '1.1rem' }}><strong style={{ color: '#ff7a00' }}>Standard Course Duration:</strong> {database[activeTab].duration}</p>
           <h4 style={{ borderTop: '1px solid rgba(255,255,255,0.1)', paddingTop: '25px', color: '#fff', fontSize: '1.3rem', marginBottom: '20px', fontWeight: 700 }}>Courses Included Under This Scope:</h4>
           
