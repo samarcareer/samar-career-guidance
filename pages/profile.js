@@ -2,6 +2,14 @@ import { useState, useEffect } from 'react';
 import { useRouter } from 'next/router';
 import { supabase } from '../utils/supabase';
 
+// Data object moved outside to prevent Vercel Build Errors
+const careerKnowledgeBank = {
+  science: { title: "Science & Technology Framework", scope: "Bsc aur technical courses ke baad aap Research, Data Analytics, Space Science, Laboratory Tech, aur Civil Services mein ja sakte hain.", duration: "3 Years Standard Graduation", jobs: ["Data Scientist", "Lab Researcher", "Content Developer", "Forest Officer", "Forensic Expert"] },
+  commerce: { title: "Commerce & Financial Management", scope: "Finance, Auditing, Corporate Laws, Investment Banking aur Taxation sector mein commerce students ki high demand rehti hai.", duration: "3 to 5 Years Professional Route", jobs: ["Chartered Accountant (CA)", "Financial Analyst", "Company Secretary", "Tax Consultant", "Bank Manager"] },
+  paramedical: { title: "Paramedical & Nursing Allied Sciences", scope: "Hospitals, Diagnostics labs, Radiology centers aur Pharmacy lines mein immediate job placements milti hain.", duration: "2 to 4 Years (Diploma / Degree)", jobs: ["Pharmacist (D.Pharm/B.Pharm)", "Lab Technician", "X-Ray/Radiology Expert", "Physiotherapist"] },
+  btech: { title: "Engineering & Advanced Automation", scope: "Software industries, Automation & Robotics, Infrastructure developers aur Aerospace corporations mein high-paying tech jobs.", duration: "4 Years Professional Degree", jobs: ["Software Engineer", "Robotics Specialist", "Civil Engineer", "Automobile Designer"] }
+};
+
 export default function StudentProfile() {
   const router = useRouter();
   const { email } = router.query;
@@ -9,13 +17,6 @@ export default function StudentProfile() {
   const [loading, setLoading] = useState(true);
   const [studentData, setStudentData] = useState(null);
   const [streamDetails, setStreamDetails] = useState(null);
-
-  const careerKnowledgeBank = {
-    science: { title: "Science & Technology Framework", scope: "Bsc aur technical courses ke baad aap Research, Data Analytics, Space Science, Laboratory Tech, aur Civil Services mein ja sakte hain.", duration: "3 Years Standard Graduation", jobs: ["Data Scientist", "Lab Researcher", "Content Developer", "Forest Officer", "Forensic Expert"] },
-    commerce: { title: "Commerce & Financial Management", scope: "Finance, Auditing, Corporate Laws, Investment Banking aur Taxation sector mein commerce students ki high demand rehti hai.", duration: "3 to 5 Years Professional Route", jobs: ["Chartered Accountant (CA)", "Financial Analyst", "Company Secretary", "Tax Consultant", "Bank Manager"] },
-    paramedical: { title: "Paramedical & Nursing Allied Sciences", scope: "Hospitals, Diagnostics labs, Radiology centers aur Pharmacy lines mein immediate job placements milti hain.", duration: "2 to 4 Years (Diploma / Degree)", jobs: ["Pharmacist (D.Pharm/B.Pharm)", "Lab Technician", "X-Ray/Radiology Expert", "Physiotherapist"] },
-    btech: { title: "Engineering & Advanced Automation", scope: "Software industries, Automation & Robotics, Infrastructure developers aur Aerospace corporations mein high-paying tech jobs.", duration: "4 Years Professional Degree", jobs: ["Software Engineer", "Robotics Specialist", "Civil Engineer", "Automobile Designer"] }
-  };
 
   useEffect(() => {
     if (!email) return;
