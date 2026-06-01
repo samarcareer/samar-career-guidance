@@ -30,6 +30,10 @@ export default function HomeLanding() {
     if (currentLoc > 1) setCurrentLoc((prev) => prev - 1);
   };
 
+  const restartBook = () => {
+    setCurrentLoc(1);
+  };
+
   const getBookTransform = () => {
     if (isMobile) return 'none';
     if (currentLoc === 1) return 'translateX(0%)';
@@ -257,8 +261,7 @@ export default function HomeLanding() {
                   Discover the perfect career path with enterprise-grade data protection and analytical student profiling matrices.
                 </p>
                 <div style={{ marginTop: '20px', width: '100%' }}>
-                  <button className="btn btn-primary" onClick={() => router.push('/assessment')}>Start Assessment</button>
-                  <button className="btn btn-secondary" onClick={nextPage}>Open Book <i className='bx bx-right-arrow-alt'></i></button>
+                  <button className="btn btn-primary" onClick={nextPage}>Start Assessment <i className='bx bx-right-arrow-alt'></i></button>
                 </div>
               </div>
               
@@ -332,6 +335,7 @@ export default function HomeLanding() {
                 
                 <div className="page-footer-nav" style={{ position: 'absolute', bottom: '35px', left: '35px', width: 'calc(100% - 70px)' }}>
                   <button className="nav-btn" onClick={prevPage}><i className='bx bx-left-arrow-alt'></i> Review Book</button>
+                  <button className="nav-btn" onClick={restartBook}>Restart <i className='bx bx-reset'></i></button>
                 </div>
               </div>
               <div className="back"></div>
