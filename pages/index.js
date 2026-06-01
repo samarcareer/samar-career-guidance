@@ -10,7 +10,7 @@ export default function HomeLanding() {
   const [searchQuery, setSearchQuery] = useState('');
   
   // 3D Book State Logic
-  const totalPages = 4;
+  const totalPages = 3; 
   const maxLoc = totalPages + 1;
   const [currentLoc, setCurrentLoc] = useState(1);
   const [isMobile, setIsMobile] = useState(false);
@@ -76,6 +76,7 @@ export default function HomeLanding() {
       </Head>
 
       <style dangerouslySetInnerHTML={{__html: `
+        /* Strict Layout Enforcement */
         * { box-sizing: border-box; margin: 0; padding: 0; }
         body, html { overflow-x: hidden; width: 100%; max-width: 100vw; background-color: #0f172a; }
 
@@ -99,7 +100,7 @@ export default function HomeLanding() {
 
         /* Marquee specific deep blue */
         .marquee-container {
-          background: #111827; 
+          background: #1e3a8a; 
           border-bottom: 1px solid rgba(56, 189, 248, 0.2);
           padding: 8px 0;
           overflow: hidden;
@@ -112,7 +113,7 @@ export default function HomeLanding() {
           animation: marquee 25s linear infinite;
           font-size: 0.9rem;
           font-weight: 600;
-          color: #93c5fd;
+          color: #bfdbfe;
         }
         @keyframes marquee { 0% { transform: translate3d(0, 0, 0); } 100% { transform: translate3d(-100%, 0, 0); } }
 
@@ -180,11 +181,9 @@ export default function HomeLanding() {
         .timeline-item h3 { font-size: 1.1rem; color: #fff; margin: 5px 0; }
         .timeline-item p { font-size: 0.9rem; color: #94a3b8; }
 
-        .btn { padding: 12px 20px; border-radius: 6px; font-weight: bold; cursor: pointer; transition: 0.3s; border: none; font-size: 0.95rem; text-align: center; width: 100%; margin-top: 10px; }
+        .btn { padding: 14px 20px; border-radius: 8px; font-weight: bold; cursor: pointer; transition: 0.3s; border: none; font-size: 1rem; text-align: center; width: 100%; margin-top: 15px; display: flex; justify-content: center; align-items: center; gap: 8px; }
         .btn-primary { background: #3b82f6; color: #fff; box-shadow: 0 4px 15px rgba(59, 130, 246, 0.4); }
         .btn-primary:hover { background: #2563eb; }
-        .btn-secondary { background: transparent; color: var(--accent); border: 2px solid var(--accent); }
-        .btn-secondary:hover { background: var(--accent); color: #0f172a; }
 
         .page-footer-nav { margin-top: auto; display: flex; justify-content: space-between; width: 100%; border-top: 1px solid rgba(255,255,255,0.1); padding-top: 15px; }
         .nav-btn { background: transparent; border: none; color: var(--accent); font-weight: bold; cursor: pointer; font-size: 1rem; transition: 0.2s; display: flex; align-items: center; gap: 5px; }
@@ -280,6 +279,7 @@ export default function HomeLanding() {
                   <p>MBBS, Pharmacy, Lab Technology, and Radiology fields.</p>
                 </div>
                 <div className="page-footer-nav">
+                  <button className="nav-btn" onClick={prevPage}><i className='bx bx-left-arrow-alt'></i> Back</button>
                   <button className="nav-btn" onClick={nextPage}>Next Page <i className='bx bx-right-arrow-alt'></i></button>
                 </div>
               </div>
@@ -288,22 +288,6 @@ export default function HomeLanding() {
             {/* PAGE 2: EXPLORE & FEATURES */}
             <div className={`page ${2 < currentLoc ? 'flipped' : ''}`} style={{ zIndex: getZIndex(2) }}>
               <div className="front standard-page">
-                <h2>Advanced Engineering</h2>
-                <div style={{ background: 'rgba(59, 130, 246, 0.1)', border: '1px solid #3b82f6', borderRadius: '8px', padding: '15px', marginBottom: '15px' }}>
-                  <h3 style={{ color: '#fff', fontSize: '1.1rem', margin: '0 0 5px 0' }}><i className='bx bx-chip'></i> B.Tech (4 Years)</h3>
-                  <p style={{ color: '#94a3b8', fontSize: '0.9rem', margin: 0 }}>Computer Science, Robotics, Civil, Aerospace, and Mechanical Engineering.</p>
-                </div>
-                <div style={{ background: 'rgba(59, 130, 246, 0.1)', border: '1px solid #3b82f6', borderRadius: '8px', padding: '15px' }}>
-                  <h3 style={{ color: '#fff', fontSize: '1.1rem', margin: '0 0 5px 0' }}><i className='bx bx-briefcase'></i> New Job Opportunities</h3>
-                  <p style={{ color: '#94a3b8', fontSize: '0.9rem', margin: 0 }}>BBA Aviation, Cargo Management, SAP Cloud Computing, and Logistics.</p>
-                </div>
-                <div className="page-footer-nav">
-                  <button className="nav-btn" onClick={prevPage}><i className='bx bx-left-arrow-alt'></i> Back</button>
-                  <button className="nav-btn" onClick={nextPage}>Next <i className='bx bx-right-arrow-alt'></i></button>
-                </div>
-              </div>
-              
-              <div className="back standard-page">
                 <h2>Platform Features</h2>
                 <div className="timeline-item">
                   <h3><i className='bx bx-lock-alt'></i> Secure Assessment</h3>
@@ -319,24 +303,28 @@ export default function HomeLanding() {
                 </div>
                 <div className="page-footer-nav">
                   <button className="nav-btn" onClick={prevPage}><i className='bx bx-left-arrow-alt'></i> Back</button>
-                  <button className="nav-btn" onClick={nextPage}>Finish <i className='bx bx-right-arrow-alt'></i></button>
+                  <button className="nav-btn" onClick={nextPage}>Finish <i className='bx bx-check-circle'></i></button>
                 </div>
+              </div>
+              
+              <div className="back standard-page" style={{ justifyContent: 'center', textAlign: 'center' }}>
+                <i className='bx bx-check-shield' style={{ fontSize: '5rem', color: '#60a5fa', marginBottom: '20px' }}></i>
+                <h2 style={{ border: 'none' }}>Tour Completed</h2>
+                <p style={{ color: '#94a3b8' }}>You have successfully navigated the platform guide.</p>
               </div>
             </div>
 
             {/* PAGE 3: END/ACTION PAGE */}
             <div className={`page ${3 < currentLoc ? 'flipped' : ''}`} style={{ zIndex: getZIndex(3) }}>
               <div className="front standard-page" style={{ justifyContent: 'center', textAlign: 'center' }}>
-                <i className='bx bxs-rocket' style={{ fontSize: '5rem', color: '#60a5fa', marginBottom: '20px' }}></i>
+                <i className='bx bxs-rocket' style={{ fontSize: '5rem', color: '#3b82f6', marginBottom: '20px' }}></i>
                 <h2 style={{ border: 'none', fontSize: '2rem' }}>Ready to Begin?</h2>
                 <p style={{ color: '#94a3b8', marginBottom: '30px' }}>Join the ultimate career roadmap system today.</p>
-                <button className="btn btn-primary" onClick={() => router.push('/assessment')} style={{ marginBottom: '15px' }}>Take The Career Test</button>
-                <button className="btn btn-secondary" onClick={() => router.push('/categories')}>Explore All Categories</button>
                 
-                <div className="page-footer-nav" style={{ position: 'absolute', bottom: '35px', left: '35px', width: 'calc(100% - 70px)' }}>
-                  <button className="nav-btn" onClick={prevPage}><i className='bx bx-left-arrow-alt'></i> Review Book</button>
-                  <button className="nav-btn" onClick={restartBook}>Restart <i className='bx bx-reset'></i></button>
-                </div>
+                {/* ONLY RESTART BUTTON ON THIS PAGE */}
+                <button className="btn btn-primary" onClick={restartBook} style={{ padding: '16px 20px', fontSize: '1.1rem' }}>
+                   Restart Book <i className='bx bx-reset' style={{ fontSize: '1.3rem' }}></i>
+                </button>
               </div>
               <div className="back"></div>
             </div>
@@ -360,7 +348,7 @@ export default function HomeLanding() {
       )}
 
       {/* Royal Blue Glass Footer */}
-      <footer style={{ width: '100%', background: 'rgba(30, 64, 175, 0.4)', backdropFilter: 'blur(10px)', borderTop: '1px solid rgba(147, 197, 253, 0.2)', padding: '20px', textAlign: 'center', fontSize: '0.9rem', color: '#93c5fd', fontWeight: '700' }}>
+      <footer style={{ width: '100%', background: 'rgba(30, 64, 175, 0.6)', backdropFilter: 'blur(16px)', borderTop: '1px solid rgba(147, 197, 253, 0.2)', padding: '20px', textAlign: 'center', fontSize: '0.9rem', color: '#bfdbfe', fontWeight: '700' }}>
         © 2026 Samar Foundation. Enterprise-Grade Architecture Layer Protection Locked.
       </footer>
     </div>
