@@ -43,7 +43,7 @@ export default function StudentLoginPortal() {
         <form onSubmit={handlePortalAction} style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
           <div>
             <label style={{ display: 'block', color: '#94a3b8', fontWeight: '600', fontSize: '1rem', marginBottom: '8px' }}>Student Email Token (Required):</label>
-            <input type="email" required value={email} onChange={(e) => setEmail(e.target.value)} placeholder="student@example.com" style={{ width: '100%', padding: '16px', borderRadius: '8px', background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.15)', color: '#fff', fontSize: '1.1rem', outline: 'none' }} />
+            <input type="email" required value={email} onChange={(e) => setEmail(e.target.value)} style={{ width: '100%', padding: '16px', borderRadius: '8px', background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.15)', color: '#fff', fontSize: '1.1rem', outline: 'none' }} />
           </div>
 
           {isRegister && (
