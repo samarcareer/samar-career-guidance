@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/router';
 import Head from 'next/head';
-import { supabase } from '../utils/supabase'; // Ensure this path matches your project structure
+import { supabase } from '../utils/supabase';
 
 export default function HomeLanding() {
   const router = useRouter();
@@ -9,7 +9,7 @@ export default function HomeLanding() {
   const [showContactModal, setShowContactModal] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   
-  // New Navbar States
+  // Navbar States
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [showGuidanceDropdown, setShowGuidanceDropdown] = useState(false);
   
@@ -114,134 +114,44 @@ export default function HomeLanding() {
         * { box-sizing: border-box; margin: 0; padding: 0; }
         body, html { overflow-x: hidden; width: 100%; max-width: 100vw; background-color: #0f172a; scroll-behavior: smooth; }
 
-        /* --- NEW COMPREHENSIVE NAVBAR STYLES --- */
+        /* --- NAVBAR STYLES --- */
         .glass-navbar {
-          width: 100%;
-          background: rgba(30, 64, 175, 0.7);
-          backdrop-filter: blur(20px);
-          -webkit-backdrop-filter: blur(20px);
-          border-bottom: 1px solid rgba(147, 197, 253, 0.2);
-          position: sticky;
-          top: 0;
-          z-index: 1000;
-          display: flex;
-          flex-direction: column;
+          width: 100%; background: rgba(30, 64, 175, 0.7); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
+          border-bottom: 1px solid rgba(147, 197, 253, 0.2); position: sticky; top: 0; z-index: 1000; display: flex; flex-direction: column;
         }
-
-        .nav-top-row {
-          display: flex;
-          justify-content: space-between;
-          align-items: center;
-          padding: 15px 5%;
-          border-bottom: 1px solid rgba(147, 197, 253, 0.1);
-        }
-
-        .nav-brand-container {
-          display: flex;
-          align-items: center;
-          gap: 12px;
-          cursor: pointer;
-        }
-
-        .desktop-menu {
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          gap: 25px;
-          padding: 12px 5%;
-          background: rgba(15, 23, 42, 0.4);
-        }
-
+        .nav-top-row { display: flex; justify-content: space-between; align-items: center; padding: 15px 5%; border-bottom: 1px solid rgba(147, 197, 253, 0.1); }
+        .nav-brand-container { display: flex; align-items: center; gap: 12px; cursor: pointer; }
+        
+        .desktop-menu { display: flex; align-items: center; justify-content: center; gap: 25px; padding: 12px 5%; background: rgba(15, 23, 42, 0.4); }
+        
         .nav-link {
-          color: #e2e8f0;
-          text-decoration: none;
-          font-weight: 600;
-          font-size: 0.95rem;
-          transition: all 0.3s ease;
-          cursor: pointer;
-          position: relative;
-          background: none;
-          border: none;
-          padding: 5px 0;
+          color: #e2e8f0; text-decoration: none; font-weight: 600; font-size: 0.95rem; transition: all 0.3s ease;
+          cursor: pointer; position: relative; background: none; border: none; padding: 5px 0;
+          white-space: nowrap; /* FIX: Keeps category text in one line */
         }
-
-        .nav-link:hover {
-          color: #38bdf8;
-        }
-        
-        .nav-link::after {
-          content: '';
-          position: absolute;
-          width: 0;
-          height: 2px;
-          bottom: 0;
-          left: 0;
-          background-color: #38bdf8;
-          transition: width 0.3s ease;
-        }
-        
-        .nav-link:hover::after {
-          width: 100%;
-        }
+        .nav-link:hover { color: #38bdf8; }
+        .nav-link::after { content: ''; position: absolute; width: 0; height: 2px; bottom: 0; left: 0; background-color: #38bdf8; transition: width 0.3s ease; }
+        .nav-link:hover::after { width: 100%; }
 
         /* Nav Dropdown Specifics */
-        .nav-dropdown-container {
-          position: relative;
-        }
-
+        .nav-dropdown-container { position: relative; }
         .nav-dropdown-menu {
-          position: absolute;
-          top: 100%;
-          left: 0;
-          background: rgba(30, 64, 175, 0.95);
-          backdrop-filter: blur(16px);
-          border: 1px solid rgba(147, 197, 253, 0.2);
-          border-radius: 8px;
-          min-width: 260px;
-          box-shadow: 0 15px 30px rgba(0,0,0,0.6);
-          padding: 10px 0;
-          display: flex;
-          flex-direction: column;
-          opacity: 0;
-          visibility: hidden;
-          transform: translateY(10px);
-          transition: all 0.3s ease;
-          z-index: 200;
+          position: absolute; top: 100%; left: 0; background: rgba(30, 64, 175, 0.95); backdrop-filter: blur(16px);
+          border: 1px solid rgba(147, 197, 253, 0.2); border-radius: 8px; min-width: 260px; box-shadow: 0 15px 30px rgba(0,0,0,0.6);
+          padding: 10px 0; display: flex; flex-direction: column; opacity: 0; visibility: hidden; transform: translateY(10px); transition: all 0.3s ease; z-index: 200;
         }
-
-        .nav-dropdown-container:hover .nav-dropdown-menu,
-        .nav-dropdown-menu.active {
-          opacity: 1;
-          visibility: visible;
-          transform: translateY(0);
-        }
-
+        .nav-dropdown-container:hover .nav-dropdown-menu, .nav-dropdown-menu.active { opacity: 1; visibility: visible; transform: translateY(0); }
         .dropdown-item {
-          padding: 12px 20px;
-          color: #fff;
-          text-decoration: none;
-          font-size: 0.9rem;
-          font-weight: 500;
-          transition: 0.2s;
-          border-bottom: 1px solid rgba(255,255,255,0.05);
-          text-align: left;
-          background: transparent;
-          border-left: none; border-right: none; border-top: none;
-          width: 100%;
-          cursor: pointer;
+          padding: 12px 20px; color: #fff; text-decoration: none; font-size: 0.9rem; font-weight: 500; transition: 0.2s;
+          border-bottom: 1px solid rgba(255,255,255,0.05); text-align: left; background: transparent; border-left: none; border-right: none; border-top: none; width: 100%; cursor: pointer;
         }
         .dropdown-item:last-child { border-bottom: none; }
         .dropdown-item:hover { background: rgba(56, 189, 248, 0.2); color: #38bdf8; padding-left: 25px; }
 
-        /* Mobile Hamburger Icon */
-        .mobile-toggle {
-          display: none;
-          background: transparent;
-          border: none;
-          color: #fff;
-          font-size: 2rem;
-          cursor: pointer;
-        }
+        /* Mobile Search & Hamburger */
+        .mobile-search-wrapper { display: none; width: 100%; padding-bottom: 15px; border-bottom: 1px solid rgba(255,255,255,0.1); margin-bottom: 10px; }
+        .desktop-search-wrapper { display: block; flex: 0.6; max-width: 400px; }
+        .mobile-toggle { display: none; background: transparent; border: none; color: #fff; font-size: 2rem; cursor: pointer; }
 
         /* --- MARQUEE --- */
         .marquee-container { background: #1e3a8a; border-bottom: 1px solid rgba(56, 189, 248, 0.2); padding: 8px 0; overflow: hidden; white-space: nowrap; width: 100%; }
@@ -293,24 +203,16 @@ export default function HomeLanding() {
 
         /* --- RESPONSIVE / MOBILE LOGIC --- */
         @media (max-width: 1024px) {
+          .desktop-search-wrapper { display: none !important; }
+          .mobile-search-wrapper { display: block; }
           .book { width: 350px; height: 500px; }
           .desktop-menu {
             display: ${isMobileMenuOpen ? 'flex' : 'none'};
-            flex-direction: column;
-            align-items: flex-start;
-            position: absolute;
-            top: 100%;
-            left: 0;
-            width: 100%;
-            background: rgba(30, 64, 175, 0.98);
-            border-bottom: 1px solid rgba(56,189,248,0.3);
-            padding: 20px 5%;
-            gap: 15px;
-            box-shadow: 0 20px 40px rgba(0,0,0,0.5);
+            flex-direction: column; align-items: flex-start; position: absolute; top: 100%; left: 0; width: 100%;
+            background: rgba(30, 64, 175, 0.98); border-bottom: 1px solid rgba(56,189,248,0.3); padding: 20px 5%; gap: 15px; box-shadow: 0 20px 40px rgba(0,0,0,0.5);
           }
           .mobile-toggle { display: block; }
           .nav-dropdown-menu { position: static; box-shadow: none; border: none; background: rgba(0,0,0,0.2); margin-top: 10px; width: 100%; display: ${showGuidanceDropdown ? 'flex' : 'none'}; opacity: 1; visibility: visible; transform: none; }
-          
           .nav-link { width: 100%; text-align: left; padding: 10px 0; border-bottom: 1px solid rgba(255,255,255,0.1); }
           .nav-link::after { display: none; }
         }
@@ -327,7 +229,7 @@ export default function HomeLanding() {
 
       {/* --- MASTER NAVBAR --- */}
       <nav className="glass-navbar">
-        {/* Top Row: Logo, Search, Login, Hamburger */}
+        {/* Top Row: Logo, Search (Desktop), Login, Hamburger */}
         <div className="nav-top-row">
           <div className="nav-brand-container" onClick={() => router.push('/')}>
             <img src="/logo.jpg" alt="Logo" style={{ width: '45px', height: '45px', borderRadius: '8px' }} />
@@ -337,8 +239,8 @@ export default function HomeLanding() {
             </div>
           </div>
 
-          {/* Search Bar (Hidden on very small screens, keep focused on nav) */}
-          <form onSubmit={handleSearchSubmit} style={{ flex: '0.6', maxWidth: '400px', display: isMobile ? 'none' : 'block' }}>
+          {/* FIX 1: Desktop Search Bar */}
+          <form className="desktop-search-wrapper" onSubmit={handleSearchSubmit}>
             <input 
               type="text" 
               value={searchQuery}
@@ -358,8 +260,20 @@ export default function HomeLanding() {
           </div>
         </div>
 
-        {/* Bottom Row: Detailed Navigation Links */}
+        {/* Bottom Row: Detailed Navigation Links & Mobile Search */}
         <div className="desktop-menu">
+          
+          {/* FIX 1: Mobile Search Bar Restored (Inside Dropdown) */}
+          <form className="mobile-search-wrapper" onSubmit={handleSearchSubmit}>
+            <input 
+              type="text" 
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              placeholder="Search matrix..." 
+              style={{ width: '100%', padding: '10px 18px', borderRadius: '8px', border: '1px solid rgba(147,197,253,0.3)', background: 'rgba(0,0,0,0.2)', color: '#fff', outline: 'none' }}
+            />
+          </form>
+
           <button className="nav-link" onClick={() => router.push('/')}>Home</button>
           <button className="nav-link" onClick={() => router.push('/about')}>About Us</button>
           
@@ -438,13 +352,19 @@ export default function HomeLanding() {
 
             {/* PAGE 3 */}
             <div className={`page ${3 < currentLoc ? 'flipped' : ''}`} style={{ zIndex: getZIndex(3) }}>
-              <div className="front standard-page" style={{ justifyContent: 'center', textAlign: 'center' }}>
-                <i className='bx bxs-rocket' style={{ fontSize: '4.5rem', color: '#3b82f6', marginBottom: '15px' }}></i>
-                <h2 style={{ border: 'none', fontSize: '1.8rem' }}>Ready to Begin?</h2>
-                <p style={{ color: '#94a3b8', marginBottom: '20px', fontSize: '0.9rem' }}>Join the ultimate career roadmap system today.</p>
+              
+              {/* FIX 3: Finish Button Layout Adjusted (More padding, distinct pill button, smaller top icon) */}
+              <div className="front standard-page" style={{ justifyContent: 'center', textAlign: 'center', paddingBottom: '70px' }}>
+                <i className='bx bxs-rocket' style={{ fontSize: '3.5rem', color: '#3b82f6', marginBottom: '10px' }}></i>
+                <h2 style={{ border: 'none', fontSize: '1.6rem', marginBottom: '10px' }}>Ready to Begin?</h2>
+                <p style={{ color: '#94a3b8', marginBottom: '15px', fontSize: '0.85rem' }}>Join the ultimate career roadmap system today.</p>
                 <button className="btn btn-primary" onClick={() => router.push('/assessment')} style={{ marginBottom: '10px' }}>Take The Career Test</button>
                 <button className="btn btn-secondary" onClick={() => router.push('/categories')}>Explore Categories</button>
-                <div className="page-footer-nav" style={{ position: 'absolute', bottom: '35px', left: '35px', width: 'calc(100% - 70px)' }}><button className="nav-btn" onClick={prevPage}><i className='bx bx-left-arrow-alt'></i> Review</button><button className="nav-btn" onClick={nextPage} style={{ color: '#10b981' }}>Finish <i className='bx bx-check-circle'></i></button></div>
+                
+                <div className="page-footer-nav" style={{ position: 'absolute', bottom: '25px', left: '25px', width: 'calc(100% - 50px)' }}>
+                  <button className="nav-btn" onClick={prevPage}><i className='bx bx-left-arrow-alt'></i> Review</button>
+                  <button className="nav-btn" onClick={nextPage} style={{ color: '#10b981', background: 'rgba(16, 185, 129, 0.1)', padding: '6px 16px', borderRadius: '25px', border: '1px solid #10b981' }}>Finish <i className='bx bx-check-circle'></i></button>
+                </div>
               </div>
 
               {/* Physical Back Cover */}
@@ -478,7 +398,7 @@ export default function HomeLanding() {
         </div>
       </section>
 
-      {/* Contact Modal */}
+      {/* Contact Modal (Phone number updated per ledger history) */}
       {showContactModal && (
         <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.8)', backdropFilter: 'blur(8px)', WebkitBackdropFilter: 'blur(8px)', display: 'flex', justifyContent: 'center', alignItems: 'center', zIndex: 2000, padding: '20px' }}>
           <div style={{ background: '#1e293b', border: '1px solid rgba(59, 130, 246, 0.4)', borderRadius: '16px', padding: '40px', maxWidth: '500px', width: '100%', boxShadow: '0 25px 50px rgba(0,0,0,0.8)' }}>
