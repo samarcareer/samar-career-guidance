@@ -8,7 +8,8 @@ const careerKnowledgeBank = {
   science: { title: "Science & Technology Framework", scope: "Bsc aur technical courses ke baad aap Research, Data Analytics, Space Science, Laboratory Tech, aur Civil Services mein ja sakte hain.", duration: "3 Years Standard Graduation", jobs: ["Data Scientist", "Lab Researcher", "Content Developer", "Forest Officer", "Forensic Expert"] },
   commerce: { title: "Commerce & Financial Management", scope: "Finance, Auditing, Corporate Laws, Investment Banking aur Taxation sector mein commerce students ki high demand rehti hai.", duration: "3 to 5 Years Professional Route", jobs: ["Chartered Accountant (CA)", "Financial Analyst", "Company Secretary", "Tax Consultant", "Bank Manager"] },
   paramedical: { title: "Paramedical & Nursing Allied Sciences", scope: "Hospitals, Diagnostics labs, Radiology centers aur Pharmacy lines mein immediate job placements milti hain.", duration: "2 to 4 Years (Diploma / Degree)", jobs: ["Pharmacist (D.Pharm/B.Pharm)", "Lab Technician", "X-Ray/Radiology Expert", "Physiotherapist"] },
-  btech: { title: "Engineering & Advanced Automation", scope: "Software industries, Automation & Robotics, Infrastructure developers aur Aerospace corporations mein high-paying tech jobs.", duration: "4 Years Professional Degree", jobs: ["Software Engineer", "Robotics Specialist", "Civil Engineer", "Automobile Designer"] }
+  btech: { title: "Engineering & Advanced Automation", scope: "Software industries, Automation & Robotics, Infrastructure developers aur Aerospace corporations mein high-paying tech jobs.", duration: "4 Years Professional Degree", jobs: ["Software Engineer", "Robotics Specialist", "Civil Engineer", "Automobile Designer"] },
+  polytechnic: { title: "Polytechnic & Diploma Engineering", scope: "Core technical hands-on experience in Mechanical, Civil, Electrical, and Computer domains for early industry entry.", duration: "3 Years Diploma", jobs: ["Junior Engineer", "Technical Supervisor", "Project Assistant", "CAD Designer"] }
 };
 
 // --- TRANSLATION DICTIONARY ---
@@ -242,6 +243,9 @@ export default function StudentProfile() {
         * { box-sizing: border-box; margin: 0; padding: 0; }
         body, html { overflow-x: hidden; width: 100%; background-color: #0f172a; scroll-behavior: smooth; }
 
+        /* --- ENGLISH FONT FIX UTILITY --- */
+        .en-text { font-family: 'Segoe UI', Roboto, sans-serif !important; direction: ltr !important; display: inline-block; }
+
         .glass-navbar { width: 100%; background: rgba(30, 64, 175, 0.7); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); border-bottom: 1px solid rgba(147, 197, 253, 0.2); position: sticky; top: 0; z-index: 1000; display: flex; flex-direction: column; }
         .nav-top-row { display: flex; justify-content: space-between; align-items: center; padding: 15px 5%; border-bottom: 1px solid rgba(147, 197, 253, 0.1); }
         .nav-brand-container { display: flex; align-items: center; gap: 12px; cursor: pointer; }
@@ -270,7 +274,6 @@ export default function StudentProfile() {
 
         .profile-container { padding: 40px 5%; width: 100%; max-width: 1400px; margin: 0 auto; display: grid; gap: 40px; }
         
-        /* STRICT FLEX LAYOUT FOR HEADER */
         .profile-header { background: rgba(15, 23, 42, 0.85); border: 1px solid rgba(255,255,255,0.1); border-radius: 16px; padding: 40px; box-shadow: 0 15px 35px rgba(0,0,0,0.4); display: flex; flex-direction: row; gap: 30px; align-items: center; backdrop-filter: blur(10px); }
         
         .avatar-lg { width: 130px; height: 130px; background-color: #1e293b; border-radius: 50%; display: flex; justify-content: center; align-items: center; border: 4px solid #38bdf8; overflow: hidden; position: relative; font-size: 4rem; color: #38bdf8; flex-shrink: 0; transition: 0.3s; }
@@ -279,9 +282,8 @@ export default function StudentProfile() {
         .upload-overlay { position: absolute; inset: 0; background: rgba(0,0,0,0.6); display: flex; justify-content: center; align-items: center; opacity: 0; transition: 0.3s; font-size: 1rem; font-weight: bold; color: #fff; z-index: 1; }
         .avatar-lg.uploadable:hover .upload-overlay { opacity: 1; }
         
-        /* TEXT CONTAINER RULES */
         .text-container { flex: 1; min-width: 0; display: flex; flex-direction: column; align-items: flex-start; justify-content: center; }
-        .student-name { font-size: clamp(1.6rem, 4vw, 2.5rem); color: #fff; margin: 10px 0 0 0; font-weight: 900; font-family: inherit; word-break: break-word; overflow-wrap: anywhere; line-height: 1.2; }
+        .student-name { font-size: clamp(1.6rem, 4vw, 2.5rem); color: #fff; margin: 10px 0 0 0; font-weight: 900; word-break: break-word; overflow-wrap: anywhere; line-height: 1.2; }
         .account-badge { display: inline-block; font-size: 0.85rem; background: rgba(56, 189, 248, 0.15); color: #38bdf8; padding: 6px 12px; border-radius: 6px; font-weight: bold; font-family: inherit; }
 
         .roadmap-card { background: rgba(15, 23, 42, 0.85); border: 1px solid rgba(255,255,255,0.1); border-radius: 16px; padding: 40px; box-shadow: 0 15px 35px rgba(0,0,0,0.4); backdrop-filter: blur(10px); }
@@ -309,32 +311,13 @@ export default function StudentProfile() {
           .nav-link::after { display: none; }
         }
 
-        /* --- MOBILE VIEW FIX FOR PROFILE --- */
         @media (max-width: 768px) {
-          .profile-header { 
-              flex-direction: column; /* Force photo on top, text below */
-              text-align: center; 
-              justify-content: center; 
-              padding: 30px 15px; 
-              gap: 20px; 
-          }
-          .text-container { 
-              align-items: center; /* Center the text and badge */
-              width: 100%; 
-          }
-          .student-name { 
-              font-size: 1.6rem; /* Scale down long names safely */
-              text-align: center; 
-          }
+          .profile-header { flex-direction: column; text-align: center; justify-content: center; padding: 30px 15px; gap: 20px; }
+          .text-container { align-items: center; width: 100%; }
+          .student-name { font-size: 1.6rem; text-align: center; }
           .roadmap-card { padding: 25px 20px; }
-          .roadmap-header-mobile {
-              flex-direction: column !important;
-              align-items: flex-start !important;
-              gap: 15px;
-          }
-          .roadmap-header-mobile button {
-              width: 100%; /* Make button full width on mobile */
-          }
+          .roadmap-header-mobile { flex-direction: column !important; align-items: flex-start !important; gap: 15px; }
+          .roadmap-header-mobile button { width: 100%; }
           .bookmark-grid { grid-template-columns: 1fr; }
         }
       `}} />
@@ -428,14 +411,20 @@ export default function StudentProfile() {
                 <span className="account-badge">
                     {t[lang].studentAcc}
                 </span>
-                <h2 className="student-name">{userName}</h2>
+                {/* Applied .en-text strictly for the name */}
+                <h2 className="student-name en-text">{userName}</h2>
+                <p style={{ margin: '10px 0 0 0', color: '#94a3b8', fontSize: '1rem', fontFamily: 'inherit' }}>
+                    <span className="en-text" style={{ color: '#cbd5e1' }}>{studentData.email}</span>
+                </p>
               </div>
             </section>
 
             <section className="roadmap-card">
               <div style={{ borderBottom: '1px solid rgba(255,255,255,0.1)', paddingBottom: '20px', marginBottom: '30px' }}>
-                <h3 style={{ margin: '0', fontSize: '2rem', color: '#fff', fontWeight: '900', fontFamily: 'inherit' }}>
-                  {t[lang].roadmapTitle} {studentData.interest_area.toUpperCase()}
+                <h3 style={{ margin: '0', fontSize: '2rem', color: '#fff', fontWeight: '900', fontFamily: 'inherit', display: 'flex', alignItems: 'center', gap: '10px', flexWrap: 'wrap' }}>
+                  {t[lang].roadmapTitle} 
+                  {/* Applied .en-text strictly for the interest area e.g., POLYTECHNIC */}
+                  <span className="en-text" style={{ color: '#38bdf8' }}>{studentData.interest_area.toUpperCase()}</span>
                 </h3>
               </div>
 
@@ -445,7 +434,7 @@ export default function StudentProfile() {
                   <p style={{ color: '#fff', fontSize: '1.1rem', marginBottom: '30px', fontFamily: 'inherit' }}><strong style={{ color: '#38bdf8' }}>{t[lang].duration}</strong> {streamDetails.duration}</p>
                   <h5 style={{ color: '#ff7a00', fontSize: '1.3rem', marginBottom: '15px', fontFamily: 'inherit' }}>{t[lang].priority}</h5>
                   <div style={{ display: 'flex', flexWrap: 'wrap', gap: '15px' }}>
-                    {streamDetails.jobs.map((job, idx) => <span key={idx} className="job-pill">💼 {job}</span>)}
+                    {streamDetails.jobs.map((job, idx) => <span key={idx} className="job-pill">💼 <span className="en-text">{job}</span></span>)}
                   </div>
                 </div>
               ) : <p style={{ color: '#94a3b8', fontFamily: 'inherit' }}>{t[lang].pendingAnalytics}</p>}
