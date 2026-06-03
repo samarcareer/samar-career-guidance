@@ -1,9 +1,9 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useRouter } from 'next/router';
 import Head from 'next/head';
 import { supabase } from '../utils/supabase';
 
-// --- CAREER KNOWLEDGE BANK (Aapka Logic) ---
+// --- CAREER KNOWLEDGE BANK ---
 const careerKnowledgeBank = {
   science: { title: "Science & Technology Framework", scope: "Bsc aur technical courses ke baad aap Research, Data Analytics, Space Science, Laboratory Tech, aur Civil Services mein ja sakte hain.", duration: "3 Years Standard Graduation", jobs: ["Data Scientist", "Lab Researcher", "Content Developer", "Forest Officer", "Forensic Expert"] },
   commerce: { title: "Commerce & Financial Management", scope: "Finance, Auditing, Corporate Laws, Investment Banking aur Taxation sector mein commerce students ki high demand rehti hai.", duration: "3 to 5 Years Professional Route", jobs: ["Chartered Accountant (CA)", "Financial Analyst", "Company Secretary", "Tax Consultant", "Bank Manager"] },
@@ -31,27 +31,25 @@ const t = {
     navContact: "Contact Us",
     footer: "© 2026 Samar Foundation. Enterprise-Grade Architecture Layer Protection Locked.",
     
-    // Profile Specific
     myProfile: "Student Dashboard",
     syncing: "Syncing Profile Data...",
     noAccount: "No Account Found!",
     takeAssess: "Take Assessment",
     studentAcc: "STUDENT ACCOUNT PROFILE",
-    regToken: "Registered Token:",
     roadmapTitle: "Roadmap Matrix:",
     scope: "Scope:",
     duration: "Duration:",
     priority: "Priority Careers:",
     pendingAnalytics: "Analytics fetching pending...",
     
-    // Bookmarks Section
     bookmarksTitle: "My Bookmarks & Highlights",
     savedTopic: "Saved Topic",
     highlightedPath: "Highlighted Career Path",
     topic1: "UPSC Civil Services Strategy",
     topic2: "AI & Data Analytics Scope",
     topic3: "Top Colleges in Maharashtra",
-    exploreMore: "Explore More Topics"
+    exploreMore: "Explore More Topics",
+    uploading: "Uploading..."
   },
   ur: {
     brand: "ثمر گائیڈنس",
@@ -71,27 +69,25 @@ const t = {
     navContact: "ہم سے رابطہ کریں",
     footer: "© 2026 ثمر فاؤنڈیشن۔ انٹرپرائز گریڈ آرکیٹیکچر کے ذریعے محفوظ۔",
     
-    // Profile Specific
     myProfile: "طالب علم ڈیش بورڈ",
     syncing: "پروفائل ڈیٹا سنک ہو رہا ہے...",
     noAccount: "کوئی اکاؤنٹ نہیں ملا!",
     takeAssess: "اسسمنٹ شروع کریں",
     studentAcc: "طالب علم کی پروفائل",
-    regToken: "رجسٹرڈ ٹوکن:",
     roadmapTitle: "روڈ میپ میٹرکس:",
     scope: "دائرہ کار:",
     duration: "مدت:",
     priority: "اہم کیریئر:",
     pendingAnalytics: "اینالیٹکس کا انتظار ہے...",
     
-    // Bookmarks Section
     bookmarksTitle: "میرے بک مارکس اور ہائی لائٹس",
     savedTopic: "محفوظ کردہ موضوع",
     highlightedPath: "ہائی لائٹ کردہ کیریئر",
     topic1: "یو پی ایس سی سول سروسز حکمت عملی",
     topic2: "اے آئی اور ڈیٹا اینالیٹکس کا دائرہ کار",
     topic3: "مہاراشٹر کے ٹاپ کالجز",
-    exploreMore: "مزید موضوعات دریافت کریں"
+    exploreMore: "مزید موضوعات دریافت کریں",
+    uploading: "اپ لوڈ ہو رہا ہے..."
   }
 };
 
@@ -99,25 +95,28 @@ export default function StudentProfile() {
   const router = useRouter();
   const [lang, setLang] = useState('en');
   
-  // --- Navbar States ---
+  // --- States ---
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [showGuidanceDropdown, setShowGuidanceDropdown] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [isMobile, setIsMobile] = useState(false);
   
-  // --- Profile States ---
   const [loading, setLoading] = useState(true);
   const [session, setSession] = useState(null);
   const [studentData, setStudentData] = useState(null);
   const [streamDetails, setStreamDetails] = useState(null);
   const [userName, setUserName] = useState("Student");
+  
+  // --- Photo Upload States ---
+  const [avatarUrl, setAvatarUrl] = useState(null);
+  const [isUploading, setIsUploading] = useState(false);
+  const fileInputRef = useRef(null);
 
   useEffect(() => {
     const handleResize = () => setIsMobile(window.innerWidth <= 1024);
     handleResize();
     window.addEventListener('resize', handleResize);
 
-    // --- BUG FIX: Use Auth Session instead of URL query ---
     const fetchProfile = async () => {
       try {
         const { data: { session } } = await supabase.auth.getSession();
@@ -130,11 +129,16 @@ export default function StudentProfile() {
         setSession(session);
         const email = session.user.email;
         
-        // Extract Name if available in metadata (added during login page update)
-        if (session.user.user_metadata?.full_name) {
-            setUserName(session.user.user_metadata.full_name);
+        // Extract Metadata (Name and Avatar)
+        const metadata = session.user.user_metadata;
+        if (metadata?.full_name) {
+            setUserName(metadata.full_name);
         } else {
             setUserName(email.split('@')[0].toUpperCase());
+        }
+
+        if (metadata?.avatar_url) {
+            setAvatarUrl(metadata.avatar_url);
         }
 
         const { data, error } = await supabase
@@ -152,7 +156,7 @@ export default function StudentProfile() {
       } catch (err) {
         console.error("Error fetching data:", err);
       } finally {
-        setLoading(false); // Failsafe: Always turn off loading
+        setLoading(false);
       }
     };
 
@@ -179,6 +183,43 @@ export default function StudentProfile() {
   const handleSearchSubmit = (e) => {
     e.preventDefault();
     if (searchQuery.trim()) router.push(`/categories?search=${encodeURIComponent(searchQuery.trim().toLowerCase())}`);
+  };
+
+  // --- PHOTO UPLOAD LOGIC ---
+  const handlePhotoClick = () => {
+      // Sirf tabhi click allow karo jab photo na ho
+      if (!avatarUrl) {
+          fileInputRef.current.click();
+      }
+  };
+
+  const handlePhotoChange = async (e) => {
+      const file = e.target.files[0];
+      if (!file) return;
+
+      setIsUploading(true);
+      try {
+          // Creating a temporary local URL so the user sees it immediately
+          const objectUrl = URL.createObjectURL(file);
+          setAvatarUrl(objectUrl);
+
+          // NOTE: Supabase Storage code (Assuming you have an 'avatars' bucket)
+          // If you haven't created the bucket yet, this will fail silently in the background but UI will update.
+          const fileExt = file.name.split('.').pop();
+          const fileName = `${session.user.id}-${Math.random()}.${fileExt}`;
+          
+          const { error: uploadError } = await supabase.storage.from('avatars').upload(fileName, file);
+          
+          if (!uploadError) {
+              const { data: { publicUrl } } = supabase.storage.from('avatars').getPublicUrl(fileName);
+              await supabase.auth.updateUser({ data: { avatar_url: publicUrl } });
+              setAvatarUrl(publicUrl);
+          }
+      } catch (error) {
+          console.error("Upload error:", error);
+      } finally {
+          setIsUploading(false);
+      }
   };
 
   // --- LOADING STATE ---
@@ -252,10 +293,19 @@ export default function StudentProfile() {
         /* --- PROFILE CARDS UI --- */
         .profile-container { padding: 40px 5%; width: 100%; max-width: 1400px; margin: 0 auto; display: grid; gap: 40px; }
         
-        .profile-header { background: rgba(15, 23, 42, 0.85); border: 1px solid rgba(255,255,255,0.1); borderRadius: 16px; padding: 40px; box-shadow: 0 15px 35px rgba(0,0,0,0.4); display: flex; flex-wrap: wrap; gap: 30px; align-items: center; border-radius: 16px; backdrop-filter: blur(10px); }
-        .avatar-lg { width: 130px; height: 130px; background-color: #1e293b; border-radius: 50%; display: flex; justify-content: center; align-items: center; border: 4px solid #38bdf8; overflow: hidden; position: relative; font-size: 4rem; color: #38bdf8; }
-        .verified-badge { position: absolute; bottom: 0; width: 100%; background: #10b981; color: #fff; font-size: 0.75rem; font-weight: bold; text-align: center; padding: 4px 0; font-family: 'Segoe UI', sans-serif; }
+        .profile-header { background: rgba(15, 23, 42, 0.85); border: 1px solid rgba(255,255,255,0.1); border-radius: 16px; padding: 40px; box-shadow: 0 15px 35px rgba(0,0,0,0.4); display: flex; flex-wrap: wrap; gap: 30px; align-items: center; backdrop-filter: blur(10px); }
         
+        /* Avatar Upload Styles */
+        .avatar-lg { width: 130px; height: 130px; background-color: #1e293b; border-radius: 50%; display: flex; justify-content: center; align-items: center; border: 4px solid #38bdf8; overflow: hidden; position: relative; font-size: 4rem; color: #38bdf8; flex-shrink: 0; transition: 0.3s; }
+        .avatar-lg.uploadable:hover { border-color: #10b981; color: #10b981; transform: scale(1.05); }
+        .verified-badge { position: absolute; bottom: 0; width: 100%; background: #10b981; color: #fff; font-size: 0.75rem; font-weight: bold; text-align: center; padding: 4px 0; font-family: 'Segoe UI', sans-serif; z-index: 2; }
+        .upload-overlay { position: absolute; inset: 0; background: rgba(0,0,0,0.6); display: flex; justify-content: center; align-items: center; opacity: 0; transition: 0.3s; font-size: 1rem; font-weight: bold; color: #fff; z-index: 1; }
+        .avatar-lg.uploadable:hover .upload-overlay { opacity: 1; }
+        
+        /* Fix for long names breaking layout */
+        .text-container { flex: 1; min-width: 0; }
+        .student-name { font-size: clamp(1.8rem, 5vw, 2.5rem); color: #fff; margin: 15px 0 0 0; font-weight: 900; font-family: inherit; word-wrap: break-word; overflow-wrap: break-word; line-height: 1.2; }
+
         .roadmap-card { background: rgba(15, 23, 42, 0.85); border: 1px solid rgba(255,255,255,0.1); border-radius: 16px; padding: 40px; box-shadow: 0 15px 35px rgba(0,0,0,0.4); backdrop-filter: blur(10px); }
         .job-pill { background: rgba(255,122,0,0.1); border: 1px solid rgba(255,122,0,0.3); padding: 12px 20px; border-radius: 8px; font-size: 1.05rem; font-weight: bold; color: #fff; font-family: inherit; }
 
@@ -325,7 +375,6 @@ export default function StudentProfile() {
 
       <div className="profile-container">
         
-        {/* --- NO ACCOUNT FOUND STATE --- */}
         {!studentData ? (
            <div style={{ background: 'rgba(15, 23, 42, 0.85)', borderRadius: '16px', padding: '60px', textAlign: 'center', border: '1px solid rgba(239,68,68,0.3)', boxShadow: '0 15px 35px rgba(0,0,0,0.4)' }}>
               <i className='bx bx-error-circle' style={{ fontSize: '5rem', color: '#ef4444', marginBottom: '20px' }}></i>
@@ -336,20 +385,40 @@ export default function StudentProfile() {
           </div>
         ) : (
           <>
-            {/* --- PROFILE HEADER --- */}
+            {/* --- FIX: PROFILE HEADER --- */}
             <section className="profile-header">
-              <div className="avatar-lg">
-                <i className='bx bx-user'></i>
-                <div className="verified-badge">VERIFIED</div>
+              
+              {/* Hidden file input for Avatar */}
+              <input type="file" accept="image/*" ref={fileInputRef} onChange={handlePhotoChange} style={{ display: 'none' }} />
+              
+              <div 
+                  className={`avatar-lg ${!avatarUrl ? 'uploadable' : ''}`} 
+                  onClick={handlePhotoClick}
+                  style={{ cursor: !avatarUrl ? 'pointer' : 'default' }}
+              >
+                  {isUploading ? (
+                      <i className='bx bx-loader-alt bx-spin' style={{ fontSize: '2.5rem' }}></i>
+                  ) : avatarUrl ? (
+                      <img src={avatarUrl} alt="Profile" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                  ) : (
+                      <>
+                          <i className='bx bx-camera'></i>
+                          <div className="upload-overlay"><i className='bx bx-upload'></i></div>
+                      </>
+                  )}
+                  <div className="verified-badge">VERIFIED</div>
               </div>
-              <div style={{ flex: 1 }}>
-                <span style={{ fontSize: '0.9rem', background: 'rgba(56, 189, 248, 0.15)', color: '#38bdf8', padding: '6px 12px', borderRadius: '6px', fontWeight: 'bold', fontFamily: 'inherit' }}>{t[lang].studentAcc}</span>
-                <h2 style={{ fontSize: '2.5rem', color: '#fff', margin: '15px 0 5px 0', fontWeight: '900', fontFamily: 'inherit' }}>{userName}</h2>
-                <p style={{ margin: 0, color: '#94a3b8', fontSize: '1.1rem', fontFamily: 'inherit' }}>{t[lang].regToken} <span style={{ color: '#cbd5e1' }}>{studentData.email}</span></p>
+
+              {/* Text constraint added using min-width: 0 and word-wrap */}
+              <div className="text-container">
+                <span style={{ fontSize: '0.9rem', background: 'rgba(56, 189, 248, 0.15)', color: '#38bdf8', padding: '6px 12px', borderRadius: '6px', fontWeight: 'bold', fontFamily: 'inherit' }}>
+                    {t[lang].studentAcc}
+                </span>
+                <h2 className="student-name">{userName}</h2>
               </div>
             </section>
 
-            {/* --- ROADMAP MATRIX (Your original logic) --- */}
+            {/* --- ROADMAP MATRIX --- */}
             <section className="roadmap-card">
               <div style={{ borderBottom: '1px solid rgba(255,255,255,0.1)', paddingBottom: '20px', marginBottom: '30px' }}>
                 <h3 style={{ margin: '0', fontSize: '2rem', color: '#fff', fontWeight: '900', fontFamily: 'inherit' }}>
@@ -369,7 +438,7 @@ export default function StudentProfile() {
               ) : <p style={{ color: '#94a3b8', fontFamily: 'inherit' }}>{t[lang].pendingAnalytics}</p>}
             </section>
 
-            {/* --- NEW FEATURE: BOOKMARKS & HIGHLIGHTS --- */}
+            {/* --- BOOKMARKS & HIGHLIGHTS --- */}
             <section className="roadmap-card">
                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid rgba(255,255,255,0.1)', paddingBottom: '20px', flexWrap: 'wrap', gap: '15px' }}>
                 <h3 style={{ margin: '0', fontSize: '1.8rem', color: '#fff', fontWeight: '800', fontFamily: 'inherit', display: 'flex', alignItems: 'center', gap: '10px' }}>
@@ -381,7 +450,6 @@ export default function StudentProfile() {
               </div>
 
               <div className="bookmark-grid">
-                
                 <div className="bookmark-item" onClick={() => router.push('/guidance?level=graduation')}>
                   <div className="bookmark-header">
                     <div className="bookmark-icon"><i className='bx bxs-institution'></i></div>
@@ -414,7 +482,6 @@ export default function StudentProfile() {
                     <p style={{ color: '#94a3b8', margin: 0, fontSize: '0.9rem', fontFamily: 'inherit' }}>{t[lang].savedTopic}</p>
                   </div>
                 </div>
-
               </div>
             </section>
           </>
