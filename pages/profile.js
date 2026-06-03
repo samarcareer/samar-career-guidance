@@ -129,7 +129,6 @@ export default function StudentProfile() {
         setSession(session);
         const email = session.user.email;
         
-        // Extract Metadata (Name and Avatar)
         const metadata = session.user.user_metadata;
         if (metadata?.full_name) {
             setUserName(metadata.full_name);
@@ -185,12 +184,8 @@ export default function StudentProfile() {
     if (searchQuery.trim()) router.push(`/categories?search=${encodeURIComponent(searchQuery.trim().toLowerCase())}`);
   };
 
-  // --- PHOTO UPLOAD LOGIC ---
   const handlePhotoClick = () => {
-      // Sirf tabhi click allow karo jab photo na ho
-      if (!avatarUrl) {
-          fileInputRef.current.click();
-      }
+      if (!avatarUrl) fileInputRef.current.click();
   };
 
   const handlePhotoChange = async (e) => {
@@ -199,12 +194,9 @@ export default function StudentProfile() {
 
       setIsUploading(true);
       try {
-          // Creating a temporary local URL so the user sees it immediately
           const objectUrl = URL.createObjectURL(file);
           setAvatarUrl(objectUrl);
 
-          // NOTE: Supabase Storage code (Assuming you have an 'avatars' bucket)
-          // If you haven't created the bucket yet, this will fail silently in the background but UI will update.
           const fileExt = file.name.split('.').pop();
           const fileName = `${session.user.id}-${Math.random()}.${fileExt}`;
           
@@ -222,7 +214,6 @@ export default function StudentProfile() {
       }
   };
 
-  // --- LOADING STATE ---
   if (loading) return (
     <div style={{ display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center', height: '100vh', backgroundColor: '#0f172a', color: '#38bdf8' }}>
         <i className='bx bx-loader-alt bx-spin' style={{ fontSize: '4rem', marginBottom: '20px' }}></i>
@@ -251,7 +242,6 @@ export default function StudentProfile() {
         * { box-sizing: border-box; margin: 0; padding: 0; }
         body, html { overflow-x: hidden; width: 100%; background-color: #0f172a; scroll-behavior: smooth; }
 
-        /* --- NAVBAR STYLES --- */
         .glass-navbar { width: 100%; background: rgba(30, 64, 175, 0.7); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); border-bottom: 1px solid rgba(147, 197, 253, 0.2); position: sticky; top: 0; z-index: 1000; display: flex; flex-direction: column; }
         .nav-top-row { display: flex; justify-content: space-between; align-items: center; padding: 15px 5%; border-bottom: 1px solid rgba(147, 197, 253, 0.1); }
         .nav-brand-container { display: flex; align-items: center; gap: 12px; cursor: pointer; }
@@ -278,6 +268,32 @@ export default function StudentProfile() {
         .desktop-search-wrapper { display: block; flex: 0.6; max-width: 400px; }
         .mobile-toggle { display: none; background: transparent; border: none; color: #fff; font-size: 2rem; cursor: pointer; }
 
+        .profile-container { padding: 40px 5%; width: 100%; max-width: 1400px; margin: 0 auto; display: grid; gap: 40px; }
+        
+        .profile-header { background: rgba(15, 23, 42, 0.85); border: 1px solid rgba(255,255,255,0.1); border-radius: 16px; padding: 40px; box-shadow: 0 15px 35px rgba(0,0,0,0.4); display: flex; flex-wrap: wrap; gap: 30px; align-items: center; backdrop-filter: blur(10px); }
+        
+        .avatar-lg { width: 130px; height: 130px; background-color: #1e293b; border-radius: 50%; display: flex; justify-content: center; align-items: center; border: 4px solid #38bdf8; overflow: hidden; position: relative; font-size: 4rem; color: #38bdf8; flex-shrink: 0; transition: 0.3s; }
+        .avatar-lg.uploadable:hover { border-color: #10b981; color: #10b981; transform: scale(1.05); }
+        .verified-badge { position: absolute; bottom: 0; width: 100%; background: #10b981; color: #fff; font-size: 0.75rem; font-weight: bold; text-align: center; padding: 4px 0; font-family: 'Segoe UI', sans-serif; z-index: 2; }
+        .upload-overlay { position: absolute; inset: 0; background: rgba(0,0,0,0.6); display: flex; justify-content: center; align-items: center; opacity: 0; transition: 0.3s; font-size: 1rem; font-weight: bold; color: #fff; z-index: 1; }
+        .avatar-lg.uploadable:hover .upload-overlay { opacity: 1; }
+        
+        .text-container { flex: 1; min-width: 0; }
+        .student-name { font-size: clamp(1.8rem, 4vw, 2.5rem); color: #fff; margin: 15px 0 0 0; font-weight: 900; font-family: inherit; word-wrap: break-word; overflow-wrap: break-word; line-height: 1.2; }
+        .account-badge { display: inline-block; font-size: 0.85rem; background: rgba(56, 189, 248, 0.15); color: #38bdf8; padding: 6px 12px; border-radius: 6px; font-weight: bold; font-family: inherit; margin-bottom: 5px; }
+
+        .roadmap-card { background: rgba(15, 23, 42, 0.85); border: 1px solid rgba(255,255,255,0.1); border-radius: 16px; padding: 40px; box-shadow: 0 15px 35px rgba(0,0,0,0.4); backdrop-filter: blur(10px); }
+        .job-pill { background: rgba(255,122,0,0.1); border: 1px solid rgba(255,122,0,0.3); padding: 12px 20px; border-radius: 8px; font-size: 1.05rem; font-weight: bold; color: #fff; font-family: inherit; }
+
+        .bookmark-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px; margin-top: 20px; }
+        .bookmark-item { background: rgba(15, 23, 42, 0.6); border: 1px solid rgba(56, 189, 248, 0.15); border-radius: 12px; padding: 20px; transition: 0.3s; cursor: pointer; display: flex; flex-direction: column; gap: 10px; }
+        .bookmark-item:hover { transform: translateY(-5px); border-color: #38bdf8; background: rgba(56, 189, 248, 0.05); box-shadow: 0 10px 20px rgba(56, 189, 248, 0.1); }
+        .bookmark-header { display: flex; justify-content: space-between; align-items: center; }
+        .bookmark-icon { width: 45px; height: 45px; border-radius: 10px; background: rgba(16, 185, 129, 0.1); color: #10b981; display: flex; justify-content: center; align-items: center; font-size: 1.8rem; }
+        
+        .btn-outline { background: transparent; border: 1px solid #38bdf8; color: #38bdf8; padding: 12px 25px; border-radius: 8px; font-weight: bold; cursor: pointer; transition: 0.3s; font-size: 1rem; font-family: inherit; display: inline-flex; align-items: center; gap: 8px; }
+        .btn-outline:hover { background: rgba(56, 189, 248, 0.1); }
+
         @media (max-width: 1024px) {
           .desktop-search-wrapper { display: none !important; }
           .mobile-search-wrapper { display: block; }
@@ -290,37 +306,16 @@ export default function StudentProfile() {
           .nav-link::after { display: none; }
         }
 
-        /* --- PROFILE CARDS UI --- */
-        .profile-container { padding: 40px 5%; width: 100%; max-width: 1400px; margin: 0 auto; display: grid; gap: 40px; }
-        
-        .profile-header { background: rgba(15, 23, 42, 0.85); border: 1px solid rgba(255,255,255,0.1); border-radius: 16px; padding: 40px; box-shadow: 0 15px 35px rgba(0,0,0,0.4); display: flex; flex-wrap: wrap; gap: 30px; align-items: center; backdrop-filter: blur(10px); }
-        
-        /* Avatar Upload Styles */
-        .avatar-lg { width: 130px; height: 130px; background-color: #1e293b; border-radius: 50%; display: flex; justify-content: center; align-items: center; border: 4px solid #38bdf8; overflow: hidden; position: relative; font-size: 4rem; color: #38bdf8; flex-shrink: 0; transition: 0.3s; }
-        .avatar-lg.uploadable:hover { border-color: #10b981; color: #10b981; transform: scale(1.05); }
-        .verified-badge { position: absolute; bottom: 0; width: 100%; background: #10b981; color: #fff; font-size: 0.75rem; font-weight: bold; text-align: center; padding: 4px 0; font-family: 'Segoe UI', sans-serif; z-index: 2; }
-        .upload-overlay { position: absolute; inset: 0; background: rgba(0,0,0,0.6); display: flex; justify-content: center; align-items: center; opacity: 0; transition: 0.3s; font-size: 1rem; font-weight: bold; color: #fff; z-index: 1; }
-        .avatar-lg.uploadable:hover .upload-overlay { opacity: 1; }
-        
-        /* Fix for long names breaking layout */
-        .text-container { flex: 1; min-width: 0; }
-        .student-name { font-size: clamp(1.8rem, 5vw, 2.5rem); color: #fff; margin: 15px 0 0 0; font-weight: 900; font-family: inherit; word-wrap: break-word; overflow-wrap: break-word; line-height: 1.2; }
-
-        .roadmap-card { background: rgba(15, 23, 42, 0.85); border: 1px solid rgba(255,255,255,0.1); border-radius: 16px; padding: 40px; box-shadow: 0 15px 35px rgba(0,0,0,0.4); backdrop-filter: blur(10px); }
-        .job-pill { background: rgba(255,122,0,0.1); border: 1px solid rgba(255,122,0,0.3); padding: 12px 20px; border-radius: 8px; font-size: 1.05rem; font-weight: bold; color: #fff; font-family: inherit; }
-
-        /* Bookmarks UI */
-        .bookmark-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px; margin-top: 20px; }
-        .bookmark-item { background: rgba(15, 23, 42, 0.6); border: 1px solid rgba(56, 189, 248, 0.15); border-radius: 12px; padding: 20px; transition: 0.3s; cursor: pointer; display: flex; flex-direction: column; gap: 10px; }
-        .bookmark-item:hover { transform: translateY(-5px); border-color: #38bdf8; background: rgba(56, 189, 248, 0.05); box-shadow: 0 10px 20px rgba(56, 189, 248, 0.1); }
-        .bookmark-header { display: flex; justify-content: space-between; align-items: center; }
-        .bookmark-icon { width: 45px; height: 45px; border-radius: 10px; background: rgba(16, 185, 129, 0.1); color: #10b981; display: flex; justify-content: center; align-items: center; font-size: 1.8rem; }
-        
-        .btn-outline { background: transparent; border: 1px solid #38bdf8; color: #38bdf8; padding: 12px 25px; border-radius: 8px; font-weight: bold; cursor: pointer; transition: 0.3s; font-size: 1rem; font-family: inherit; display: inline-flex; align-items: center; gap: 8px; }
-        .btn-outline:hover { background: rgba(56, 189, 248, 0.1); }
+        /* --- MOBILE VIEW FIX FOR PROFILE HEADER --- */
+        @media (max-width: 768px) {
+          .profile-header { flex-direction: column; text-align: center; justify-content: center; padding: 30px 20px; gap: 15px; }
+          .text-container { width: 100%; display: flex; flex-direction: column; align-items: center; }
+          .student-name { font-size: 2rem; text-align: center; }
+          .roadmap-card { padding: 25px 20px; }
+          .bookmark-grid { grid-template-columns: 1fr; }
+        }
       `}} />
 
-      {/* --- MASTER NAVBAR --- */}
       <nav className="glass-navbar">
         <div className="nav-top-row">
           <div className="nav-brand-container" onClick={() => router.push('/')}>
@@ -385,10 +380,7 @@ export default function StudentProfile() {
           </div>
         ) : (
           <>
-            {/* --- FIX: PROFILE HEADER --- */}
             <section className="profile-header">
-              
-              {/* Hidden file input for Avatar */}
               <input type="file" accept="image/*" ref={fileInputRef} onChange={handlePhotoChange} style={{ display: 'none' }} />
               
               <div 
@@ -409,16 +401,14 @@ export default function StudentProfile() {
                   <div className="verified-badge">VERIFIED</div>
               </div>
 
-              {/* Text constraint added using min-width: 0 and word-wrap */}
               <div className="text-container">
-                <span style={{ fontSize: '0.9rem', background: 'rgba(56, 189, 248, 0.15)', color: '#38bdf8', padding: '6px 12px', borderRadius: '6px', fontWeight: 'bold', fontFamily: 'inherit' }}>
+                <span className="account-badge">
                     {t[lang].studentAcc}
                 </span>
                 <h2 className="student-name">{userName}</h2>
               </div>
             </section>
 
-            {/* --- ROADMAP MATRIX --- */}
             <section className="roadmap-card">
               <div style={{ borderBottom: '1px solid rgba(255,255,255,0.1)', paddingBottom: '20px', marginBottom: '30px' }}>
                 <h3 style={{ margin: '0', fontSize: '2rem', color: '#fff', fontWeight: '900', fontFamily: 'inherit' }}>
@@ -438,7 +428,6 @@ export default function StudentProfile() {
               ) : <p style={{ color: '#94a3b8', fontFamily: 'inherit' }}>{t[lang].pendingAnalytics}</p>}
             </section>
 
-            {/* --- BOOKMARKS & HIGHLIGHTS --- */}
             <section className="roadmap-card">
                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid rgba(255,255,255,0.1)', paddingBottom: '20px', flexWrap: 'wrap', gap: '15px' }}>
                 <h3 style={{ margin: '0', fontSize: '1.8rem', color: '#fff', fontWeight: '800', fontFamily: 'inherit', display: 'flex', alignItems: 'center', gap: '10px' }}>
@@ -488,7 +477,6 @@ export default function StudentProfile() {
         )}
       </div>
 
-      {/* --- FOOTER --- */}
       <footer style={{ width: '100%', background: 'rgba(30, 64, 175, 0.6)', backdropFilter: 'blur(16px)', padding: '20px', textAlign: 'center', fontSize: '0.9rem', color: '#bfdbfe', fontWeight: '700', marginTop: 'auto', position: 'relative', fontFamily: 'inherit' }}>
         {t[lang].footer}
         <i className='bx bxs-shield-alt-2' onClick={() => router.push('/admin')} style={{ position: 'absolute', right: lang === 'ur' ? 'auto' : '20px', left: lang === 'ur' ? '20px' : 'auto', bottom: '20px', cursor: 'pointer', opacity: 0.3, fontSize: '1.2rem', transition: '0.3s' }} title="Security Protected"></i>
