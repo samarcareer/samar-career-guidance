@@ -13,7 +13,7 @@ const teamMembers = [
     image: "https://ui-avatars.com/api/?name=Ashfaque+Umar&background=0D8ABC&color=fff&size=200",
     color: "#fde047", // Yellow pastel border
     bio: "Visionary founder of Samar Guidance. Dedicated to shaping the careers of thousands of students through precise, analytical, and empathetic counseling.",
-    email: "dr.ashfaque@samarguidance.com"
+    email: "ashfaqueumar@gmail.com"
   },
   {
     id: 2,
@@ -22,25 +22,25 @@ const teamMembers = [
     image: "https://ui-avatars.com/api/?name=Mohammed+Junaid&background=10B981&color=fff&size=200",
     color: "#93c5fd", // Blue pastel border
     bio: "The technical brain behind the Samar Guidance portal. Overseeing the enterprise-grade architecture, data protection, and seamless UI/UX from the Malegaon headquarters.",
-    email: "mohammedjunaid5463@gmail.com"
+    email: "mohammedjunaid5263@gmail.com"
   },
   {
     id: 3,
-    name: "Sarah Khan",
+    name: "Mohammed Ozair",
     role: "Senior Academic Counselor",
-    image: "https://ui-avatars.com/api/?name=Sarah+Khan&background=F472B6&color=fff&size=200",
+    image: "https://ui-avatars.com/api/?name=MOHAMMED+OZAIR&background=F472B6&color=fff&size=200",
     color: "#f9a8d4", // Pink pastel border
-    bio: "Expert in psychological profiling and student mentoring. Sarah helps students bridge the gap between their passions and real-world opportunities.",
-    email: "sarah@samarguidance.com"
+    bio: "Expert in psychological profiling and student mentoring. Ozair helps students bridge the gap between their passions and real-world opportunities.",
+    email: "Ozair@samarguidance.com"
   },
   {
     id: 4,
-    name: "Ameen Ahmed",
+    name: "Naeem Ahmed",
     role: "Student Success Manager",
-    image: "https://ui-avatars.com/api/?name=Ameen+Ahmed&background=F59E0B&color=fff&size=200",
+    image: "https://ui-avatars.com/api/?name=Naeem+Ahmed&background=F59E0B&color=fff&size=200",
     color: "#a7f3d0", // Green pastel border
-    bio: "Ensures every student gets personalized attention. Ameen manages the tracking matrices and post-assessment follow-ups.",
-    email: "ameen@samarguidance.com"
+    bio: "Ensures every student gets personalized attention. naeem manages the tracking matrices and post-assessment follow-ups.",
+    email: "naeem@samarguidance.com"
   }
 ];
 
