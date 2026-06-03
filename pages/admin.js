@@ -15,12 +15,10 @@ export default function AdminDashboard() {
 
   // --- Auth & Admin States ---
   const [email, setEmail] = useState('');
-  const [otp, setOtp] = useState('');
-  const [step, setStep] = useState(1);
+  const [password, setPassword] = useState('');
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
-  const [message, setMessage] = useState('');
 
   // --- Data State ---
   const [studentsData, setStudentsData] = useState([]);
@@ -32,6 +30,9 @@ export default function AdminDashboard() {
     "mohammedjunaid8484@gmail.com",
     "mohammedjunaid5463@gmail.com"
   ];
+
+  // ⚠️ Master Password for Admin Login
+  const MASTER_PASSWORD = "samar@2026";
 
   useEffect(() => {
     // Navbar & Auth Listeners
@@ -65,62 +66,28 @@ export default function AdminDashboard() {
     }
   };
 
-  // --- ADMIN LOGIC ---
-  const handleSendOtp = async (e) => {
+  // --- NEW EMAIL + PASSWORD LOGIC ---
+  const handleAdminLogin = (e) => {
     e.preventDefault();
     setError('');
-    setMessage('');
 
     const cleanEmail = email.trim().toLowerCase();
 
+    // Step 1: Verify Email
     if (!ALLOWED_ADMIN_EMAILS.includes(cleanEmail)) {
-      setError("Security Alert: Access Denied! You are not authorized as an Admin.");
+      setError("Access Denied! Your email is not authorized for Admin Access.");
       return;
     }
 
-    setLoading(true);
-    try {
-      const { error } = await supabase.auth.signInWithOtp({
-        email: cleanEmail,
-        options: { shouldCreateUser: true }
-      });
-      
-      if (error) throw error;
-      
-      setMessage("Secure Admin OTP has been sent to authorized email.");
-      setStep(2);
-    } catch (err) {
-      setError(err.message || 'Failed to send OTP. Please try again.');
-    } finally {
-      setLoading(false);
+    // Step 2: Verify Password
+    if (password !== MASTER_PASSWORD) {
+      setError("Incorrect Password! Please try again.");
+      return;
     }
-  };
 
-  const handleVerifyOtp = async (e) => {
-    e.preventDefault();
-    if (!otp) return;
-
-    setLoading(true);
-    setError('');
-
-    try {
-      const { data, error } = await supabase.auth.verifyOtp({
-        email: email.trim().toLowerCase(),
-        token: otp.trim(),
-        type: 'email'
-      });
-
-      if (error) throw error;
-
-      if (data?.session) {
-        setIsAuthenticated(true);
-        fetchData();
-      }
-    } catch (err) {
-      setError("Invalid or expired OTP. Please check and try again.");
-    } finally {
-      setLoading(false);
-    }
+    // Success!
+    setIsAuthenticated(true);
+    fetchData();
   };
 
   const fetchData = async () => {
@@ -158,13 +125,6 @@ export default function AdminDashboard() {
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
-  };
-
-  const goBackToEmail = () => {
-    setStep(1);
-    setOtp('');
-    setError('');
-    setMessage('');
   };
 
   return (
@@ -246,8 +206,7 @@ export default function AdminDashboard() {
         .input-group input:focus { border-color: #38bdf8; box-shadow: 0 0 15px rgba(56, 189, 248, 0.3); }
 
         .btn-primary { background: #3b82f6; color: #fff; padding: 14px 25px; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; font-size: 1.05rem; width: 100%; transition: 0.3s; display: flex; justify-content: center; align-items: center; gap: 8px; }
-        .btn-primary:hover:not(:disabled) { background: #2563eb; transform: translateY(-2px); }
-        .btn-primary:disabled { background: #64748b; cursor: not-allowed; }
+        .btn-primary:hover { background: #2563eb; transform: translateY(-2px); }
         
         .action-btn { background: transparent; border: 1px solid #10b981; color: #10b981; padding: 8px 16px; border-radius: 6px; cursor: pointer; font-weight: bold; transition: 0.3s; display: flex; align-items: center; gap: 5px; }
         .action-btn:hover { background: #10b981; color: #0f172a; }
@@ -255,9 +214,6 @@ export default function AdminDashboard() {
         
         .alert-box { padding: 12px; border-radius: 8px; margin-bottom: 20px; font-size: 0.9rem; font-weight: 500; display: flex; align-items: center; gap: 8px; text-align: left; }
         .alert-error { background: rgba(239, 68, 68, 0.1); border: 1px solid rgba(239, 68, 68, 0.3); color: #fca5a5; }
-        .alert-success { background: rgba(16, 185, 129, 0.1); border: 1px solid rgba(16, 185, 129, 0.3); color: #6ee7b7; }
-        .back-link { background: none; border: none; color: #94a3b8; font-size: 0.9rem; margin-top: 20px; cursor: pointer; transition: 0.2s; display: inline-flex; align-items: center; gap: 5px; }
-        .back-link:hover { color: #38bdf8; }
       `}} />
 
       {/* --- MASTER NAVBAR (SAMAR UI) --- */}
@@ -342,42 +298,40 @@ export default function AdminDashboard() {
         </header>
 
         {!isAuthenticated ? (
-          // --- SECURE OTP LOGIN SCREEN FOR ADMIN ---
+          // --- NEW EMAIL + PASSWORD LOGIN SCREEN ---
           <div className="admin-card">
             <h2 style={{ color: '#fff', marginBottom: '5px', fontSize: '1.5rem' }}>Admin Authentication</h2>
             <p style={{ color: '#94a3b8', fontSize: '0.9rem', marginBottom: '25px' }}>
-              {step === 1 ? 'Enter authorized email to proceed.' : `OTP sent to ${email}`}
+              Enter authorized email and master password to proceed.
             </p>
 
             {error && <div className="alert-box alert-error"><i className='bx bx-error-circle'></i> {error}</div>}
-            {message && step === 2 && !error && <div className="alert-box alert-success"><i className='bx bx-check-circle'></i> {message}</div>}
 
-            {step === 1 ? (
-              <form onSubmit={handleSendOtp}>
-                <div className="input-group">
-                  <label><i className='bx bx-user-circle'></i> Admin Email</label>
-                  <input type="email" placeholder="admin@example.com" value={email} onChange={(e) => setEmail(e.target.value)} required />
-                </div>
-                <button type="submit" className="btn-primary" disabled={loading}>
-                  {loading ? <i className='bx bx-loader-alt bx-spin'></i> : <i className='bx bx-send'></i>}
-                  {loading ? 'Verifying...' : 'Request Admin OTP'}
-                </button>
-              </form>
-            ) : (
-              <form onSubmit={handleVerifyOtp}>
-                <div className="input-group">
-                  <label><i className='bx bx-dialpad-alt'></i> 6-Digit Code</label>
-                  <input type="text" placeholder="Enter OTP" value={otp} onChange={(e) => setOtp(e.target.value)} maxLength={6} required style={{ letterSpacing: '8px', textAlign: 'center', fontSize: '1.2rem', fontWeight: 'bold' }} />
-                </div>
-                <button type="submit" className="btn-primary" disabled={loading || otp.length < 6}>
-                  {loading ? <i className='bx bx-loader-alt bx-spin'></i> : <i className='bx bx-lock-open-alt'></i>}
-                  {loading ? 'Unlocking...' : 'Verify & Unlock'}
-                </button>
-                <button type="button" className="back-link" onClick={goBackToEmail}>
-                  <i className='bx bx-edit-alt'></i> Change Admin Email
-                </button>
-              </form>
-            )}
+            <form onSubmit={handleAdminLogin}>
+              <div className="input-group">
+                <label><i className='bx bx-envelope'></i> Admin Email</label>
+                <input 
+                  type="email" 
+                  placeholder="admin@example.com" 
+                  value={email} 
+                  onChange={(e) => setEmail(e.target.value)} 
+                  required 
+                />
+              </div>
+              <div className="input-group">
+                <label><i className='bx bx-lock-alt'></i> Master Password</label>
+                <input 
+                  type="password" 
+                  placeholder="Enter Password" 
+                  value={password} 
+                  onChange={(e) => setPassword(e.target.value)} 
+                  required 
+                />
+              </div>
+              <button type="submit" className="btn-primary" style={{ marginTop: '10px' }}>
+                <i className='bx bx-check-shield'></i> Secure Login
+              </button>
+            </form>
           </div>
         ) : (
           // --- DASHBOARD DATA SCREEN ---
@@ -395,7 +349,7 @@ export default function AdminDashboard() {
                 <button onClick={downloadCSV} className="action-btn">
                   <i className='bx bx-download'></i> Download Excel
                 </button>
-                <button onClick={() => { setIsAuthenticated(false); setStep(1); setOtp(''); }} className="action-btn" style={{ borderColor: '#ef4444', color: '#ef4444' }}>
+                <button onClick={() => { setIsAuthenticated(false); setPassword(''); }} className="action-btn" style={{ borderColor: '#ef4444', color: '#ef4444' }}>
                   <i className='bx bx-log-out'></i> Lock Dashboard
                 </button>
               </div>
@@ -443,8 +397,16 @@ export default function AdminDashboard() {
       </main>
 
       {/* --- FOOTER --- */}
-      <footer style={{ width: '100%', background: 'rgba(30, 64, 175, 0.6)', backdropFilter: 'blur(16px)', padding: '20px', textAlign: 'center', fontSize: '0.9rem', color: '#bfdbfe', fontWeight: '700', marginTop: 'auto' }}>
+      <footer style={{ width: '100%', background: 'rgba(30, 64, 175, 0.6)', backdropFilter: 'blur(16px)', padding: '20px', textAlign: 'center', fontSize: '0.9rem', color: '#bfdbfe', fontWeight: '700', marginTop: 'auto', position: 'relative' }}>
         © 2026 Samar Foundation. Enterprise-Grade Architecture Layer Protection Locked.
+        
+        {/* Secret Admin Button */}
+        <i 
+          className='bx bxs-shield-alt-2' 
+          onClick={() => router.push('/admin')} 
+          style={{ position: 'absolute', right: '20px', bottom: '20px', cursor: 'pointer', opacity: 0.3, fontSize: '1.2rem', transition: '0.3s' }}
+          title="Security Protected"
+        ></i>
       </footer>
     </div>
   );
