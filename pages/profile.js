@@ -270,7 +270,8 @@ export default function StudentProfile() {
 
         .profile-container { padding: 40px 5%; width: 100%; max-width: 1400px; margin: 0 auto; display: grid; gap: 40px; }
         
-        .profile-header { background: rgba(15, 23, 42, 0.85); border: 1px solid rgba(255,255,255,0.1); border-radius: 16px; padding: 40px; box-shadow: 0 15px 35px rgba(0,0,0,0.4); display: flex; flex-wrap: wrap; gap: 30px; align-items: center; backdrop-filter: blur(10px); }
+        /* STRICT FLEX LAYOUT FOR HEADER */
+        .profile-header { background: rgba(15, 23, 42, 0.85); border: 1px solid rgba(255,255,255,0.1); border-radius: 16px; padding: 40px; box-shadow: 0 15px 35px rgba(0,0,0,0.4); display: flex; flex-direction: row; gap: 30px; align-items: center; backdrop-filter: blur(10px); }
         
         .avatar-lg { width: 130px; height: 130px; background-color: #1e293b; border-radius: 50%; display: flex; justify-content: center; align-items: center; border: 4px solid #38bdf8; overflow: hidden; position: relative; font-size: 4rem; color: #38bdf8; flex-shrink: 0; transition: 0.3s; }
         .avatar-lg.uploadable:hover { border-color: #10b981; color: #10b981; transform: scale(1.05); }
@@ -278,12 +279,14 @@ export default function StudentProfile() {
         .upload-overlay { position: absolute; inset: 0; background: rgba(0,0,0,0.6); display: flex; justify-content: center; align-items: center; opacity: 0; transition: 0.3s; font-size: 1rem; font-weight: bold; color: #fff; z-index: 1; }
         .avatar-lg.uploadable:hover .upload-overlay { opacity: 1; }
         
-        .text-container { flex: 1; min-width: 0; }
-        .student-name { font-size: clamp(1.8rem, 4vw, 2.5rem); color: #fff; margin: 15px 0 0 0; font-weight: 900; font-family: inherit; word-wrap: break-word; overflow-wrap: break-word; line-height: 1.2; }
-        .account-badge { display: inline-block; font-size: 0.85rem; background: rgba(56, 189, 248, 0.15); color: #38bdf8; padding: 6px 12px; border-radius: 6px; font-weight: bold; font-family: inherit; margin-bottom: 5px; }
+        /* TEXT CONTAINER RULES */
+        .text-container { flex: 1; min-width: 0; display: flex; flex-direction: column; align-items: flex-start; justify-content: center; }
+        .student-name { font-size: clamp(1.6rem, 4vw, 2.5rem); color: #fff; margin: 10px 0 0 0; font-weight: 900; font-family: inherit; word-break: break-word; overflow-wrap: anywhere; line-height: 1.2; }
+        .account-badge { display: inline-block; font-size: 0.85rem; background: rgba(56, 189, 248, 0.15); color: #38bdf8; padding: 6px 12px; border-radius: 6px; font-weight: bold; font-family: inherit; }
 
         .roadmap-card { background: rgba(15, 23, 42, 0.85); border: 1px solid rgba(255,255,255,0.1); border-radius: 16px; padding: 40px; box-shadow: 0 15px 35px rgba(0,0,0,0.4); backdrop-filter: blur(10px); }
         .job-pill { background: rgba(255,122,0,0.1); border: 1px solid rgba(255,122,0,0.3); padding: 12px 20px; border-radius: 8px; font-size: 1.05rem; font-weight: bold; color: #fff; font-family: inherit; }
+        .roadmap-header-desktop { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 20px; flex-wrap: wrap; gap: 15px; }
 
         .bookmark-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px; margin-top: 20px; }
         .bookmark-item { background: rgba(15, 23, 42, 0.6); border: 1px solid rgba(56, 189, 248, 0.15); border-radius: 12px; padding: 20px; transition: 0.3s; cursor: pointer; display: flex; flex-direction: column; gap: 10px; }
@@ -291,7 +294,7 @@ export default function StudentProfile() {
         .bookmark-header { display: flex; justify-content: space-between; align-items: center; }
         .bookmark-icon { width: 45px; height: 45px; border-radius: 10px; background: rgba(16, 185, 129, 0.1); color: #10b981; display: flex; justify-content: center; align-items: center; font-size: 1.8rem; }
         
-        .btn-outline { background: transparent; border: 1px solid #38bdf8; color: #38bdf8; padding: 12px 25px; border-radius: 8px; font-weight: bold; cursor: pointer; transition: 0.3s; font-size: 1rem; font-family: inherit; display: inline-flex; align-items: center; gap: 8px; }
+        .btn-outline { background: transparent; border: 1px solid #38bdf8; color: #38bdf8; padding: 12px 25px; border-radius: 8px; font-weight: bold; cursor: pointer; transition: 0.3s; font-size: 1rem; font-family: inherit; display: inline-flex; justify-content: center; align-items: center; gap: 8px; }
         .btn-outline:hover { background: rgba(56, 189, 248, 0.1); }
 
         @media (max-width: 1024px) {
@@ -306,12 +309,32 @@ export default function StudentProfile() {
           .nav-link::after { display: none; }
         }
 
-        /* --- MOBILE VIEW FIX FOR PROFILE HEADER --- */
+        /* --- MOBILE VIEW FIX FOR PROFILE --- */
         @media (max-width: 768px) {
-          .profile-header { flex-direction: column; text-align: center; justify-content: center; padding: 30px 20px; gap: 15px; }
-          .text-container { width: 100%; display: flex; flex-direction: column; align-items: center; }
-          .student-name { font-size: 2rem; text-align: center; }
+          .profile-header { 
+              flex-direction: column; /* Force photo on top, text below */
+              text-align: center; 
+              justify-content: center; 
+              padding: 30px 15px; 
+              gap: 20px; 
+          }
+          .text-container { 
+              align-items: center; /* Center the text and badge */
+              width: 100%; 
+          }
+          .student-name { 
+              font-size: 1.6rem; /* Scale down long names safely */
+              text-align: center; 
+          }
           .roadmap-card { padding: 25px 20px; }
+          .roadmap-header-mobile {
+              flex-direction: column !important;
+              align-items: flex-start !important;
+              gap: 15px;
+          }
+          .roadmap-header-mobile button {
+              width: 100%; /* Make button full width on mobile */
+          }
           .bookmark-grid { grid-template-columns: 1fr; }
         }
       `}} />
@@ -429,7 +452,7 @@ export default function StudentProfile() {
             </section>
 
             <section className="roadmap-card">
-               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid rgba(255,255,255,0.1)', paddingBottom: '20px', flexWrap: 'wrap', gap: '15px' }}>
+               <div className="roadmap-header-desktop roadmap-header-mobile">
                 <h3 style={{ margin: '0', fontSize: '1.8rem', color: '#fff', fontWeight: '800', fontFamily: 'inherit', display: 'flex', alignItems: 'center', gap: '10px' }}>
                   <i className='bx bx-bookmark-star' style={{ color: '#f59e0b' }}></i> {t[lang].bookmarksTitle}
                 </h3>
