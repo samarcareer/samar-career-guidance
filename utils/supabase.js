@@ -1,14 +1,16 @@
 import { createClient } from '@supabase/supabase-js';
 
-// Fallback logic: Agar Vercel build time par variable read na kar paye, 
-// toh code crash nahi hoga balki ek temporary placeholder use kar lega.
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || 'https://placeholder.supabase.co';
-const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || 'placeholder-key';
+// Ultimate Bulletproof Check: 
+// Yeh check karega ki Vercel se aane wala URL sach mein 'http' se shuru hota hai ya nahi.
+// Agar nahi (ya khali hai), toh yeh turant placeholder use kar lega taaki build crash na ho.
+const rawUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || '';
+const supabaseUrl = rawUrl.startsWith('http') ? rawUrl : 'https://placeholder.supabase.co';
 
-// Console warning taaki developer ko pata chal jaye agar keys missing hain
+const rawKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || '';
+const supabaseAnonKey = rawKey !== '' ? rawKey : 'placeholder-key';
+
 if (supabaseUrl === 'https://placeholder.supabase.co') {
-  console.warn("⚠️ Warning: Supabase URL is missing. Please check Vercel Environment Variables.");
+  console.warn("⚠️ Warning: Using Supabase placeholder. Valid URL not found during build.");
 }
 
-// Create a single, secure instance of the Supabase client
 export const supabase = createClient(supabaseUrl, supabaseAnonKey);
