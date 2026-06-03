@@ -28,7 +28,7 @@ export default function HomeLanding() {
   const [careers, setCareers] = useState(0);
 
   useEffect(() => {
-    // 1. Auth Listener Setup
+    // Auth Listener Setup
     supabase.auth.getSession().then(({ data: { session } }) => {
       setSession(session);
     });
@@ -37,12 +37,12 @@ export default function HomeLanding() {
       setSession(session);
     });
 
-    // 2. Resize Listener
+    // Resize Listener
     const handleResize = () => setIsMobile(window.innerWidth <= 1024);
     handleResize();
     window.addEventListener('resize', handleResize);
 
-    // 3. Animation function for UI
+    // Animation function for UI
     const animateCounter = (target, setter, duration) => {
       let start = 0;
       const increment = target / (duration / 16); 
@@ -57,7 +57,7 @@ export default function HomeLanding() {
       }, 16);
     };
 
-    // 4. Trigger Supabase Live Counter
+    // Trigger Supabase Live Counter
     const fetchLiveVisitors = async () => {
       try {
         const { data, error } = await supabase.rpc('increment_page_view', { page_slug_param: 'home' });
@@ -135,7 +135,6 @@ export default function HomeLanding() {
         * { box-sizing: border-box; margin: 0; padding: 0; }
         body, html { overflow-x: hidden; width: 100%; max-width: 100vw; background-color: #0f172a; scroll-behavior: smooth; }
 
-        /* --- NAVBAR STYLES --- */
         .glass-navbar {
           width: 100%; background: rgba(30, 64, 175, 0.7); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
           border-bottom: 1px solid rgba(147, 197, 253, 0.2); position: sticky; top: 0; z-index: 1000; display: flex; flex-direction: column;
@@ -423,8 +422,17 @@ export default function HomeLanding() {
         </div>
       )}
 
-      <footer style={{ width: '100%', background: 'rgba(30, 64, 175, 0.6)', backdropFilter: 'blur(16px)', padding: '20px', textAlign: 'center', fontSize: '0.9rem', color: '#bfdbfe', fontWeight: '700' }}>
+      {/* --- STEALTHY ADMIN FOOTER LINK ADDED HERE --- */}
+      <footer style={{ width: '100%', background: 'rgba(30, 64, 175, 0.6)', backdropFilter: 'blur(16px)', padding: '20px', textAlign: 'center', fontSize: '0.9rem', color: '#bfdbfe', fontWeight: '700', position: 'relative' }}>
         © 2026 Samar Foundation. Enterprise-Grade Architecture Layer Protection Locked.
+        
+        {/* Secret Admin Button */}
+        <i 
+          className='bx bxs-shield-alt-2' 
+          onClick={() => router.push('/admin')} 
+          style={{ position: 'absolute', right: '20px', bottom: '20px', cursor: 'pointer', opacity: 0.3, fontSize: '1.2rem', transition: '0.3s' }}
+          title="Security Protected"
+        ></i>
       </footer>
     </div>
   );
