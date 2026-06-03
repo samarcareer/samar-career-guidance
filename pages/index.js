@@ -21,6 +21,9 @@ export default function HomeLanding() {
   const maxLoc = totalPages + 1;
   const [currentLoc, setCurrentLoc] = useState(1);
   const [isMobile, setIsMobile] = useState(false);
+  
+  // Completion State
+  const [isCompleted, setIsCompleted] = useState(false);
 
   // Live Stats State
   const [visitors, setVisitors] = useState(0);
@@ -88,7 +91,18 @@ export default function HomeLanding() {
 
   const nextPage = () => { if (currentLoc < maxLoc) setCurrentLoc((prev) => prev + 1); };
   const prevPage = () => { if (currentLoc > 1) setCurrentLoc((prev) => prev - 1); };
-  const restartBook = () => { setCurrentLoc(1); };
+  
+  const handleFinish = () => {
+      setIsCompleted(true);
+      setTimeout(() => {
+          nextPage();
+      }, 800);
+  }
+  
+  const restartBook = () => { 
+      setCurrentLoc(1); 
+      setIsCompleted(false);
+  };
 
   const getBookTransform = () => {
     if (isMobile) return 'none';
@@ -108,6 +122,10 @@ export default function HomeLanding() {
       router.push(`/categories?search=${encodeURIComponent(searchQuery.trim().toLowerCase())}`);
     }
   };
+  
+  const toggleLanguage = () => {
+      setLang(prev => prev === 'en' ? 'ur' : 'en');
+  }
 
   return (
     <div style={{
@@ -207,6 +225,44 @@ export default function HomeLanding() {
         .page-footer-nav { margin-top: auto; display: flex; justify-content: space-between; width: 100%; border-top: 1px solid rgba(255,255,255,0.1); padding-top: 15px; }
         .nav-btn { background: transparent; border: none; color: var(--accent); font-weight: bold; cursor: pointer; font-size: 0.95rem; transition: 0.2s; display: flex; align-items: center; gap: 5px; }
         .nav-btn:hover { color: #fff; text-shadow: 0 0 10px var(--accent); }
+        
+        /* Premium Language Toggle */
+        .lang-toggle-container {
+            display: flex;
+            align-items: center;
+            background: rgba(15, 23, 42, 0.6);
+            border: 1px solid rgba(56, 189, 248, 0.3);
+            border-radius: 20px;
+            padding: 4px;
+            position: relative;
+            cursor: pointer;
+            width: 80px;
+            height: 36px;
+            box-shadow: inset 0 2px 4px rgba(0,0,0,0.3);
+        }
+        
+        .lang-toggle-indicator {
+            position: absolute;
+            top: 4px;
+            left: ${lang === 'en' ? '4px' : '40px'};
+            width: 34px;
+            height: 26px;
+            background: #38bdf8;
+            border-radius: 14px;
+            transition: left 0.3s cubic-bezier(0.4, 0.0, 0.2, 1);
+            box-shadow: 0 2px 8px rgba(56, 189, 248, 0.5);
+        }
+        
+        .lang-label {
+            flex: 1;
+            text-align: center;
+            font-size: 0.75rem;
+            font-weight: 700;
+            color: #fff;
+            z-index: 1;
+            user-select: none;
+            transition: color 0.3s;
+        }
 
         .live-stats-wrapper {
           width: 100%; background: rgba(30, 58, 138, 0.3); border-top: 1px solid rgba(56, 189, 248, 0.1); border-bottom: 1px solid rgba(56, 189, 248, 0.1); backdrop-filter: blur(10px);
@@ -215,6 +271,53 @@ export default function HomeLanding() {
         .stat-card { text-align: center; }
         .stat-card h3 { font-size: 2.8rem; color: #38bdf8; margin: 0 0 5px 0; font-weight: 900; text-shadow: 0 0 20px rgba(56, 189, 248, 0.4); display: flex; align-items: center; justify-content: center; gap: 8px; }
         .stat-card p { color: #e2e8f0; font-size: 1rem; font-weight: 600; margin: 0; text-transform: uppercase; letter-spacing: 1px; }
+        
+        /* Auth Icon Buttons */
+        .auth-icon-btn {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 1.4rem;
+            cursor: pointer;
+            border: 1px solid rgba(255,255,255,0.1);
+            background: rgba(15, 23, 42, 0.6);
+            backdrop-filter: blur(8px);
+            transition: all 0.3s ease;
+        }
+        
+        .profile-btn { color: #10b981; }
+        .profile-btn:hover {
+            background: rgba(16, 185, 129, 0.15);
+            border-color: #10b981;
+            box-shadow: 0 0 15px rgba(16, 185, 129, 0.3);
+            transform: translateY(-2px);
+        }
+        
+        .logout-btn { color: #ef4444; }
+        .logout-btn:hover {
+            background: rgba(239, 68, 68, 0.15);
+            border-color: #ef4444;
+            box-shadow: 0 0 15px rgba(239, 68, 68, 0.3);
+            transform: translateY(-2px);
+        }
+        
+        /* Completion Button Animation */
+        @keyframes successPulse {
+            0% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.4); }
+            70% { box-shadow: 0 0 0 10px rgba(16, 185, 129, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0); }
+        }
+        
+        .btn-completed {
+            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+            color: #fff;
+            border: none;
+            box-shadow: 0 4px 15px rgba(16, 185, 129, 0.4);
+            animation: successPulse 2s infinite;
+        }
 
         @media (max-width: 1024px) {
           .desktop-search-wrapper { display: none !important; }
@@ -262,15 +365,22 @@ export default function HomeLanding() {
             />
           </form>
 
-          {/* SMART LOGIN LOGIC */}
+          {/* SMART LOGIN LOGIC & PREMIUM TOGGLE */}
           <div style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
+              
+            <div className="lang-toggle-container" onClick={toggleLanguage} title="Switch Language">
+                <div className="lang-toggle-indicator"></div>
+                <span className="lang-label" style={{ color: lang === 'en' ? '#fff' : '#94a3b8' }}>EN</span>
+                <span className="lang-label" style={{ color: lang === 'ur' ? '#fff' : '#94a3b8' }}>UR</span>
+            </div>
+
             {session ? (
               <>
-                <button onClick={() => router.push('/profile')} style={{ padding: '8px 20px', background: '#10b981', border: 'none', color: '#fff', borderRadius: '6px', fontWeight: 'bold', cursor: 'pointer', boxShadow: '0 4px 10px rgba(16,185,129,0.4)' }}>
-                  My Profile
+                <button onClick={() => router.push('/profile')} className="auth-icon-btn profile-btn" title="My Profile">
+                  <i className='bx bx-user-circle'></i>
                 </button>
-                <button onClick={handleLogout} style={{ padding: '8px 20px', background: 'transparent', border: '1px solid #ef4444', color: '#ef4444', borderRadius: '6px', fontWeight: 'bold', cursor: 'pointer' }}>
-                  Logout
+                <button onClick={handleLogout} className="auth-icon-btn logout-btn" title="Logout">
+                  <i className='bx bx-log-out'></i>
                 </button>
               </>
             ) : (
@@ -376,7 +486,14 @@ export default function HomeLanding() {
                 
                 <div className="page-footer-nav" style={{ position: 'absolute', bottom: '25px', left: '25px', width: 'calc(100% - 50px)' }}>
                   <button className="nav-btn" onClick={prevPage}><i className='bx bx-left-arrow-alt'></i> Review</button>
-                  <button className="nav-btn" onClick={nextPage} style={{ color: '#10b981', background: 'rgba(16, 185, 129, 0.1)', padding: '6px 16px', borderRadius: '25px', border: '1px solid #10b981' }}>Finish <i className='bx bx-check-circle'></i></button>
+                  <button 
+                    className={`nav-btn ${isCompleted ? 'btn-completed' : ''}`} 
+                    onClick={handleFinish} 
+                    style={!isCompleted ? { color: '#10b981', background: 'rgba(16, 185, 129, 0.1)', padding: '6px 16px', borderRadius: '25px', border: '1px solid #10b981', transition: 'all 0.3s ease' } : { padding: '6px 16px', borderRadius: '25px', transition: 'all 0.3s ease' }}
+                  >
+                    {isCompleted ? 'Successfully Completed ' : 'Finish '}
+                    <i className='bx bx-check-circle'></i>
+                  </button>
                 </div>
               </div>
 
