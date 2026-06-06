@@ -577,7 +577,9 @@ export default function HomeLanding() {
             <p style={{ color: '#94a3b8', fontSize: '1rem', lineHeight: '1.6', margin: '0 0 25px 0', fontFamily: 'inherit' }}>For analytical matrix guidelines, reach out directly to the developer desk:</p>
             <div style={{ background: 'rgba(30, 64, 175, 0.2)', padding: '20px', borderRadius: '8px', borderLeft: '4px solid #3b82f6', marginBottom: '30px', direction: 'ltr' }}>
               <p style={{ margin: '0 0 10px 0', fontWeight: 'bold', color: '#fff', fontSize: '1.1rem' }}>👨‍💻 Website Developer: Mohammed Junaid</p>
-              <p style={{ margin: 0, fontWeight: '800', color: '#60a5fa', fontSize: '1.2rem' }}>📞 9270323128</p>
+              <p style={{ margin: 0, fontWeight: '800', color: '#60a5fa', fontSize: '1.2rem' }}>📞 8484004636</p>
+        <p style={{ margin: '0 0 10px 0', fontWeight: 'bold', color: '#fff', fontSize: '1.1rem' }}>👨‍💻 Website Developer: Mohammed Ozair</p>
+              <p style={{ margin: 0, fontWeight: '800', color: '#60a5fa', fontSize: '1.2rem' }}>📞 9226363686</p>
             </div>
             <button onClick={() => setShowContactModal(false)} style={{ width: '100%', padding: '14px', background: 'rgba(59, 130, 246, 0.1)', border: '1px solid #3b82f6', color: '#fff', borderRadius: '8px', fontWeight: 'bold', cursor: 'pointer', fontSize: '1rem', fontFamily: 'inherit' }}>Close Window</button>
           </div>
