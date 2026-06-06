@@ -17,6 +17,13 @@ const t = {
     navGallery: "Gallery",
     myProfile: "Student Dashboard",
     
+    // Dropdown items
+    courses10: "Courses After 10th",
+    courses12: "Courses After 12th",
+    coursesGrad: "Courses After Graduation",
+    coursesPost: "Courses After Post Graduation",
+    coursesOther: "Other Specializations",
+    
     // Admin Dashboard Specific
     adminTitle: "Director's Dashboard",
     adminSub: "Samar Foundation • Advanced CRM & Operations",
@@ -66,6 +73,13 @@ const t = {
     navGallery: "گیلری",
     myProfile: "طالب علم ڈیش بورڈ",
     
+    // Dropdown items
+    courses10: "دسویں کے بعد کورسز",
+    courses12: "بارہویں کے بعد کورسز",
+    coursesGrad: "گریجویشن کے بعد",
+    coursesPost: "پوسٹ گریجویشن کے بعد",
+    coursesOther: "دیگر مہارتیں",
+
     // Admin Dashboard Specific
     adminTitle: "ڈائریکٹر ڈیش بورڈ",
     adminSub: "ثمر فاؤنڈیشن • ایڈوانسڈ سی آر ایم اور آپریشنز",
@@ -266,6 +280,13 @@ export default function AdminDashboard() {
         .nav-link { color: #e2e8f0; text-decoration: none; font-weight: 600; font-size: 0.95rem; transition: all 0.3s ease; cursor: pointer; position: relative; background: none; border: none; padding: 5px 0; white-space: nowrap; font-family: inherit; }
         .nav-link:hover { color: #38bdf8; }
         
+        /* Dropdown CSS added for desktop menu */
+        .nav-dropdown-container { position: relative; }
+        .nav-dropdown-menu { position: absolute; top: 100%; left: 0; background: rgba(30, 64, 175, 0.95); backdrop-filter: blur(16px); border: 1px solid rgba(147, 197, 253, 0.2); border-radius: 8px; min-width: 260px; box-shadow: 0 15px 30px rgba(0,0,0,0.6); padding: 10px 0; display: flex; flex-direction: column; opacity: 0; visibility: hidden; transform: translateY(10px); transition: all 0.3s ease; z-index: 200; }
+        .nav-dropdown-container:hover .nav-dropdown-menu, .nav-dropdown-menu.active { opacity: 1; visibility: visible; transform: translateY(0); }
+        .dropdown-item { padding: 12px 20px; color: #fff; text-decoration: none; font-size: 0.9rem; font-weight: 500; transition: 0.2s; border-bottom: 1px solid rgba(255,255,255,0.05); text-align: left; background: transparent; border-left: none; border-right: none; border-top: none; width: 100%; cursor: pointer; font-family: inherit; }
+        .dropdown-item:hover { background: rgba(56, 189, 248, 0.2); color: #38bdf8; padding-left: 25px; }
+
         .lang-toggle-container { display: flex; align-items: center; background: rgba(15, 23, 42, 0.6); border: 1px solid rgba(56, 189, 248, 0.3); border-radius: 20px; padding: 4px; position: relative; cursor: pointer; width: 80px; height: 36px; direction: ltr !important; }
         .lang-toggle-indicator { position: absolute; top: 4px; left: ${lang === 'en' ? '4px' : '40px'}; width: 34px; height: 26px; background: #38bdf8; border-radius: 14px; transition: left 0.3s cubic-bezier(0.4, 0.0, 0.2, 1); }
         .lang-label { flex: 1; text-align: center; font-size: 0.75rem; font-weight: 700; color: #fff; z-index: 1; user-select: none; font-family: 'Segoe UI', sans-serif; }
@@ -352,7 +373,21 @@ export default function AdminDashboard() {
         <div className="desktop-menu">
             <button className="nav-link" onClick={() => router.push('/')}>{t[lang].navHome}</button>
             <button className="nav-link" onClick={() => router.push('/about')}>{t[lang].navAbout}</button>
-            <button className="nav-link" onClick={() => router.push('/categories')}>{t[lang].navCareer}</button>
+            
+            {/* FIXED DROPDOWN LINKING */}
+            <div className="nav-dropdown-container" onMouseEnter={() => !isMobile && setShowGuidanceDropdown(true)} onMouseLeave={() => !isMobile && setShowGuidanceDropdown(false)}>
+                <button className="nav-link" onClick={() => setIsMobile && setShowGuidanceDropdown(!showGuidanceDropdown)} style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
+                    {t[lang].navCareer} <i className='bx bx-chevron-down'></i>
+                </button>
+                <div className={`nav-dropdown-menu ${showGuidanceDropdown ? 'active' : ''}`}>
+                    <button className="dropdown-item" onClick={() => router.push('/categories?search=10th')}>{t[lang].courses10}</button>
+                    <button className="dropdown-item" onClick={() => router.push('/categories?search=12th')}>{t[lang].courses12}</button>
+                    <button className="dropdown-item" onClick={() => router.push('/categories?search=graduation')}>{t[lang].coursesGrad}</button>
+                    <button className="dropdown-item" onClick={() => router.push('/categories?search=postgrad')}>{t[lang].coursesPost}</button>
+                    <button className="dropdown-item" onClick={() => router.push('/categories?search=other')}>{t[lang].coursesOther}</button>
+                </div>
+            </div>
+
             <button className="nav-link" onClick={() => router.push('/assessment')}>{t[lang].navAssess}</button>
         </div>
       </nav>
