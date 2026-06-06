@@ -446,17 +446,18 @@ export default function HomeLanding() {
           <button className="nav-link" onClick={() => router.push('/')}>{t[lang].navHome}</button>
           <button className="nav-link" onClick={() => router.push('/about')}>{t[lang].navAbout}</button>
           
+         {/* YEH NAYA CODE YAHAN PASTE KAREIN */}
           <div className="nav-dropdown-container" onMouseEnter={() => !isMobile && setShowGuidanceDropdown(true)} onMouseLeave={() => !isMobile && setShowGuidanceDropdown(false)}>
             <button className="nav-link" onClick={() => setIsMobile && setShowGuidanceDropdown(!showGuidanceDropdown)} style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
               {t[lang].navCareer} <i className='bx bx-chevron-down'></i>
             </button>
             
             <div className={`nav-dropdown-menu ${showGuidanceDropdown ? 'active' : ''}`}>
-              <button className="dropdown-item" onClick={() => router.push('/guidance?level=10th')}>{t[lang].courses10}</button>
-              <button className="dropdown-item" onClick={() => router.push('/guidance?level=12th')}>{t[lang].courses12}</button>
-              <button className="dropdown-item" onClick={() => router.push('/guidance?level=graduation')}>{t[lang].coursesGrad}</button>
-              <button className="dropdown-item" onClick={() => router.push('/guidance?level=postgrad')}>{t[lang].coursesPost}</button>
-              <button className="dropdown-item" onClick={() => router.push('/guidance?level=other')}>{t[lang].coursesOther}</button>
+              <button className="dropdown-item" onClick={() => router.push('/categories?search=10th')}>{t[lang].courses10}</button>
+              <button className="dropdown-item" onClick={() => router.push('/categories?search=12th')}>{t[lang].courses12}</button>
+              <button className="dropdown-item" onClick={() => router.push('/categories?search=graduation')}>{t[lang].coursesGrad}</button>
+              <button className="dropdown-item" onClick={() => router.push('/categories?search=postgrad')}>{t[lang].coursesPost}</button>
+              <button className="dropdown-item" onClick={() => router.push('/categories?search=other')}>{t[lang].coursesOther}</button>
             </div>
           </div>
 
