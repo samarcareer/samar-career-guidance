@@ -125,8 +125,7 @@ supabase.auth.getSession().then(({ data: { session } }) => setSession(session));
       for (const [key, val] of Object.entries(dbData.en)) {
         if (val.items.some(i => i.toLowerCase().includes(query)) || key.includes(query)) { 
             setActiveTab(key); 
-            break; 
-            }, []);-
+            break;     
         }
       }
     }
