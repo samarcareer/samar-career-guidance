@@ -51,7 +51,7 @@ const t = {
     readyToBegin: "Ready to Begin?",
     joinMap: "Join the ultimate career roadmap system today.",
     takeTest: "Take The Career Test",
-    exploreCat: "Explore Categories",
+    exploreCat: "Explore category",
     review: "Review",
     finish: "Finish",
     completedText: "Successfully Completed ",
@@ -237,7 +237,7 @@ export default function HomeLanding() {
   const handleSearchSubmit = (e) => {
     e.preventDefault();
     if (searchQuery.trim()) {
-      router.push(`/categories?search=${encodeURIComponent(searchQuery.trim().toLowerCase())}`);
+      router.push(`/category?search=${encodeURIComponent(searchQuery.trim().toLowerCase())}`);
     }
   };
   
@@ -527,7 +527,7 @@ export default function HomeLanding() {
                 <h2 style={{ border: 'none', fontSize: '1.6rem', marginBottom: '10px' }}>{t[lang].readyToBegin}</h2>
                 <p style={{ color: '#94a3b8', marginBottom: '15px', fontSize: '0.85rem', fontFamily: 'inherit' }}>{t[lang].joinMap}</p>
                 <button className="btn btn-primary" onClick={() => router.push('/assessment')} style={{ marginBottom: '10px' }}>{t[lang].takeTest}</button>
-                <button className="btn btn-secondary" onClick={() => router.push('/categories')}>{t[lang].exploreCat}</button>
+                <button className="btn btn-secondary" onClick={() => router.push('/category')}>{t[lang].exploreCat}</button>
                 
                 <div className="page-footer-nav" style={{ position: 'absolute', bottom: '25px', left: lang === 'ur' ? 'auto' : '25px', right: lang === 'ur' ? '25px' : 'auto', width: 'calc(100% - 50px)' }}>
                   <button className="nav-btn" onClick={prevPage}><i className={`bx bx-${lang === 'ur' ? 'right' : 'left'}-arrow-alt`}></i> {t[lang].review}</button>
