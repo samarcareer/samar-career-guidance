@@ -91,28 +91,11 @@ export default function CourseCategories() {
   const [activeTab, setActiveTab] = useState('science');
 
   useEffect(() => {
-    // 1. Fetch CMS Data
-    const fetchMatrix = async () => {
-      const { data } = await supabase.from('matrix_content').select('*');
-      if (data) {
-        const formatted = { en: {}, ur: {} };
-        data.forEach(item => {
-          formatted.en[item.stream_key] = { title: item.title_en, scope: item.scope_en, duration: item.duration_en, items: item.courses_en };
-          formatted.ur[item.stream_key] = { title: item.title_ur, scope: item.scope_ur, duration: item.duration_ur, items: item.courses_ur };
-        });
-        setDbData(formatted);
-      }
-      setLoading(false);
-    };
-    fetchMatrix();
-
-    // 2. Existing Handlers
+    // Responsive handler
     const handleResize = () => setIsMobile(window.innerWidth <= 1024);
     handleResize();
     window.addEventListener('resize', handleResize);
-supabase.auth.getSession().then(({ data: { session } }) => setSession(session));
-    return () => window.removeEventListener('resize', handleResize);
-  
+
     // Auth handler
     supabase.auth.getSession().then(({ data: { session } }) => setSession(session));
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => setSession(session));
@@ -125,7 +108,7 @@ supabase.auth.getSession().then(({ data: { session } }) => setSession(session));
       for (const [key, val] of Object.entries(dbData.en)) {
         if (val.items.some(i => i.toLowerCase().includes(query)) || key.includes(query)) { 
             setActiveTab(key); 
-            break;     
+            break; 
         }
       }
     }
