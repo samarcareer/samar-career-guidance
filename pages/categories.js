@@ -112,7 +112,6 @@ export default function CourseCategories() {
     window.addEventListener('resize', handleResize);
 supabase.auth.getSession().then(({ data: { session } }) => setSession(session));
     return () => window.removeEventListener('resize', handleResize);
-  }, []);
   
     // Auth handler
     supabase.auth.getSession().then(({ data: { session } }) => setSession(session));
@@ -127,6 +126,7 @@ supabase.auth.getSession().then(({ data: { session } }) => setSession(session));
         if (val.items.some(i => i.toLowerCase().includes(query)) || key.includes(query)) { 
             setActiveTab(key); 
             break; 
+            }, []);-
         }
       }
     }
