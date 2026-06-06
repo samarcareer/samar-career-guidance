@@ -3,8 +3,9 @@ import { useRouter } from 'next/router';
 import Head from 'next/head';
 import { supabase } from '../utils/supabase';
 
-// --- BILINGUAL KNOWLEDGE BANK DATABASE ---
-const dbData = {
+// --- FALLBACK BILINGUAL KNOWLEDGE BANK ---
+// Yeh data tab kaam aayega jab Supabase se connection slow ho ya table khali ho
+const fallbackDbData = {
   en: {
     science: { title: "Science & Technology Domain", scope: "Research, Advanced Data Science, Labs, Agriculture systems and professional engineering branches.", duration: "3 to 4 Years Degree Modules", items: ["Bsc Physics", "Bsc Chemistry", "Bsc Botany", "Bsc Zoology", "Bsc Computer science", "Bsc Mathematics", "Bsc PCM", "Bsc CBZ", "Bsc Forensic Science", "Bsc Food technology"] },
     commerce: { title: "Commerce & Strategic Finance Hub", scope: "Corporate accounting, banking, management systems, taxation laws and professional financial audits.", duration: "3 Years Standard Graduation Route", items: ["CA Chartered Account", "CMA Cost Management Account", "CS Company Secretary", "B.Com Regular", "B.Com Taxation", "BBA / BBM Regular", "BFM Financial Management"] },
@@ -38,8 +39,6 @@ const t = {
     navGallery: "Gallery",
     navContact: "Contact Us",
     footer: "© 2026 Samar Foundation. Enterprise-Grade Architecture Layer Protection Locked.",
-    
-    // Categories Specific
     pageTitle: "Samar Course Knowledge Bank",
     pageSub: "Explore comprehensive global dynamic study stems instantly.",
     matrix: " Matrix",
@@ -64,8 +63,6 @@ const t = {
     navGallery: "گیلری",
     navContact: "ہم سے رابطہ کریں",
     footer: "© 2026 ثمر فاؤنڈیشن۔ انٹرپرائز گریڈ آرکیٹیکچر کے ذریعے محفوظ۔",
-    
-    // Categories Specific
     pageTitle: "ثمر کورس نالج بینک",
     pageSub: "جامع عالمی کیریئر کے اختیارات فوری طور پر دریافت کریں۔",
     matrix: " میٹرکس",
@@ -87,37 +84,70 @@ export default function CourseCategories() {
   const [isMobile, setIsMobile] = useState(false);
   const [session, setSession] = useState(null);
   
-  // Active Tab State
   const [activeTab, setActiveTab] = useState('science');
+  
+  // --- CMS Database State ---
+  const [dbData, setDbData] = useState(fallbackDbData);
+  const [isCmsLoading, setIsCmsLoading] = useState(true);
 
   useEffect(() => {
-    // Responsive handler
     const handleResize = () => setIsMobile(window.innerWidth <= 1024);
     handleResize();
     window.addEventListener('resize', handleResize);
 
-    // Auth handler
     supabase.auth.getSession().then(({ data: { session } }) => setSession(session));
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => setSession(session));
 
-    // Category Parsing Logic (Uses English base for logic checks)
-    if (stream && dbData.en[stream]) {
-        setActiveTab(stream);
-    } else if (search) {
-      const query = decodeURIComponent(search).toLowerCase();
-      for (const [key, val] of Object.entries(dbData.en)) {
-        if (val.items.some(i => i.toLowerCase().includes(query)) || key.includes(query)) { 
-            setActiveTab(key); 
-            break; 
+    // --- FETCH CMS DATA FROM SUPABASE ---
+    const fetchMatrixData = async () => {
+      try {
+        const { data, error } = await supabase.from('matrix_content').select('*');
+        if (error) throw error;
+        
+        if (data && data.length > 0) {
+          // Format Data to match UI Structure
+          const formattedData = { en: {}, ur: {} };
+          data.forEach(item => {
+            formattedData.en[item.stream_key] = {
+              title: item.title_en, scope: item.scope_en, duration: item.duration_en, items: item.courses_en || []
+            };
+            formattedData.ur[item.stream_key] = {
+              title: item.title_ur, scope: item.scope_ur, duration: item.duration_ur, items: item.courses_ur || []
+            };
+          });
+          setDbData(formattedData);
         }
+      } catch (err) {
+        console.error("CMS Fetch Error, using fallback data:", err);
+      } finally {
+        setIsCmsLoading(false);
       }
-    }
+    };
+
+    fetchMatrixData();
 
     return () => {
       window.removeEventListener('resize', handleResize);
       subscription.unsubscribe();
     };
-  }, [stream, search]);
+  }, []);
+
+  // --- Auto-Switch Tab based on URL Query ---
+  useEffect(() => {
+    if (!isCmsLoading) {
+      if (stream && dbData.en[stream]) {
+        setActiveTab(stream);
+      } else if (search) {
+        const query = decodeURIComponent(search).toLowerCase();
+        for (const [key, val] of Object.entries(dbData.en)) {
+          if (val.items.some(i => i.toLowerCase().includes(query)) || key.includes(query)) { 
+            setActiveTab(key); 
+            break; 
+          }
+        }
+      }
+    }
+  }, [stream, search, isCmsLoading, dbData]);
 
   const handleLogout = async () => {
     await supabase.auth.signOut();
@@ -176,7 +206,6 @@ export default function CourseCategories() {
         .lang-label { flex: 1; text-align: center; font-size: 0.75rem; font-weight: 700; color: #fff; z-index: 1; user-select: none; transition: color 0.3s; font-family: 'Segoe UI', sans-serif; }
 
         .auth-icon-btn { width: 40px; height: 40px; border-radius: 50%; display: flex; justify-content: center; align-items: center; font-size: 1.4rem; cursor: pointer; border: 1px solid rgba(255,255,255,0.1); background: rgba(15, 23, 42, 0.6); backdrop-filter: blur(8px); transition: all 0.3s ease; }
-        .profile-btn { color: #10b981; } .profile-btn:hover { background: rgba(16, 185, 129, 0.15); border-color: #10b981; box-shadow: 0 0 15px rgba(16, 185, 129, 0.3); transform: translateY(-2px); }
         .logout-btn { color: #ef4444; } .logout-btn:hover { background: rgba(239, 68, 68, 0.15); border-color: #ef4444; box-shadow: 0 0 15px rgba(239, 68, 68, 0.3); transform: translateY(-2px); }
 
         .mobile-search-wrapper { display: none; width: 100%; padding-bottom: 15px; border-bottom: 1px solid rgba(255,255,255,0.1); margin-bottom: 10px; }
@@ -241,15 +270,8 @@ export default function CourseCategories() {
             </div>
 
             {session ? (
-              <>
-                <button onClick={() => router.push('/profile')} className="auth-icon-btn profile-btn" title={t[lang].myProfile}><i className='bx bx-user-circle'></i></button>
-                <button onClick={handleLogout} className="auth-icon-btn logout-btn" title="Logout"><i className='bx bx-log-out'></i></button>
-              </>
-            ) : (
-              <button onClick={() => router.push('/login')} style={{ padding: '8px 20px', background: '#3b82f6', border: 'none', color: '#fff', borderRadius: '6px', fontWeight: 'bold', cursor: 'pointer', boxShadow: '0 4px 10px rgba(59,130,246,0.4)', fontFamily: 'inherit' }}>
-                Login
-              </button>
-            )}
+              <button onClick={handleLogout} className="auth-icon-btn logout-btn" title="Logout"><i className='bx bx-log-out'></i></button>
+            ) : null}
             
             <button className="mobile-toggle" onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}>
               {isMobileMenuOpen ? <i className='bx bx-x'></i> : <i className='bx bx-menu'></i>}
@@ -267,11 +289,11 @@ export default function CourseCategories() {
           <div className="nav-dropdown-container" onMouseEnter={() => !isMobile && setShowGuidanceDropdown(true)} onMouseLeave={() => !isMobile && setShowGuidanceDropdown(false)}>
             <button className="nav-link" onClick={() => setIsMobile && setShowGuidanceDropdown(!showGuidanceDropdown)} style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>{t[lang].navCareer} <i className='bx bx-chevron-down'></i></button>
             <div className={`nav-dropdown-menu ${showGuidanceDropdown ? 'active' : ''}`}>
-              <button className="dropdown-item" onClick={() => router.push('/guidance?level=10th')}>{t[lang].courses10}</button>
-              <button className="dropdown-item" onClick={() => router.push('/guidance?level=12th')}>{t[lang].courses12}</button>
-              <button className="dropdown-item" onClick={() => router.push('/guidance?level=graduation')}>{t[lang].coursesGrad}</button>
-              <button className="dropdown-item" onClick={() => router.push('/guidance?level=postgrad')}>{t[lang].coursesPost}</button>
-              <button className="dropdown-item" onClick={() => router.push('/guidance?level=other')}>{t[lang].coursesOther}</button>
+              <button className="dropdown-item" onClick={() => router.push('/categories?search=10th')}>{t[lang].courses10}</button>
+              <button className="dropdown-item" onClick={() => router.push('/categories?search=12th')}>{t[lang].courses12}</button>
+              <button className="dropdown-item" onClick={() => router.push('/categories?search=graduation')}>{t[lang].coursesGrad}</button>
+              <button className="dropdown-item" onClick={() => router.push('/categories?search=postgrad')}>{t[lang].coursesPost}</button>
+              <button className="dropdown-item" onClick={() => router.push('/categories?search=other')}>{t[lang].coursesOther}</button>
             </div>
           </div>
           <button className="nav-link" onClick={() => router.push('/assessment')}>{t[lang].navAssess}</button>
@@ -289,49 +311,60 @@ export default function CourseCategories() {
           </div>
         </header>
 
-        <div className="tab-container">
-          {Object.keys(dbData[lang]).map((tabKey) => (
-            <button 
-                key={tabKey} 
-                onClick={() => setActiveTab(tabKey)} 
-                className="tab-btn"
-                style={{ 
-                    background: activeTab === tabKey ? '#1e3a8a' : 'rgba(30,41,59,0.5)', 
-                    border: `1px solid ${activeTab === tabKey ? '#38bdf8' : 'rgba(255,255,255,0.1)'}`,
-                    color: activeTab === tabKey ? '#fff' : '#94a3b8'
-                }}
-            >
-              <span className="en-text" style={{ textTransform: 'uppercase' }}>{tabKey}</span> {t[lang].matrix}
-            </button>
-          ))}
-        </div>
-
-        <div className="content-card">
-          <h3 className="content-title">{dbData[lang][activeTab].title}</h3>
-          
-          <p className="content-desc">
-              <strong style={{ color: '#ff7a00', marginRight: lang === 'en' ? '8px' : '0', marginLeft: lang === 'ur' ? '8px' : '0' }}>{t[lang].scope}</strong> 
-              {dbData[lang][activeTab].scope}
-          </p>
-          
-          <p className="content-desc" style={{ marginBottom: '40px' }}>
-              <strong style={{ color: '#ff7a00', marginRight: lang === 'en' ? '8px' : '0', marginLeft: lang === 'ur' ? '8px' : '0' }}>{t[lang].duration}</strong> 
-              {dbData[lang][activeTab].duration}
-          </p>
-          
-          <h4 style={{ borderTop: '1px solid rgba(255,255,255,0.1)', paddingTop: '25px', color: '#fff', fontSize: '1.3rem', marginBottom: '20px', fontWeight: 700, fontFamily: 'inherit' }}>
-              {t[lang].coursesIncluded}
-          </h4>
-          
-          <div className="course-grid">
-            {dbData[lang][activeTab].items.map((item, idx) => (
-              <span key={idx} className="course-item">
-                  <i className='bx bxs-book-bookmark' style={{ color: '#38bdf8' }}></i> 
-                  <span className="en-text">{item}</span>
-              </span>
-            ))}
+        {isCmsLoading ? (
+          <div style={{ textAlign: 'center', padding: '50px', color: '#38bdf8' }}>
+            <i className='bx bx-loader-alt bx-spin' style={{ fontSize: '3rem' }}></i>
+            <p style={{ marginTop: '10px', fontWeight: 'bold' }}>Syncing Global Matrix...</p>
           </div>
-        </div>
+        ) : (
+          <>
+            <div className="tab-container">
+              {Object.keys(dbData[lang] || {}).map((tabKey) => (
+                <button 
+                    key={tabKey} 
+                    onClick={() => setActiveTab(tabKey)} 
+                    className="tab-btn"
+                    style={{ 
+                        background: activeTab === tabKey ? '#1e3a8a' : 'rgba(30,41,59,0.5)', 
+                        border: `1px solid ${activeTab === tabKey ? '#38bdf8' : 'rgba(255,255,255,0.1)'}`,
+                        color: activeTab === tabKey ? '#fff' : '#94a3b8'
+                    }}
+                >
+                  <span className="en-text" style={{ textTransform: 'uppercase' }}>{tabKey}</span> {t[lang].matrix}
+                </button>
+              ))}
+            </div>
+
+            {dbData[lang] && dbData[lang][activeTab] && (
+                <div className="content-card">
+                <h3 className="content-title">{dbData[lang][activeTab].title}</h3>
+                
+                <p className="content-desc">
+                    <strong style={{ color: '#ff7a00', marginRight: lang === 'en' ? '8px' : '0', marginLeft: lang === 'ur' ? '8px' : '0' }}>{t[lang].scope}</strong> 
+                    {dbData[lang][activeTab].scope}
+                </p>
+                
+                <p className="content-desc" style={{ marginBottom: '40px' }}>
+                    <strong style={{ color: '#ff7a00', marginRight: lang === 'en' ? '8px' : '0', marginLeft: lang === 'ur' ? '8px' : '0' }}>{t[lang].duration}</strong> 
+                    {dbData[lang][activeTab].duration}
+                </p>
+                
+                <h4 style={{ borderTop: '1px solid rgba(255,255,255,0.1)', paddingTop: '25px', color: '#fff', fontSize: '1.3rem', marginBottom: '20px', fontWeight: 700, fontFamily: 'inherit' }}>
+                    {t[lang].coursesIncluded}
+                </h4>
+                
+                <div className="course-grid">
+                    {dbData[lang][activeTab].items.map((item, idx) => (
+                    <span key={idx} className="course-item">
+                        <i className='bx bxs-book-bookmark' style={{ color: '#38bdf8' }}></i> 
+                        <span className="en-text">{item}</span>
+                    </span>
+                    ))}
+                </div>
+                </div>
+            )}
+          </>
+        )}
       </main>
 
       {/* --- SECURE FOOTER --- */}
