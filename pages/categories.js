@@ -29,7 +29,8 @@ const t = {
     navAssess: "Career Assessment", navPersonality: "Personality Development", navGallery: "Gallery", navContact: "Contact Us",
     footer: "© 2026 Samar Foundation. Enterprise-Grade Architecture Layer Protection Locked.",
     pageTitle: "Samar Course Knowledge Bank", pageSub: "Explore comprehensive global dynamic study stems instantly.",
-    matrix: " Matrix", scope: "Scope:", duration: "Standard Course Duration:", coursesIncluded: "Courses Included Under This Scope:"
+    matrix: " Matrix", scope: "Scope:", duration: "Standard Course Duration:", coursesIncluded: "Courses Included Under This Scope:",
+    detailedInfo: "Detailed Information:"
   },
   ur: {
     brand: "ثمر گائیڈنس", doctor: "ڈاکٹر اشفاق عمر", searchPlaceholder: "تلاش کریں...",
@@ -39,7 +40,8 @@ const t = {
     navAssess: "کیریئر اسسمنٹ", navPersonality: "شخصیت سازی", navGallery: "گیلری", navContact: "ہم سے رابطہ کریں",
     footer: "© 2026 ثمر فاؤنڈیشن۔ انٹرپرائز گریڈ آرکیٹیکچر کے ذریعے محفوظ۔",
     pageTitle: "ثمر کورس نالج بینک", pageSub: "جامع عالمی کیریئر کے اختیارات فوری طور پر دریافت کریں۔",
-    matrix: " میٹرکس", scope: "دائرہ کار:", duration: "کورس کی معیاری مدت:", coursesIncluded: "اس دائرہ کار میں شامل کورسز:"
+    matrix: " میٹرکس", scope: "دائرہ کار:", duration: "کورس کی معیاری مدت:", coursesIncluded: "اس دائرہ کار میں شامل کورسز:",
+    detailedInfo: "تفصیلی معلومات:"
   }
 };
 
@@ -76,8 +78,20 @@ export default function CourseCategories() {
         if (data && data.length > 0) {
           const formatted = { en: {}, ur: {} };
           data.forEach(item => {
-            formatted.en[item.stream_key] = { title: item.title_en, scope: item.scope_en, duration: item.duration_en, items: item.courses_en || [] };
-            formatted.ur[item.stream_key] = { title: item.title_ur, scope: item.scope_ur, duration: item.duration_ur, items: item.courses_ur || [] };
+            formatted.en[item.stream_key] = { 
+              title: item.title_en, 
+              scope: item.scope_en, 
+              duration: item.duration_en, 
+              items: item.courses_en || [],
+              details: item.details_en || '' // Fetching the new details column
+            };
+            formatted.ur[item.stream_key] = { 
+              title: item.title_ur, 
+              scope: item.scope_ur, 
+              duration: item.duration_ur, 
+              items: item.courses_ur || [],
+              details: item.details_ur || '' // Fetching the new details column
+            };
           });
           setDbData(formatted);
         }
@@ -202,6 +216,11 @@ export default function CourseCategories() {
         .course-item { background: rgba(30, 41, 59, 0.8); border: 1px solid rgba(255,255,255,0.1); padding: 15px 20px; border-radius: 8px; font-size: 1rem; font-weight: 600; color: #cbd5e1; display: flex; align-items: center; gap: 10px; transition: transform 0.2s; font-family: inherit; }
         .course-item:hover { transform: translateY(-3px); border-color: #38bdf8; background: rgba(56, 189, 248, 0.05); }
 
+        /* NEW DETAILS SECTION STYLES */
+        .details-section { margin-top: 40px; padding-top: 30px; border-top: 1px dashed rgba(56, 189, 248, 0.3); }
+        .details-title { color: #38bdf8; font-size: 1.4rem; margin-bottom: 20px; font-weight: 700; font-family: inherit; }
+        .details-content { color: #cbd5e1; font-size: 1.05rem; line-height: 1.9; white-space: pre-wrap; font-family: inherit; }
+
         @media (max-width: 768px) {
             .content-card { padding: 30px 20px; }
             .tab-btn { min-width: 100%; }
@@ -322,6 +341,20 @@ export default function CourseCategories() {
                 </span>
               ))}
             </div>
+
+            {/* --- NEW FULL DETAILS SECTION --- */}
+            {dbData[lang][activeTab].details && (
+              <div className="details-section">
+                <h4 className="details-title">{t[lang].detailedInfo}</h4>
+                <div 
+                  className="details-content" 
+                  dir={lang === 'ur' ? 'rtl' : 'ltr'}
+                >
+                  {dbData[lang][activeTab].details}
+                </div>
+              </div>
+            )}
+
           </div>
         )}
       </main>
