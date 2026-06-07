@@ -3,8 +3,8 @@ import { useRouter } from 'next/router';
 import Head from 'next/head';
 import { supabase } from '../utils/supabase';
 
-// --- BILINGUAL KNOWLEDGE BANK DATABASE ---
-const dbData = {
+// --- BILINGUAL KNOWLEDGE BANK DATABASE (FALLBACK STATE) ---
+const fallbackDbData = {
   en: {
     science: { title: "Science & Technology Domain", scope: "Research, Advanced Data Science, Labs, Agriculture systems and professional engineering branches.", duration: "3 to 4 Years Degree Modules", items: ["Bsc Physics", "Bsc Chemistry", "Bsc Botany", "Bsc Zoology", "Bsc Computer science", "Bsc Mathematics", "Bsc PCM", "Bsc CBZ", "Bsc Forensic Science", "Bsc Food technology"] },
     commerce: { title: "Commerce & Strategic Finance Hub", scope: "Corporate accounting, banking, management systems, taxation laws and professional financial audits.", duration: "3 Years Standard Graduation Route", items: ["CA Chartered Account", "CMA Cost Management Account", "CS Company Secretary", "B.Com Regular", "B.Com Taxation", "BBA / BBM Regular", "BFM Financial Management"] },
@@ -15,63 +15,31 @@ const dbData = {
     science: { title: "سائنس اور ٹیکنالوجی ڈومین", scope: "ریسرچ، ایڈوانسڈ ڈیٹا سائنس، لیبز، ایگریکلچر سسٹمز اور پروفیشنل انجینئرنگ برانچز۔", duration: "3 سے 4 سالہ ڈگری ماڈیولز", items: ["Bsc Physics", "Bsc Chemistry", "Bsc Botany", "Bsc Zoology", "Bsc Computer science", "Bsc Mathematics", "Bsc PCM", "Bsc CBZ", "Bsc Forensic Science", "Bsc Food technology"] },
     commerce: { title: "کامرس اور اسٹریٹجک فنانس ہب", scope: "کارپوریٹ اکاؤنٹنگ، بینکنگ، مینجمنٹ سسٹمز، ٹیکسیشن قوانین اور پروفیشنل فنانشل آڈٹ۔", duration: "3 سالہ معیاری گریجویشن", items: ["CA Chartered Account", "CMA Cost Management Account", "CS Company Secretary", "B.Com Regular", "B.Com Taxation", "BBA / BBM Regular", "BFM Financial Management"] },
     paramedical: { title: "پیرامیڈیکل اور ہیلتھ کیئر الائیڈ سائنس", scope: "کلینیکل فارمیسی، پیتھالوجی لیبارٹری، ریڈیولوجی میٹرکس، میڈیکل اسکیننگ اور نرسنگ کے شعبے۔", duration: "2 سے 4 سال (ڈپلومہ / ڈگری)", items: ["Nursing", "Pharm D", "B.Pharm", "D.Pharm", "Anesthesia technical", "Cardiac Care technical", "Clinical Optometry", "Medical Lab technician", "PHYSIOTHERAPY"] },
-    btech: { title: "ایڈوانسڈ انجینئرنگ فریم ورک", scope: "سافٹ ویئر ڈیولپمنٹ، روبوٹک آرکیٹیکچر، آٹومیشن انجینئرنگ، انفراسٹرکچر میپنگ، سسٹم کنفیگریشنز۔", duration: "4 سالہ پروفیشنل انجینئرنگ ڈگری", items: ["Computer Science Engi.", "Electronics & Comm.Engi.", "Mechanical Engineering", "Civil Engineering", "Automation & Robotics Eng.", "Biomedical Engineering"] }
+    btech: { title: "ایڈوانسڈ انجینئرنگ فریم ورک", scope: "سافٹ ویئر ڈیولپمنٹ، روبوٹک آرکیٹیکچر، آٹومیشن انجینئرنگ، انفراسٹرکچر میپنگ، SYSTEM کنفیگریشنز۔", duration: "4 سالہ پروفیشنل انجینئرنگ ڈگری", items: ["Computer Science Engi.", "Electronics & Comm.Engi.", "Mechanical Engineering", "Civil Engineering", "Automation & Robotics Eng.", "Biomedical Engineering"] }
   }
 };
 
 // --- TRANSLATION DICTIONARY ---
 const t = {
   en: {
-    brand: "Samar Guidance",
-    doctor: "Dr. Ashfaque Umar",
-    searchPlaceholder: "Search matrix...",
-    navHome: "Home",
-    navAbout: "About Us",
-    navCareer: "Career Guidance",
-    courses10: "Courses After 10th",
-    courses12: "Courses After 12th",
-    coursesGrad: "Courses After Graduation",
-    coursesPost: "Courses After Post Graduation",
-    coursesOther: "Other Specializations",
-    navAssess: "Career Assessment",
-    navPersonality: "Personality Development",
-    navGallery: "Gallery",
-    navContact: "Contact Us",
+    brand: "Samar Guidance", doctor: "Dr. Ashfaque Umar", searchPlaceholder: "Search matrix...",
+    navHome: "Home", navAbout: "About Us", navCareer: "Career Guidance",
+    courses10: "Courses After 10th", courses12: "Courses After 12th", coursesGrad: "Courses After Graduation",
+    coursesPost: "Courses After Post Graduation", coursesOther: "Other Specializations",
+    navAssess: "Career Assessment", navPersonality: "Personality Development", navGallery: "Gallery", navContact: "Contact Us",
     footer: "© 2026 Samar Foundation. Enterprise-Grade Architecture Layer Protection Locked.",
-    
-    // Categories Specific
-    pageTitle: "Samar Course Knowledge Bank",
-    pageSub: "Explore comprehensive global dynamic study stems instantly.",
-    matrix: " Matrix",
-    scope: "Scope:",
-    duration: "Standard Course Duration:",
-    coursesIncluded: "Courses Included Under This Scope:"
+    pageTitle: "Samar Course Knowledge Bank", pageSub: "Explore comprehensive global dynamic study stems instantly.",
+    matrix: " Matrix", scope: "Scope:", duration: "Standard Course Duration:", coursesIncluded: "Courses Included Under This Scope:"
   },
   ur: {
-    brand: "ثمر گائیڈنس",
-    doctor: "ڈاکٹر اشفاق عمر",
-    searchPlaceholder: "تلاش کریں...",
-    navHome: "ہوم",
-    navAbout: "ہمارے بارے میں",
-    navCareer: "کیریئر گائیڈنس",
-    courses10: "دسویں کے بعد کورسز",
-    courses12: "بارہویں کے بعد کورسز",
-    coursesGrad: "گریجویشن کے بعد",
-    coursesPost: "پوسٹ گریجویشن کے بعد",
-    coursesOther: "دیگر مہارتیں",
-    navAssess: "کیریئر اسسمنٹ",
-    navPersonality: "شخصیت سازی",
-    navGallery: "گیلری",
-    navContact: "ہم سے رابطہ کریں",
+    brand: "ثمر گائیڈنس", doctor: "ڈاکٹر اشفاق عمر", searchPlaceholder: "تلاش کریں...",
+    navHome: "ہوم", navAbout: "ہمارے بارے میں", navCareer: "کیریئر گائیڈنس",
+    courses10: "دسویں کے بعد کورسز", courses12: "بارہویں کے بعد کورسز", coursesGrad: "گریجویشن کے بعد",
+    coursesPost: "پوسٹ گریجویشن کے بعد", coursesOther: "دیگر مہارتیں",
+    navAssess: "کیریئر اسسمنٹ", navPersonality: "شخصیت سازی", navGallery: "گیلری", navContact: "ہم سے رابطہ کریں",
     footer: "© 2026 ثمر فاؤنڈیشن۔ انٹرپرائز گریڈ آرکیٹیکچر کے ذریعے محفوظ۔",
-    
-    // Categories Specific
-    pageTitle: "ثمر کورس نالج بینک",
-    pageSub: "جامع عالمی کیریئر کے اختیارات فوری طور پر دریافت کریں۔",
-    matrix: " میٹرکس",
-    scope: "دائرہ کار:",
-    duration: "کورس کی معیاری مدت:",
-    coursesIncluded: "اس دائرہ کار میں شامل کورسز:"
+    pageTitle: "ثمر کورس نالج بینک", pageSub: "جامع عالمی کیریئر کے اختیارات فوری طور پر دریافت کریں۔",
+    matrix: " میٹرکس", scope: "دائرہ کار:", duration: "کورس کی معیاری مدت:", coursesIncluded: "اس دائرہ کار میں شامل کورسز:"
   }
 };
 
@@ -86,21 +54,48 @@ export default function CourseCategories() {
   const [searchQuery, setSearchQuery] = useState('');
   const [isMobile, setIsMobile] = useState(false);
   const [session, setSession] = useState(null);
-  
-  // Active Tab State
   const [activeTab, setActiveTab] = useState('science');
+  
+  // Dynamic Content State loaded with default fallback structure
+  const [dbData, setDbData] = useState(fallbackDbData);
 
   useEffect(() => {
-    // Responsive handler
     const handleResize = () => setIsMobile(window.innerWidth <= 1024);
     handleResize();
     window.addEventListener('resize', handleResize);
 
-    // Auth handler
     supabase.auth.getSession().then(({ data: { session } }) => setSession(session));
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => setSession(session));
 
-    // Category Parsing Logic (Uses English base for logic checks)
+    // Live CMS Fetching Layer
+    const fetchMatrixFromCMS = async () => {
+      try {
+        const { data, error } = await supabase.from('matrix_content').select('*');
+        if (error) throw error;
+        
+        if (data && data.length > 0) {
+          const formatted = { en: {}, ur: {} };
+          data.forEach(item => {
+            formatted.en[item.stream_key] = { title: item.title_en, scope: item.scope_en, duration: item.duration_en, items: item.courses_en || [] };
+            formatted.ur[item.stream_key] = { title: item.title_ur, scope: item.scope_ur, duration: item.duration_ur, items: item.courses_ur || [] };
+          });
+          setDbData(formatted);
+        }
+      } catch (err) {
+        console.warn("CMS offline or table empty, using local architecture fallback layout safely.");
+      }
+    };
+
+    fetchMatrixFromCMS();
+
+    return () => {
+      window.removeEventListener('resize', handleResize);
+      subscription.unsubscribe();
+    };
+  }, []);
+
+  // Sync parameters with runtime database state
+  useEffect(() => {
     if (stream && dbData.en[stream]) {
         setActiveTab(stream);
     } else if (search) {
@@ -112,12 +107,7 @@ export default function CourseCategories() {
         }
       }
     }
-
-    return () => {
-      window.removeEventListener('resize', handleResize);
-      subscription.unsubscribe();
-    };
-  }, [stream, search]);
+  }, [stream, search, dbData]);
 
   const handleLogout = async () => {
     await supabase.auth.signOut();
@@ -164,7 +154,7 @@ export default function CourseCategories() {
         .nav-link:hover { color: #38bdf8; }
         .nav-link::after { content: ''; position: absolute; width: 0; height: 2px; bottom: 0; left: 0; background-color: #38bdf8; transition: width 0.3s ease; }
         .nav-link:hover::after { width: 100%; }
-        
+         
         .nav-dropdown-container { position: relative; }
         .nav-dropdown-menu { position: absolute; top: 100%; left: 0; background: rgba(30, 64, 175, 0.95); backdrop-filter: blur(16px); border: 1px solid rgba(147, 197, 253, 0.2); border-radius: 8px; min-width: 260px; box-shadow: 0 15px 30px rgba(0,0,0,0.6); padding: 10px 0; display: flex; flex-direction: column; opacity: 0; visibility: hidden; transform: translateY(10px); transition: all 0.3s ease; z-index: 200; }
         .nav-dropdown-container:hover .nav-dropdown-menu, .nav-dropdown-menu.active { opacity: 1; visibility: visible; transform: translateY(0); }
@@ -200,14 +190,14 @@ export default function CourseCategories() {
         .cat-header { border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 25px; margin-bottom: 40px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 20px; }
         .cat-title { color: #38bdf8; margin: 0; font-weight: 800; font-size: clamp(1.8rem, 4vw, 2.5rem); font-family: inherit; }
         .cat-sub { color: #94a3b8; margin: 8px 0 0 0; font-size: 1.1rem; font-family: inherit; }
-        
+         
         .tab-container { display: flex; gap: 15px; flex-wrap: wrap; margin-bottom: 40px; }
         .tab-btn { padding: 15px 30px; border-radius: 8px; font-weight: bold; cursor: pointer; font-size: 1rem; flex: 1; min-width: 200px; transition: all 0.3s ease; display: flex; align-items: center; justify-content: center; gap: 8px; font-family: inherit; }
-        
+         
         .content-card { width: 100%; background: rgba(15, 23, 42, 0.8); border: 1px solid rgba(255,255,255,0.1); border-radius: 16px; padding: 50px; box-shadow: 0 20px 40px rgba(0,0,0,0.4); backdrop-filter: blur(10px); }
         .content-title { color: #38bdf8; margin: 0 0 20px 0; font-size: clamp(1.8rem, 4vw, 2.2rem); font-weight: 800; font-family: inherit; }
         .content-desc { color: #cbd5e1; line-height: 1.8; margin: 0 0 25px 0; font-size: 1.1rem; font-family: inherit; }
-        
+         
         .course-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 15px; }
         .course-item { background: rgba(30, 41, 59, 0.8); border: 1px solid rgba(255,255,255,0.1); padding: 15px 20px; border-radius: 8px; font-size: 1rem; font-weight: 600; color: #cbd5e1; display: flex; align-items: center; gap: 10px; transition: transform 0.2s; font-family: inherit; }
         .course-item:hover { transform: translateY(-3px); border-color: #38bdf8; background: rgba(56, 189, 248, 0.05); }
@@ -250,7 +240,7 @@ export default function CourseCategories() {
                 Login
               </button>
             )}
-            
+             
             <button className="mobile-toggle" onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}>
               {isMobileMenuOpen ? <i className='bx bx-x'></i> : <i className='bx bx-menu'></i>}
             </button>
@@ -267,11 +257,11 @@ export default function CourseCategories() {
           <div className="nav-dropdown-container" onMouseEnter={() => !isMobile && setShowGuidanceDropdown(true)} onMouseLeave={() => !isMobile && setShowGuidanceDropdown(false)}>
             <button className="nav-link" onClick={() => setIsMobile && setShowGuidanceDropdown(!showGuidanceDropdown)} style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>{t[lang].navCareer} <i className='bx bx-chevron-down'></i></button>
             <div className={`nav-dropdown-menu ${showGuidanceDropdown ? 'active' : ''}`}>
-              <button className="dropdown-item" onClick={() => router.push('/guidance?level=10th')}>{t[lang].courses10}</button>
-              <button className="dropdown-item" onClick={() => router.push('/guidance?level=12th')}>{t[lang].courses12}</button>
-              <button className="dropdown-item" onClick={() => router.push('/guidance?level=graduation')}>{t[lang].coursesGrad}</button>
-              <button className="dropdown-item" onClick={() => router.push('/guidance?level=postgrad')}>{t[lang].coursesPost}</button>
-              <button className="dropdown-item" onClick={() => router.push('/guidance?level=other')}>{t[lang].coursesOther}</button>
+              <button className="dropdown-item" onClick={() => router.push('/categories?search=10th')}>{t[lang].courses10}</button>
+              <button className="dropdown-item" onClick={() => router.push('/categories?search=12th')}>{t[lang].courses12}</button>
+              <button className="dropdown-item" onClick={() => router.push('/categories?search=graduation')}>{t[lang].coursesGrad}</button>
+              <button className="dropdown-item" onClick={() => router.push('/categories?search=postgrad')}>{t[lang].coursesPost}</button>
+              <button className="dropdown-item" onClick={() => router.push('/categories?search=other')}>{t[lang].coursesOther}</button>
             </div>
           </div>
           <button className="nav-link" onClick={() => router.push('/assessment')}>{t[lang].navAssess}</button>
@@ -290,7 +280,7 @@ export default function CourseCategories() {
         </header>
 
         <div className="tab-container">
-          {Object.keys(dbData[lang]).map((tabKey) => (
+          {Object.keys(dbData[lang] || {}).map((tabKey) => (
             <button 
                 key={tabKey} 
                 onClick={() => setActiveTab(tabKey)} 
@@ -306,32 +296,34 @@ export default function CourseCategories() {
           ))}
         </div>
 
-        <div className="content-card">
-          <h3 className="content-title">{dbData[lang][activeTab].title}</h3>
-          
-          <p className="content-desc">
-              <strong style={{ color: '#ff7a00', marginRight: lang === 'en' ? '8px' : '0', marginLeft: lang === 'ur' ? '8px' : '0' }}>{t[lang].scope}</strong> 
-              {dbData[lang][activeTab].scope}
-          </p>
-          
-          <p className="content-desc" style={{ marginBottom: '40px' }}>
-              <strong style={{ color: '#ff7a00', marginRight: lang === 'en' ? '8px' : '0', marginLeft: lang === 'ur' ? '8px' : '0' }}>{t[lang].duration}</strong> 
-              {dbData[lang][activeTab].duration}
-          </p>
-          
-          <h4 style={{ borderTop: '1px solid rgba(255,255,255,0.1)', paddingTop: '25px', color: '#fff', fontSize: '1.3rem', marginBottom: '20px', fontWeight: 700, fontFamily: 'inherit' }}>
-              {t[lang].coursesIncluded}
-          </h4>
-          
-          <div className="course-grid">
-            {dbData[lang][activeTab].items.map((item, idx) => (
-              <span key={idx} className="course-item">
-                  <i className='bx bxs-book-bookmark' style={{ color: '#38bdf8' }}></i> 
-                  <span className="en-text">{item}</span>
-              </span>
-            ))}
+        {dbData[lang] && dbData[lang][activeTab] && (
+          <div className="content-card">
+            <h3 className="content-title">{dbData[lang][activeTab].title}</h3>
+             
+            <p className="content-desc">
+                <strong style={{ color: '#ff7a00', marginRight: lang === 'en' ? '8px' : '0', marginLeft: lang === 'ur' ? '8px' : '0' }}>{t[lang].scope}</strong> 
+                {dbData[lang][activeTab].scope}
+            </p>
+             
+            <p className="content-desc" style={{ marginBottom: '40px' }}>
+                <strong style={{ color: '#ff7a00', marginRight: lang === 'en' ? '8px' : '0', marginLeft: lang === 'ur' ? '8px' : '0' }}>{t[lang].duration}</strong> 
+                {dbData[lang][activeTab].duration}
+            </p>
+             
+            <h4 style={{ borderTop: '1px solid rgba(255,255,255,0.1)', paddingTop: '25px', color: '#fff', fontSize: '1.3rem', marginBottom: '20px', fontWeight: 700, fontFamily: 'inherit' }}>
+                {t[lang].coursesIncluded}
+            </h4>
+             
+            <div className="course-grid">
+              {(dbData[lang][activeTab].items || []).map((item, idx) => (
+                <span key={idx} className="course-item">
+                    <i className='bx bxs-book-bookmark' style={{ color: '#38bdf8' }}></i> 
+                    <span className="en-text">{item}</span>
+                </span>
+              ))}
+            </div>
           </div>
-        </div>
+        )}
       </main>
 
       {/* --- SECURE FOOTER --- */}
