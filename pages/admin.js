@@ -119,13 +119,6 @@ const t = {
   }
 };
 
-// Dummy Initial DB for CMS Demonstration
-const initialMatrixDB = [
-  { id: 1, key: 'science', title: "Science & Technology", scope: "Research, Advanced Data Science, Labs...", duration: "3 to 4 Years", jobs: "Data Scientist, Researcher" },
-  { id: 2, key: 'commerce', title: "Commerce & Finance", scope: "Corporate accounting, banking, taxation...", duration: "3 Years", jobs: "CA, CS, Bank Manager" },
-  { id: 3, key: 'polytechnic', title: "Polytechnic Diploma", scope: "Core technical hands-on experience...", duration: "3 Years", jobs: "Junior Engineer, CAD Designer" },
-];
-
 export default function AdminDashboard() {
   const router = useRouter();
   const [lang, setLang] = useState('en');
@@ -153,8 +146,20 @@ export default function AdminDashboard() {
   const [filterStream, setFilterStream] = useState('');
   const [statusMap, setStatusMap] = useState({});
 
-  // --- CMS States ---
-  const [matrixContent, setMatrixContent] = useState(initialMatrixDB);
+  // --- CMS LIVE DATABASE STATE ---
+  const [matrixContent, setMatrixContent] = useState([]);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isCmsSubmitting, setIsCmsSubmitting] = useState(false);
+  
+  // Form Setup State
+  const blankForm = {
+    id: null, stream_key: '',
+    title_en: '', title_ur: '',
+    scope_en: '', scope_ur: '',
+    duration_en: '', duration_ur: '',
+    courses_en: '', courses_ur: ''
+  };
+  const [formData, setFormData] = useState(blankForm);
 
   // ⚠️ Authorized Admin Emails
   const ALLOWED_ADMIN_EMAILS = [
@@ -201,6 +206,7 @@ export default function AdminDashboard() {
     }
     setIsAuthenticated(true);
     fetchData();
+    fetchCMSData();
   };
 
   const fetchData = async () => {
@@ -216,6 +222,73 @@ export default function AdminDashboard() {
       alert("Error fetching data: " + err.message);
     }
     setLoading(false);
+  };
+
+  // Live CMS Matrix Loading Function
+  const fetchCMSData = async () => {
+    const { data, error } = await supabase
+      .from('matrix_content')
+      .select('*')
+      .order('created_at', { ascending: true });
+    if (data) setMatrixContent(data);
+    if (error) console.error("CMS read error:", error);
+  };
+
+  // Form Management Actions
+  const handleOpenEdit = (item) => {
+    setFormData({
+      id: item.id,
+      stream_key: item.stream_key,
+      title_en: item.title_en || '', title_ur: item.title_ur || '',
+      scope_en: item.scope_en || '', scope_ur: item.scope_ur || '',
+      duration_en: item.duration_en || '', duration_ur: item.duration_ur || '',
+      courses_en: item.courses_en ? item.courses_en.join(', ') : '',
+      courses_ur: item.courses_ur ? item.courses_ur.join(', ') : ''
+    });
+    setIsModalOpen(true);
+  };
+
+  const handleOpenAdd = () => {
+    setFormData(blankForm);
+    setIsModalOpen(true);
+  };
+
+  const handleCmsSave = async (e) => {
+    e.preventDefault();
+    setIsCmsSubmitting(true);
+
+    const payload = {
+      stream_key: formData.stream_key.toLowerCase().trim(),
+      title_en: formData.title_en, title_ur: formData.title_ur,
+      scope_en: formData.scope_en, scope_ur: formData.scope_ur,
+      duration_en: formData.duration_en, duration_ur: formData.duration_ur,
+      courses_en: formData.courses_en.split(',').map(s => s.trim()).filter(s => s),
+      courses_ur: formData.courses_ur.split(',').map(s => s.trim()).filter(s => s),
+    };
+
+    let responseError;
+    if (formData.id) {
+      const { error } = await supabase.from('matrix_content').update(payload).eq('id', formData.id);
+      responseError = error;
+    } else {
+      const { error } = await supabase.from('matrix_content').insert([payload]);
+      responseError = error;
+    }
+
+    setIsCmsSubmitting(false);
+    if (responseError) {
+      alert("Database operational sync failure: " + responseError.message);
+    } else {
+      setIsModalOpen(false);
+      fetchCMSData();
+    }
+  };
+
+  const handleCmsDelete = async (id) => {
+    if (window.confirm("Are you sure you want to completely erase this study module matrix line structure?")) {
+      const { error } = await supabase.from('matrix_content').delete().eq('id', id);
+      if (!error) fetchCMSData();
+    }
   };
 
   const handleStatusChange = (studentEmail, newStatus) => {
@@ -280,7 +353,6 @@ export default function AdminDashboard() {
         .nav-link { color: #e2e8f0; text-decoration: none; font-weight: 600; font-size: 0.95rem; transition: all 0.3s ease; cursor: pointer; position: relative; background: none; border: none; padding: 5px 0; white-space: nowrap; font-family: inherit; }
         .nav-link:hover { color: #38bdf8; }
         
-        /* Dropdown CSS added for desktop menu */
         .nav-dropdown-container { position: relative; }
         .nav-dropdown-menu { position: absolute; top: 100%; left: 0; background: rgba(30, 64, 175, 0.95); backdrop-filter: blur(16px); border: 1px solid rgba(147, 197, 253, 0.2); border-radius: 8px; min-width: 260px; box-shadow: 0 15px 30px rgba(0,0,0,0.6); padding: 10px 0; display: flex; flex-direction: column; opacity: 0; visibility: hidden; transform: translateY(10px); transition: all 0.3s ease; z-index: 200; }
         .nav-dropdown-container:hover .nav-dropdown-menu, .nav-dropdown-menu.active { opacity: 1; visibility: visible; transform: translateY(0); }
@@ -374,7 +446,6 @@ export default function AdminDashboard() {
             <button className="nav-link" onClick={() => router.push('/')}>{t[lang].navHome}</button>
             <button className="nav-link" onClick={() => router.push('/about')}>{t[lang].navAbout}</button>
             
-            {/* FIXED DROPDOWN LINKING */}
             <div className="nav-dropdown-container" onMouseEnter={() => !isMobile && setShowGuidanceDropdown(true)} onMouseLeave={() => !isMobile && setShowGuidanceDropdown(false)}>
                 <button className="nav-link" onClick={() => setIsMobile && setShowGuidanceDropdown(!showGuidanceDropdown)} style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
                     {t[lang].navCareer} <i className='bx bx-chevron-down'></i>
@@ -508,7 +579,7 @@ export default function AdminDashboard() {
                 </>
             )}
 
-            {/* --- TAB 2: CMS --- */}
+            {/* --- TAB 2: CMS DYNAMIC WORKFLOW --- */}
             {adminTab === 'cms' && (
                 <div style={{ background: 'rgba(30, 41, 59, 0.85)', padding: '30px', borderRadius: '16px', border: '1px solid rgba(56, 189, 248, 0.3)' }}>
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '25px', flexWrap: 'wrap', gap: '15px' }}>
@@ -516,22 +587,31 @@ export default function AdminDashboard() {
                             <h2 style={{ color: '#fff', margin: '0 0 5px 0', fontFamily: 'inherit' }}>{t[lang].cmsTitle}</h2>
                             <p style={{ color: '#94a3b8', margin: 0, fontSize: '0.9rem', fontFamily: 'inherit' }}>{t[lang].cmsSub}</p>
                         </div>
-                        <button className="action-btn" style={{ background: '#38bdf8', color: '#0f172a', borderColor: '#38bdf8' }}>
+                        <button onClick={handleOpenAdd} className="action-btn" style={{ background: '#38bdf8', color: '#0f172a', borderColor: '#38bdf8' }}>
                             {t[lang].addNew}
                         </button>
                     </div>
 
                     <div>
-                        {matrixContent.map(item => (
+                        {matrixContent.length === 0 ? (
+                          <div style={{textAlign:'center', color:'#94a3b8', padding:'20px'}}>No live matrices synchronized. Click "+ Add New Matrix" to input data.</div>
+                        ) : matrixContent.map(item => (
                             <div key={item.id} className="cms-card">
                                 <div className="cms-info">
-                                    <h4><span className="en-text">{item.title}</span></h4>
-                                    <p><strong>{t[lang].scope}:</strong> <span className="en-text">{item.scope}</span></p>
-                                    <p style={{ marginTop: '5px' }}><strong>{t[lang].duration}:</strong> <span className="en-text">{item.duration}</span> | <strong>{t[lang].jobs}:</strong> <span className="en-text">{item.jobs}</span></p>
+                                    <h4><span className="en-text">{item.title_en}</span> <span style={{fontSize:'0.8rem', color:'#38bdf8', background:'rgba(56,189,248,0.1)', padding:'2px 8px', borderRadius:'10px', marginLeft:'10px'}}>{item.stream_key}</span></h4>
+                                    <p dir={lang === 'ur' ? 'rtl' : 'ltr'}><strong>{t[lang].scope}:</strong> <span className="en-text">{lang === 'ur' ? item.scope_ur : item.scope_en}</span></p>
+                                    <p style={{ marginTop: '5px' }}>
+                                      <strong>{t[lang].duration}:</strong> <span className="en-text">{lang === 'ur' ? item.duration_ur : item.duration_en}</span> 
+                                    </p>
                                 </div>
-                                <button className="action-btn" style={{ borderColor: '#f59e0b', color: '#f59e0b' }}>
-                                    <i className='bx bx-edit'></i> {t[lang].edit}
-                                </button>
+                                <div style={{display:'flex', gap:'10px'}}>
+                                  <button onClick={() => handleOpenEdit(item)} className="action-btn" style={{ borderColor: '#f59e0b', color: '#f59e0b' }}>
+                                      <i className='bx bx-edit'></i> {t[lang].edit}
+                                  </button>
+                                  <button onClick={() => handleCmsDelete(item.id)} className="action-btn" style={{ borderColor: '#ef4444', color: '#ef4444' }}>
+                                      Delete
+                                  </button>
+                                </div>
                             </div>
                         ))}
                     </div>
@@ -541,6 +621,74 @@ export default function AdminDashboard() {
           </div>
         )}
       </main>
+
+      {/* --- LIVE SYSTEM MODAL LAYER --- */}
+      {isModalOpen && (
+        <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.85)', display: 'flex', justifyContent: 'center', alignItems: 'center', zIndex: 9999, padding: '20px', backdropFilter:'blur(5px)' }}>
+          <div style={{ background: '#1e293b', border: '1px solid #334155', borderRadius: '12px', padding: '30px', width: '100%', maxWidth: '750px', maxHeight: '90vh', overflowY: 'auto' }} dir="ltr">
+            <h2 style={{ marginTop: 0, color: '#38bdf8', marginBottom:'20px' }}>{formData.id ? 'Edit Study Matrix Structure' : 'Add New Study Matrix Node'}</h2>
+            
+            <form onSubmit={handleCmsSave} style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+              <div>
+                <label style={{ display: 'block', marginBottom: '5px', color: '#cbd5e1', fontWeight:'600' }}>Stream System Key (e.g., science, commerce, btech, 10th)</label>
+                <input required type="text" value={formData.stream_key} onChange={(e) => setFormData({...formData, stream_key: e.target.value})} style={{ width: '100%', padding: '12px', background: '#0f172a', border: '1px solid #334155', color: '#fff', borderRadius: '6px' }} placeholder="lowercase routing format key" />
+              </div>
+
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px' }}>
+                <div>
+                  <label style={{ display: 'block', marginBottom: '5px', color: '#cbd5e1' }}>Title Name (English)</label>
+                  <input required type="text" value={formData.title_en} onChange={(e) => setFormData({...formData, title_en: e.target.value})} style={{ width: '100%', padding: '12px', background: '#0f172a', border: '1px solid #334155', color: '#fff', borderRadius: '6px' }} />
+                </div>
+                <div>
+                  <label style={{ display: 'block', marginBottom: '5px', color: '#cbd5e1' }}>Title Name (Urdu)</label>
+                  <input required type="text" value={formData.title_ur} onChange={(e) => setFormData({...formData, title_ur: e.target.value})} dir="rtl" style={{ width: '100%', padding: '12px', background: '#0f172a', border: '1px solid #334155', color: '#fff', borderRadius: '6px' }} />
+                </div>
+              </div>
+
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px' }}>
+                <div>
+                  <label style={{ display: 'block', marginBottom: '5px', color: '#cbd5e1' }}>Scope Framework (English)</label>
+                  <textarea required rows="2" value={formData.scope_en} onChange={(e) => setFormData({...formData, scope_en: e.target.value})} style={{ width: '100%', padding: '12px', background: '#0f172a', border: '1px solid #334155', color: '#fff', borderRadius: '6px' }} />
+                </div>
+                <div>
+                  <label style={{ display: 'block', marginBottom: '5px', color: '#cbd5e1' }}>Scope Framework (Urdu)</label>
+                  <textarea required rows="2" value={formData.scope_ur} onChange={(e) => setFormData({...formData, scope_ur: e.target.value})} dir="rtl" style={{ width: '100%', padding: '12px', background: '#0f172a', border: '1px solid #334155', color: '#fff', borderRadius: '6px' }} />
+                </div>
+              </div>
+
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px' }}>
+                <div>
+                  <label style={{ display: 'block', marginBottom: '5px', color: '#cbd5e1' }}>Duration (English)</label>
+                  <input required type="text" value={formData.duration_en} onChange={(e) => setFormData({...formData, duration_en: e.target.value})} style={{ width: '100%', padding: '12px', background: '#0f172a', border: '1px solid #334155', color: '#fff', borderRadius: '6px' }} />
+                </div>
+                <div>
+                  <label style={{ display: 'block', marginBottom: '5px', color: '#cbd5e1' }}>Duration (Urdu)</label>
+                  <input required type="text" value={formData.duration_ur} onChange={(e) => setFormData({...formData, duration_ur: e.target.value})} dir="rtl" style={{ width: '100%', padding: '12px', background: '#0f172a', border: '1px solid #334155', color: '#fff', borderRadius: '6px' }} />
+                </div>
+              </div>
+
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px' }}>
+                <div>
+                  <label style={{ display: 'block', marginBottom: '5px', color: '#cbd5e1' }}>Courses Included (English) <span style={{color:'#64748b'}}>[Comma Separated]</span></label>
+                  <textarea required rows="3" value={formData.courses_en} onChange={(e) => setFormData({...formData, courses_en: e.target.value})} placeholder="Bsc Physics, Bsc Chemistry, Bsc Mathematics" style={{ width: '100%', padding: '12px', background: '#0f172a', border: '1px solid #334155', color: '#fff', borderRadius: '6px' }} />
+                </div>
+                <div>
+                  <label style={{ display: 'block', marginBottom: '5px', color: '#cbd5e1' }}>Courses Included (Urdu) <span style={{color:'#64748b'}}>[Comma Separated]</span></label>
+                  <textarea required rows="3" value={formData.courses_ur} onChange={(e) => setFormData({...formData, courses_ur: e.target.value})} dir="rtl" placeholder="بی ایس سی فزکس, بی ایس سی کیمسٹری" style={{ width: '100%', padding: '12px', background: '#0f172a', border: '1px solid #334155', color: '#fff', borderRadius: '6px' }} />
+                </div>
+              </div>
+
+              <div style={{ display: 'flex', gap: '15px', justifyContent: 'flex-end', marginTop: '10px' }}>
+                <button type="button" onClick={() => setIsModalOpen(false)} style={{ background: 'transparent', border: '1px solid #64748b', color: '#cbd5e1', padding: '10px 20px', borderRadius: '6px', cursor: 'pointer' }}>Cancel</button>
+                <button type="submit" disabled={isCmsSubmitting} style={{ background: '#38bdf8', color: '#0f172a', border: 'none', padding: '10px 30px', borderRadius: '6px', fontWeight: 'bold', cursor: 'pointer' }}>
+                  {isCmsSubmitting ? 'Syncing...' : 'Save Matrix Data'}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
     </div>
   );
 }
