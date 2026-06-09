@@ -1,160 +1,236 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/router';
+import Head from 'next/head';
 import { supabase } from '../utils/supabase';
 
-// Data objects moved outside to prevent Vercel Build Errors
-const streams = {
-  science: { en: "Science Courses (3 Years)", ur: "سائنس کورسز (3 سالہ)", items: ["Bsc Physics", "Bsc Chemistry", "Bsc Botany", "Bsc Zoology", "Bsc Computer science", "Bsc Mathematics", "Bsc PCM", "Bsc CBZ", "Bsc Forestry", "Bsc Dietician & Nutritionist", "Bsc Home Science", "Bsc Agriculture Science", "Bsc Horticulture", "Bsc Sericulture", "Bsc Oceanography", "Bsc Melsorology", "Bsc Arthopology", "Bsc Forensic Science", "Bsc Food technology", "Bsc Diary Technology", "Bsc Hotel Management", "Bsc Fashion Design", "Bsc Mass Communication", "Bsc Electronic Media", "Bsc Multimedia", "Bsc 3D Animation"] },
-  commerce: { en: "Commerce Courses", ur: "کامرس کورسز", items: ["CA Chartered Account", "CMA Cost Management Account", "CS Company Secretary (Foundation)", "B.Com Regular", "B.Com Taxation & Tax Procedure", "B.Com Travel & Tourism", "B.Com Bank Management", "B.Com Professional", "BBA / BBM Regular", "BFM Bachelor of Financial Management", "BMS", "BAF"] },
-  humanities: { en: "Humanities Courses", ur: "آرٹس اور ہیومینٹیز", items: ["Advertising", "BS General", "Criminology", "Economics", "Fine Arts", "Foreign languages", "Home Science", "Interior Design", "Journalism", "Library Science", "Physical Education", "Political Science", "Psychology", "Social Work", "Sociology", "Travel and Tourism"] },
-  management: { en: "Management Courses", ur: "مینجمنٹ کورسز", items: ["Business Management", "Bank Management", "Event Management", "Hospital Management", "Hotel Management", "Human Resources Management", "Logistics Management"] },
-  law: { en: "Law Courses (3/5 Years)", ur: "قانون کے کورسز (3/5 سالہ)", items: ["LLB", "BA + LLB", "B.Com + LLB", "BBM + LLB", "BBA + LLB"] },
-  medical: { en: "Medical Courses", ur: "میڈیکل کورسز", items: ["MBBS", "BUMS Unani", "BHMS Homeopathy", "BAMS Ayurveda", "BSMS Sidha", "BNYS Naturopathy", "BDS Dental", "BVSc Veterinary"] },
-  paramedical: { en: "Paramedical Courses", ur: "پیرامیڈیکل کورسز", items: ["Nursing", "Pharm D", "B.Pharm", "D.Pharm", "M. Pharm", "Anesthesia technical", "Cardiac Care technical", "Perfusion technology", "Cathllab technology", "Clinical Optometry", "Dental Hygiene", "Dental Mechanic", "Dental Technician", "Health Inspector", "Medical imaging & Tech", "Medical Lab technician", "Medical Records tech", "Medical X Ray Technician", "Nuclear Medicine Tech", "Occupational Therapist", "Operation theater Tech", "Ophthalmic Assistant", "PHYSIOTHERAPY", "Radiographic Assistant", "Radiotherapy Technician", "Rehabilitation Therapy", "Respiratory Therapy Tech", "Blood Transfusion Tech", "Bsc Renal Dialysis"] },
-  btech: { en: "B.Tech Engineering (4 Years)", ur: "بی ٹیک انجینئرنگ (4 سالہ)", items: ["Petro chemical Engineering", "Petroleum Engineering", "Civil Engineering", "Mechanical Engineering", "Aeronautical Engineering", "Aerospace Engineering", "Agricultural Engineering", "Architecture Engineering", "Automobile Engineering", "Automation & Robotics Eng.", "Avionics Engineering", "Biomedical Engineering", "Bio technological Eng.", "Chemical Engineering", "Ceramics Engineering", "Computer Science Engi.", "Electronics & Comm.Engi.", "Electrical & Electronics Engi.", "Environmental Science Engi.", "Information Science Engi", "Industrial Engineering", "Industrial Production Engi.", "Instrumental Technology", "Marine Engineering", "Medical Electronics Engi.", "Mining Engineering", "Manufacturing Science Engi.", "Naval Architecture Engi.", "Nanotechnology Engi.", "Polymer Technology Engi.", "Silk Polymar Engi.", "Carpet Technology Engi.", "Textile engineering", "Robotics", "Genetic"] },
-  polytechnic: { en: "Polytechnic (10th Class)", ur: "پولی ٹیکنک (دسویں کے بعد)", items: ["Civil engineering", "Mechanical engineering", "Automobile engineering", "Computer science engi.", "Electronics and communication Engineering", "Electrical engineering", "Petro chemical engineering"] },
-  newJobMgmt: { en: "New Job Opportunity Courses (2/3/5 Years)", ur: "جدید ملازمت کے مواقع والے کورسز", items: ["BBA / BBM", "BBA Aviation", "BBA Air Cargo Management", "BBA Aeronautical", "BBA Retail Marketing", "BBA Customer Care Management", "BBA Airline & Airport Management", "BBA Cargo Management", "BBA Office Management", "BBA Store Management", "BBA Mall Management", "BBA Logistics", "BCA SAP", "BCA Cloud Computing", "MBA Logistics", "MBA Aviation", "MBA HR", "MBA Management"] },
-  architecture: { en: "Architecture (5 Years + 2)", ur: "آرکیٹیکچر کورسز", items: ["B.Arch (NATA is Compulsory)", "M.Arch"] }
-};
-
-export default function AssessmentWizard() {
+export default function CareerAssessment() {
   const router = useRouter();
-  const [lang, setLang] = useState('en');
-  const [step, setStep] = useState(1);
+  
+  // States for dynamic workflow
+  const [questions, setQuestions] = useState([]);
+  const [currentStep, setCurrentStep] = useState(0); // 0 = Intro, 1 to N = Questions, N+1 = Lead Capture, N+2 = Result
+  const [answers, setAnswers] = useState([]); // Will store the selected streams (e.g., ['science', 'commerce', ...])
+  
+  // Lead Data
   const [email, setEmail] = useState('');
-  const [selectedStream, setSelectedStream] = useState('');
-  const [submitting, setSubmitting] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [calculatedStream, setCalculatedStream] = useState('');
+  
+  const [loading, setLoading] = useState(true);
 
-  const t = {
-    brand: "Samar Career Guidance",
-    founder: "Founder: Dr. Ashfaque Umar",
-    title: lang === 'ur' ? "محفوظ کیریئر اسیسمنٹ وزرڈ" : "Secure Academic Assessment Wizard",
-    emailLabel: lang === 'ur' ? "سیشن ٹوکن محفوظ کرنے کے لیے ای میل درج کریں:" : "Enter Email to Bind Secure Session Token:",
-    chooseStream: lang === 'ur' ? "تعلیمی شعبہ (Stream) منتخب کریں:" : "Select an Educational Stream to Explore:",
-    nextBtn: lang === 'ur' ? "اگلا مرحلہ" : "Continue Next",
-    backBtn: lang === 'ur' ? "پیچھے جائیں" : "Go Back",
-    homeBtn: lang === 'ur' ? "ہوم پیج پر جائیں" : "Return to Home Page",
-    finishBtn: lang === 'ur' ? "پروفائل اکاؤنٹ بنائیں" : "Submit & Create Account Profile"
-  };
-
+  // Fetch Questions from Supabase (Only active ones)
   useEffect(() => {
-    if (router.isReady && router.query.search) {
-      const query = decodeURIComponent(router.query.search).toLowerCase();
-      for (const [streamKey, streamVal] of Object.entries(streams)) {
-        const matches = streamVal.items.some(item => item.toLowerCase().includes(query));
-        if (matches) {
-          setSelectedStream(streamKey);
-          setStep(3);
-          break;
-        }
-      }
-    }
-  }, [router.isReady, router.query.search]);
+    const fetchQuestions = async () => {
+      const { data, error } = await supabase
+        .from('diagnostic_questions')
+        .select('*')
+        .eq('is_active', true)
+        .order('created_at', { ascending: true });
 
-  const handleSubmit = async () => {
-    if (!email) {
-      const inputEmail = prompt(lang === 'ur' ? "ڈیٹا محفوظ کرنے کے لیے ای میل درج کریں:" : "Please provide your Email to store validation data:");
-      if (inputEmail && inputEmail.includes('@')) {
-        const cleanEmail = inputEmail.trim().toLowerCase();
-        setEmail(cleanEmail);
-        executeDbInsert(cleanEmail, selectedStream);
-      } else {
-        alert(lang === 'ur' ? "درست ای میل لازمی ہے!" : "Valid Email is required.");
-      }
-      return;
+      if (data) setQuestions(data);
+      if (error) console.error("Error fetching questions:", error);
+      setLoading(false);
+    };
+    fetchQuestions();
+  }, []);
+
+  // Handle Option Click
+  const handleOptionSelect = (selectedStream) => {
+    const newAnswers = [...answers, selectedStream];
+    setAnswers(newAnswers);
+    
+    // Move to next question or lead capture form
+    if (currentStep < questions.length) {
+      setCurrentStep(currentStep + 1);
     }
-    executeDbInsert(email.trim().toLowerCase(), selectedStream);
   };
 
-  const executeDbInsert = async (userEmail, targetStream) => {
-    if (!userEmail || !targetStream) return;
-    setSubmitting(true);
-    try {
-      const { data: existingEntries } = await supabase.from('user_assessments').select('email').eq('email', userEmail);
-      if (existingEntries && existingEntries.length > 0) {
-        alert(lang === 'ur' ? "یہ ای میل پہلے سے موجود ہے!" : "Error: Email already exists.");
-        router.push(`/profile?email=${encodeURIComponent(userEmail)}`);
-        setSubmitting(false);
-        return;
-      }
-      const { error: insertError } = await supabase.from('user_assessments').insert([{ email: userEmail, interest_area: targetStream, preferred_language: lang }]);
-      if (insertError) {
-        alert("Database Error: " + insertError.message);
-      } else {
-        router.push(`/profile?email=${encodeURIComponent(userEmail)}`);
-      }
-    } catch (err) { alert(err.message); }
-    setSubmitting(false);
+  // Calculate Result & Submit Lead
+  const handleFinalSubmit = async (e) => {
+    e.preventDefault();
+    setIsSubmitting(true);
+
+    // 1. Tally the scores (Which stream got the most selections?)
+    const streamCounts = answers.reduce((acc, stream) => {
+      acc[stream] = (acc[stream] || 0) + 1;
+      return acc;
+    }, {});
+
+    // Find the highest scoring stream
+    const targetStream = Object.keys(streamCounts).reduce((a, b) => streamCounts[a] > streamCounts[b] ? a : b);
+    setCalculatedStream(targetStream);
+
+    // 2. Save to Supabase (CRM)
+    const { error } = await supabase.from('user_assessments').insert([{
+      email: email,
+      interest_area: targetStream,
+      status: 'Completed' // or 'new' based on your DB rules
+    }]);
+
+    setIsSubmitting(false);
+
+    if (error) {
+      alert("Something went wrong! Please try again.");
+      console.error(error);
+    } else {
+      // Move to Result Step
+      setCurrentStep(questions.length + 2);
+    }
   };
+
+  if (loading) {
+    return (
+      <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh', background: '#0f172a', color: '#38bdf8' }}>
+        <h2>Loading Assessment...</h2>
+      </div>
+    );
+  }
 
   return (
-    <div style={{ width: '100%', minHeight: '100vh', backgroundColor: '#0f172a', backgroundImage: `radial-gradient(rgba(56, 189, 248, 0.15) 1px, transparent 1px), radial-gradient(rgba(56, 189, 248, 0.15) 1px, #0f172a 1px)`, backgroundSize: '24px 24px', display: 'flex', flexDirection: 'column', padding: '40px 5%', fontFamily: lang === 'ur' ? "'AlviNastaleeq', 'Tahoma', sans-serif" : "'Segoe UI', sans-serif", direction: lang === 'ur' ? 'rtl' : 'ltr' }}>
-      <style jsx global>{`
-        @font-face { font-family: 'AlviNastaleeq'; src: url('/alvi-nastaleeq.ttf') format('truetype'); }
-        .course-chip { display: inline-block; background: rgba(30, 41, 59, 0.8); border: 1px solid rgba(255,255,255,0.1); padding: 8px 14px; border-radius: 4px; font-size: 0.95rem; font-weight: 600; margin: 5px; color: #cbd5e1; }
-        .list-row { padding: 16px 20px; background: rgba(30, 41, 59, 0.6); border: 1px solid rgba(255,255,255,0.1); border-radius: 8px; margin-bottom: 12px; cursor: pointer; font-weight: bold; color: #cbd5e1; display: block; width: 100%; box-sizing: border-box; font-size: 1.05rem; }
-        .list-row:hover { border-color: #ff7a00; background-color: rgba(255,122,0,0.05); color: #fff; }
-        .list-row.selected { border-color: #38bdf8; background-color: #1e3a8a; color: #fff; }
-      `}</style>
+    <div style={{
+      fontFamily: "'Segoe UI', Roboto, sans-serif",
+      backgroundColor: '#0f172a', 
+      backgroundImage: `radial-gradient(rgba(56, 189, 248, 0.1) 1px, transparent 1px)`,
+      backgroundSize: '30px 30px', 
+      minHeight: '100vh', 
+      color: '#f8fafc', 
+      display: 'flex', 
+      justifyContent: 'center', 
+      alignItems: 'center', 
+      padding: '20px'
+    }}>
+      <Head>
+        <title>Career Discovery Assessment | Samar Guidance</title>
+      </Head>
 
-      <div style={{ width: '100%', maxWidth: '1200px', margin: '0 auto', background: 'rgba(15, 23, 42, 0.85)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '16px', padding: '40px', boxShadow: '0 20px 40px rgba(0,0,0,0.4)', display: 'flex', flexDirection: 'column', flex: 1 }}>
+      <div style={{
+        background: 'rgba(30, 41, 59, 0.85)',
+        backdropFilter: 'blur(10px)',
+        border: '1px solid rgba(56,189,248,0.3)',
+        borderRadius: '16px',
+        padding: '40px',
+        width: '100%',
+        maxWidth: '600px',
+        boxShadow: '0 20px 40px rgba(0,0,0,0.5)',
+        textAlign: 'center'
+      }}>
         
-        <header style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid rgba(255,255,255,0.1)', paddingBottom: '20px', marginBottom: '30px' }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
-            <img src="/logo.jpg" alt="Logo" style={{ width: '50px', height: '50px', borderRadius: '8px' }} />
-            <div>
-              <h3 style={{ margin: 0, color: '#38bdf8', fontSize: '1.4rem' }}>{t.brand}</h3>
-              <small style={{ color: '#ff7a00', fontWeight: 'bold' }}>{t.founder}</small>
+        {/* STEP 0: INTRODUCTION */}
+        {currentStep === 0 && (
+          <div>
+            <div style={{ fontSize: '3rem', marginBottom: '15px' }}>🚀</div>
+            <h1 style={{ color: '#fff', marginBottom: '10px' }}>Discover Your True Potential</h1>
+            <p style={{ color: '#94a3b8', marginBottom: '30px', lineHeight: '1.6' }}>
+              We won't test your memory. We will test your personality, problem-solving skills, and behavioral traits to suggest the absolute best career path for you.
+            </p>
+            {questions.length > 0 ? (
+              <button 
+                onClick={() => setCurrentStep(1)}
+                style={{ background: '#38bdf8', color: '#0f172a', border: 'none', padding: '15px 40px', borderRadius: '30px', fontSize: '1.1rem', fontWeight: 'bold', cursor: 'pointer', transition: '0.3s' }}
+              >
+                Start Assessment
+              </button>
+            ) : (
+              <p style={{ color: '#ef4444' }}>No questions available right now. Please contact the administrator.</p>
+            )}
+          </div>
+        )}
+
+        {/* STEP 1 to N: GAMIFIED QUESTIONS */}
+        {currentStep > 0 && currentStep <= questions.length && (
+          <div>
+            {/* Progress Bar */}
+            <div style={{ width: '100%', background: '#1e293b', borderRadius: '10px', height: '8px', marginBottom: '30px' }}>
+              <div style={{ width: `${(currentStep / questions.length) * 100}%`, background: '#38bdf8', height: '8px', borderRadius: '10px', transition: 'width 0.3s ease' }}></div>
+            </div>
+            
+            <h4 style={{ color: '#93c5fd', textTransform: 'uppercase', letterSpacing: '1px', marginBottom: '15px' }}>
+              Question {currentStep} of {questions.length}
+            </h4>
+            <h2 style={{ color: '#fff', marginBottom: '30px', fontSize: '1.4rem' }}>
+              {questions[currentStep - 1].q_text_en}
+            </h2>
+
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '15px' }}>
+              {/* Render the 4 dynamic options */}
+              {[1, 2, 3, 4].map((num) => (
+                <button
+                  key={num}
+                  onClick={() => handleOptionSelect(questions[currentStep - 1][`opt${num}_stream`])}
+                  style={{
+                    background: 'rgba(15, 23, 42, 0.6)',
+                    border: '1px solid rgba(56, 189, 248, 0.3)',
+                    color: '#e2e8f0',
+                    padding: '15px 20px',
+                    borderRadius: '12px',
+                    fontSize: '1rem',
+                    cursor: 'pointer',
+                    transition: 'all 0.2s ease',
+                    textAlign: 'left'
+                  }}
+                  onMouseOver={(e) => { e.currentTarget.style.background = 'rgba(56, 189, 248, 0.1)'; e.currentTarget.style.borderColor = '#38bdf8'; e.currentTarget.style.paddingLeft = '25px'; }}
+                  onMouseOut={(e) => { e.currentTarget.style.background = 'rgba(15, 23, 42, 0.6)'; e.currentTarget.style.borderColor = 'rgba(56, 189, 248, 0.3)'; e.currentTarget.style.paddingLeft = '20px'; }}
+                >
+                  {questions[currentStep - 1][`opt${num}_en`]}
+                </button>
+              ))}
             </div>
           </div>
-          <button onClick={() => setLang(lang === 'en' ? 'ur' : 'en')} style={{ padding: '8px 20px', background: '#ff7a00', border: 'none', color: '#fff', borderRadius: '8px', fontWeight: 'bold', cursor: 'pointer' }}>{lang === 'en' ? 'اردو' : 'English'}</button>
-        </header>
+        )}
 
-        <main style={{ flex: 1 }}>
-          {step === 1 && (
-            <div style={{ maxWidth: '600px', margin: '0 auto', paddingTop: '40px' }}>
-              <h2 style={{ fontSize: '2rem', color: '#fff', marginBottom: '30px' }}>{t.title}</h2>
-              <label style={{ display: 'block', marginBottom: '15px', color: '#94a3b8', fontSize: '1.1rem' }}>{t.emailLabel}</label>
-              <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} style={{ width: '100%', padding: '16px 20px', borderRadius: '8px', background: 'rgba(255,255,255,0.05)', color: '#fff', border: '1px solid rgba(255,255,255,0.2)', fontSize: '1.1rem', outline: 'none' }} />
-            </div>
-          )}
-
-          {step === 2 && (
-            <div style={{ maxWidth: '800px', margin: '0 auto' }}>
-              <h3 style={{ fontSize: '1.8rem', color: '#fff', marginBottom: '30px' }}>{t.chooseStream}</h3>
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '15px' }}>
-                {Object.keys(streams).map((key) => (
-                  <button key={key} onClick={() => setSelectedStream(key)} className={`list-row ${selectedStream === key ? 'selected' : ''}`} style={{ textAlign: lang === 'ur' ? 'right' : 'left' }}>
-                    {lang === 'ur' ? streams[key].ur : streams[key].en}
-                  </button>
-                ))}
-              </div>
-            </div>
-          )}
-
-          {step === 3 && selectedStream && (
-            <div>
-              <h3 style={{ fontSize: '1.8rem', color: '#38bdf8', marginBottom: '30px', borderBottom: '1px solid rgba(255,255,255,0.1)', paddingBottom: '15px' }}>
-                {lang === 'ur' ? streams[selectedStream].ur : streams[selectedStream].en}
-              </h3>
-              <div>
-                {streams[selectedStream].items.map((item) => <span key={item} className="course-chip">{item}</span>)}
-              </div>
-            </div>
-          )}
-        </main>
-
-        <footer style={{ marginTop: '50px', borderTop: '1px solid rgba(255,255,255,0.1)', paddingTop: '30px', display: 'flex', justifyContent: 'space-between' }}>
-          <div style={{ display: 'flex', gap: '15px' }}>
-            {step > 1 && <button onClick={() => setStep(step - 1)} style={{ padding: '12px 25px', background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.2)', color: '#cbd5e1', borderRadius: '8px', cursor: 'pointer', fontWeight: 'bold' }}>{t.backBtn}</button>}
-            <button onClick={() => router.push('/')} style={{ padding: '12px 25px', background: 'transparent', border: '1px solid #ef4444', color: '#ef4444', borderRadius: '8px', cursor: 'pointer', fontWeight: 'bold' }}>{t.homeBtn}</button>
+        {/* STEP N+1: LEAD CAPTURE (Gated Content) */}
+        {currentStep === questions.length + 1 && (
+          <div>
+             <div style={{ fontSize: '3rem', marginBottom: '15px' }}>🔒</div>
+             <h2 style={{ color: '#fff', marginBottom: '10px' }}>Analyzing Your Responses...</h2>
+             <p style={{ color: '#94a3b8', marginBottom: '30px' }}>
+               Your career profile is ready! Enter your email to unlock your AI-calculated target stream and send the report to our counselors.
+             </p>
+             
+             <form onSubmit={handleFinalSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+                <input 
+                  type="email" 
+                  placeholder="Enter your Email ID" 
+                  value={email} 
+                  onChange={(e) => setEmail(e.target.value)} 
+                  required 
+                  style={{ padding: '15px', borderRadius: '8px', border: '1px solid #38bdf8', background: '#0f172a', color: '#fff', fontSize: '1rem', textAlign: 'center' }}
+                />
+                <button 
+                  type="submit" 
+                  disabled={isSubmitting}
+                  style={{ background: '#10b981', color: '#fff', border: 'none', padding: '15px', borderRadius: '8px', fontSize: '1.1rem', fontWeight: 'bold', cursor: 'pointer' }}
+                >
+                  {isSubmitting ? 'Unlocking...' : 'Unlock My Result'}
+                </button>
+             </form>
           </div>
-          {step < 3 ? (
-            <button onClick={() => { if (step === 1 && !email) { alert('Email is required!'); return; } setStep(step + 1); }} style={{ padding: '12px 35px', background: '#38bdf8', color: '#0f172a', border: 'none', borderRadius: '8px', cursor: 'pointer', fontWeight: 'bold', fontSize: '1.1rem' }}>{t.nextBtn}</button>
-          ) : (
-            <button onClick={handleSubmit} disabled={submitting} style={{ padding: '12px 40px', background: '#10b981', color: '#fff', border: 'none', borderRadius: '8px', cursor: 'pointer', fontWeight: 'bold', fontSize: '1.1rem' }}>{submitting ? '...' : t.finishBtn}</button>
-          )}
-        </footer>
+        )}
+
+        {/* STEP N+2: FINAL RESULT & CTA */}
+        {currentStep === questions.length + 2 && (
+          <div>
+            <div style={{ fontSize: '4rem', marginBottom: '15px', color: '#10b981' }}>🎯</div>
+            <h2 style={{ color: '#fff', marginBottom: '10px' }}>Assessment Complete!</h2>
+            <p style={{ color: '#94a3b8', marginBottom: '20px' }}>Based on your behavioral and logical mapping, your strongest aptitude aligns with:</p>
+            
+            <div style={{ background: 'rgba(56,189,248,0.1)', border: '1px dashed #38bdf8', borderRadius: '12px', padding: '20px', marginBottom: '30px' }}>
+               <h1 style={{ color: '#38bdf8', textTransform: 'uppercase', margin: 0 }}>{calculatedStream}</h1>
+            </div>
+
+            <p style={{ color: '#cbd5e1', fontSize: '0.9rem', marginBottom: '30px' }}>
+              Your profile has been saved. Dr. Ashfaque Umar's team will review your report and guide you further.
+            </p>
+
+            <button 
+              onClick={() => router.push(`/categories?search=${calculatedStream}`)}
+              style={{ background: '#3b82f6', color: '#fff', border: 'none', padding: '12px 30px', borderRadius: '8px', fontSize: '1rem', fontWeight: 'bold', cursor: 'pointer' }}
+            >
+              Explore {calculatedStream} Courses
+            </button>
+          </div>
+        )}
+
       </div>
     </div>
   );
