@@ -40,10 +40,12 @@ export default function AdminDashboard() {
   const [isMobile, setIsMobile] = useState(false);
   const [session, setSession] = useState(null);
 
+  // AUTH STATE (New OTP System)
   const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
+  const [otp, setOtp] = useState('');
+  const [otpSent, setOtpSent] = useState(false);
+  const [loadingAuth, setLoadingAuth] = useState(false);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
-  const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
 
   const [adminTab, setAdminTab] = useState('crm'); 
@@ -53,7 +55,7 @@ export default function AdminDashboard() {
   const [searchTerm, setSearchTerm] = useState('');
   const [filterStream, setFilterStream] = useState('');
   const [statusMap, setStatusMap] = useState({});
-  const [selectedStudent, setSelectedStudent] = useState(null); // For Report Modal
+  const [selectedStudent, setSelectedStudent] = useState(null);
 
   // CMS LIVE DATABASE STATE
   const [matrixContent, setMatrixContent] = useState([]);
@@ -81,39 +83,113 @@ export default function AdminDashboard() {
   };
   const [qnaFormData, setQnaFormData] = useState(blankQnaForm);
 
-  const ALLOWED_ADMIN_EMAILS = [
-    "ashfaqueumar@gmail.com", "ashfaqueumarsir@gmail.com", "mohammedjunaid8484@gmail.com", "mohammedjunaid5463@gmail.com"
-  ];
-  const MASTER_PASSWORD = "samar@2026";
-
+  // INITIAL LOAD & AUTO-LOGIN CHECK
   useEffect(() => {
-    supabase.auth.getSession().then(({ data: { session } }) => setSession(session));
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => setSession(session));
     const handleResize = () => setIsMobile(window.innerWidth <= 1024);
     handleResize();
     window.addEventListener('resize', handleResize);
-    return () => { window.removeEventListener('resize', handleResize); subscription.unsubscribe(); };
+
+    const checkSession = async () => {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (session) {
+        // Verify if the logged-in session belongs to an authorized admin
+        const { data: adminUser } = await supabase
+          .from('admin_users')
+          .select('email')
+          .eq('email', session.user.email)
+          .single();
+          
+        if (adminUser) {
+          setSession(session);
+          setIsAuthenticated(true);
+          fetchData();
+          fetchCMSData();
+          fetchQnaData();
+        } else {
+          await supabase.auth.signOut(); // Kick out unauthorized users
+        }
+      }
+    };
+    checkSession();
+
+    return () => { window.removeEventListener('resize', handleResize); };
   }, []);
 
-  const handleLogout = async () => { await supabase.auth.signOut(); router.push('/'); };
+  const handleLogout = async () => { 
+    await supabase.auth.signOut(); 
+    setIsAuthenticated(false);
+    setOtpSent(false);
+    setOtp('');
+    setEmail('');
+    router.push('/'); 
+  };
+  
   const toggleLanguage = () => setLang(prev => prev === 'en' ? 'ur' : 'en');
 
-  const handleAdminLogin = (e) => {
+  // --- NEW SECURE OTP LOGIN FLOW ---
+  const handleSendOtp = async (e) => {
     e.preventDefault();
     setError('');
+    setLoadingAuth(true);
     const cleanEmail = email.trim().toLowerCase();
-    if (!ALLOWED_ADMIN_EMAILS.includes(cleanEmail)) {
-      setError("Access Denied! Your email is not authorized for Admin Access."); return;
+
+    try {
+      // 1. Check if email exists in our secure admin_users table
+      const { data: adminUser, error: dbError } = await supabase
+        .from('admin_users')
+        .select('email')
+        .eq('email', cleanEmail)
+        .single();
+
+      if (dbError || !adminUser) {
+        setError("Access Denied! Your email is not authorized for Admin Access.");
+        setLoadingAuth(false);
+        return;
+      }
+
+      // 2. If authorized, trigger Supabase OTP Email
+      const { error: otpError } = await supabase.auth.signInWithOtp({
+        email: cleanEmail,
+      });
+
+      if (otpError) throw otpError;
+
+      setOtpSent(true);
+    } catch (err) {
+      setError(err.message || "Failed to send OTP. Please check your network.");
     }
-    if (password !== MASTER_PASSWORD) {
-      setError("Incorrect Password! Please try again."); return;
-    }
-    setIsAuthenticated(true);
-    fetchData();
-    fetchCMSData();
-    fetchQnaData();
+    setLoadingAuth(false);
   };
 
+  const handleVerifyOtp = async (e) => {
+    e.preventDefault();
+    setError('');
+    setLoadingAuth(true);
+    const cleanEmail = email.trim().toLowerCase();
+
+    try {
+      const { data, error: verifyError } = await supabase.auth.verifyOtp({
+        email: cleanEmail,
+        token: otp,
+        type: 'email'
+      });
+
+      if (verifyError) throw verifyError;
+
+      if (data.session) {
+        setSession(data.session);
+        setIsAuthenticated(true);
+        fetchData();
+        fetchCMSData();
+        fetchQnaData();
+      }
+    } catch (err) {
+      setError("Invalid or expired OTP. Please try again.");
+    }
+    setLoadingAuth(false);
+  };
+
+  // --- DATA FETCHING ---
   const fetchData = async () => {
     setLoading(true);
     try {
@@ -259,7 +335,7 @@ export default function AdminDashboard() {
         .logout-btn { color: #ef4444; } .logout-btn:hover { background: rgba(239, 68, 68, 0.15); border-color: #ef4444; }
         .mobile-toggle { display: none; background: transparent; border: none; color: #fff; font-size: 2rem; }
         .admin-main { flex: 1; display: flex; flex-direction: column; align-items: center; padding: 40px 5%; width: 100%; }
-        .admin-card { background: rgba(30, 41, 59, 0.85); border: 1px solid rgba(56,189,248,0.3); border-radius: 16px; padding: 40px; width: 100%; max-width: 480px; text-align: center; margin: 0 auto; }
+        .admin-card { background: rgba(30, 41, 59, 0.85); border: 1px solid rgba(56,189,248,0.3); border-radius: 16px; padding: 40px; width: 100%; max-width: 480px; text-align: center; margin: 0 auto; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
         .dashboard-container { width: 100%; max-width: 1400px; margin: 0 auto; }
         .admin-tabs { display: flex; gap: 15px; margin-bottom: 30px; flex-wrap: wrap; }
         .tab-btn { flex: 1; padding: 15px; border-radius: 10px; font-weight: bold; cursor: pointer; border: 1px solid rgba(56, 189, 248, 0.3); transition: 0.3s; font-family: inherit; font-size: 1rem; }
@@ -305,7 +381,7 @@ export default function AdminDashboard() {
                 <span className="lang-label" style={{ color: lang === 'en' ? '#fff' : '#94a3b8' }}>EN</span>
                 <span className="lang-label" style={{ color: lang === 'ur' ? '#fff' : '#94a3b8' }}>UR</span>
             </div>
-            {session && <button onClick={handleLogout} className="auth-icon-btn logout-btn"><i className='bx bx-log-out'></i></button>}
+            {isAuthenticated && <button onClick={handleLogout} className="auth-icon-btn logout-btn"><i className='bx bx-log-out'></i></button>}
             <button className="mobile-toggle" onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}>
               {isMobileMenuOpen ? <i className='bx bx-x'></i> : <i className='bx bx-menu'></i>}
             </button>
@@ -334,21 +410,37 @@ export default function AdminDashboard() {
           <p style={{ color: '#94a3b8', margin: 0, fontSize: '1rem', fontFamily: 'inherit' }}>{t[lang].adminSub}</p>
         </header>
 
+        {/* --- NEW OTP LOGIN SYSTEM UI --- */}
         {!isAuthenticated ? (
           <div className="admin-card">
             <h2 style={{ color: '#fff', marginBottom: '15px', fontSize: '1.5rem', fontFamily: 'inherit' }}>Secure Authorization</h2>
-            {error && <div className="alert-box alert-error" style={{color:'#ef4444', marginBottom:'10px'}}><i className='bx bx-error-circle'></i> {error}</div>}
-            <form onSubmit={handleAdminLogin}>
-              <div style={{ marginBottom: '15px', textAlign: 'left' }} dir="ltr">
-                <label style={{ color: '#93c5fd', display: 'block', marginBottom: '5px' }}>Admin Email</label>
-                <input type="email" style={{ width: '100%', padding: '12px', borderRadius: '8px', background: 'rgba(15,23,42,0.6)', border: '1px solid #38bdf8', color: '#fff' }} value={email} onChange={(e) => setEmail(e.target.value)} required />
-              </div>
-              <div style={{ marginBottom: '20px', textAlign: 'left' }} dir="ltr">
-                <label style={{ color: '#93c5fd', display: 'block', marginBottom: '5px' }}>Security Key</label>
-                <input type="password" style={{ width: '100%', padding: '12px', borderRadius: '8px', background: 'rgba(15,23,42,0.6)', border: '1px solid #38bdf8', color: '#fff' }} value={password} onChange={(e) => setPassword(e.target.value)} required />
-              </div>
-              <button type="submit" style={{ width: '100%', padding: '12px', background: '#3b82f6', color: '#fff', border: 'none', borderRadius: '8px', fontWeight: 'bold', fontSize: '1rem', cursor: 'pointer' }}>Verify & Access</button>
-            </form>
+            {error && <div style={{ background: 'rgba(239,68,68,0.1)', color: '#ef4444', border: '1px solid #ef4444', padding: '10px', borderRadius: '8px', marginBottom: '15px' }}><i className='bx bx-error-circle'></i> {error}</div>}
+            
+            {!otpSent ? (
+                <form onSubmit={handleSendOtp}>
+                  <div style={{ marginBottom: '20px', textAlign: 'left' }} dir="ltr">
+                    <label style={{ color: '#93c5fd', display: 'block', marginBottom: '5px' }}>Authorized Admin Email</label>
+                    <input type="email" style={{ width: '100%', padding: '12px', borderRadius: '8px', background: 'rgba(15,23,42,0.6)', border: '1px solid #38bdf8', color: '#fff', fontSize: '1rem' }} placeholder="Enter registered email" value={email} onChange={(e) => setEmail(e.target.value)} required />
+                  </div>
+                  <button type="submit" disabled={loadingAuth} style={{ width: '100%', padding: '14px', background: '#3b82f6', color: '#fff', border: 'none', borderRadius: '8px', fontWeight: 'bold', fontSize: '1rem', cursor: 'pointer', display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '8px', transition: '0.3s' }}>
+                    {loadingAuth ? <><i className='bx bx-loader-alt bx-spin'></i> Verifying...</> : 'Send Access OTP'}
+                  </button>
+                </form>
+            ) : (
+                <form onSubmit={handleVerifyOtp}>
+                  <div style={{ marginBottom: '20px', textAlign: 'left' }} dir="ltr">
+                    <label style={{ color: '#10b981', display: 'block', marginBottom: '5px', fontWeight: 'bold' }}>Enter 6-Digit Security PIN</label>
+                    <p style={{color: '#94a3b8', fontSize: '0.85rem', marginBottom: '15px'}}>OTP sent securely to <strong>{email}</strong></p>
+                    <input type="text" maxLength="6" style={{ width: '100%', padding: '15px', borderRadius: '8px', background: 'rgba(15,23,42,0.6)', border: '1px solid #10b981', color: '#fff', fontSize: '1.5rem', textAlign: 'center', letterSpacing: '8px', fontWeight: 'bold' }} placeholder="••••••" value={otp} onChange={(e) => setOtp(e.target.value)} required />
+                  </div>
+                  <button type="submit" disabled={loadingAuth} style={{ width: '100%', padding: '14px', background: '#10b981', color: '#fff', border: 'none', borderRadius: '8px', fontWeight: 'bold', fontSize: '1rem', cursor: 'pointer', marginBottom: '15px', display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '8px' }}>
+                    {loadingAuth ? <><i className='bx bx-loader-alt bx-spin'></i> Authenticating...</> : 'Verify & Access Dashboard'}
+                  </button>
+                  <button type="button" onClick={() => {setOtpSent(false); setOtp(''); setError('');}} style={{ width: '100%', padding: '10px', background: 'transparent', color: '#94a3b8', border: '1px solid #475569', borderRadius: '8px', fontSize: '0.9rem', cursor: 'pointer', transition: '0.3s' }}>
+                    Change Email
+                  </button>
+                </form>
+            )}
           </div>
         ) : (
           <div className="dashboard-container">
@@ -496,7 +588,6 @@ export default function AdminDashboard() {
                 <div><label style={{ color: '#cbd5e1' }}>Question (Urdu)</label><textarea required rows="2" value={qnaFormData.q_text_ur} onChange={(e) => setQnaFormData({...qnaFormData, q_text_ur: e.target.value})} dir="rtl" style={{ width: '100%', padding: '10px', background: '#0f172a', border: '1px solid #334155', color: '#fff', borderRadius: '6px', marginTop: '5px' }} /></div>
               </div>
 
-              {/* Options 1 to 4 with Stream Mapping */}
               {[1, 2, 3, 4].map(num => (
                 <div key={num} style={{ background: '#0f172a', padding: '15px', borderRadius: '8px', border: '1px solid #334155' }}>
                   <h4 style={{ margin: '0 0 10px 0', color: '#38bdf8' }}>Option {num}</h4>
@@ -530,7 +621,6 @@ export default function AdminDashboard() {
                     <input required placeholder="Title (EN)" value={formData.title_en} onChange={(e) => setFormData({...formData, title_en: e.target.value})} style={{ flex: 1, padding: '10px', background: '#0f172a', border: '1px solid #334155', color: '#fff', borderRadius: '6px' }} />
                     <input required placeholder="Title (UR)" value={formData.title_ur} onChange={(e) => setFormData({...formData, title_ur: e.target.value})} dir="rtl" style={{ flex: 1, padding: '10px', background: '#0f172a', border: '1px solid #334155', color: '#fff', borderRadius: '6px' }} />
                 </div>
-                {/* Save button logic kept identical, truncated form visual for brevity */}
                 <div style={{ display: 'flex', gap: '15px', justifyContent: 'flex-end', marginTop: '10px' }}>
                     <button type="button" onClick={() => setIsModalOpen(false)} style={{ background: 'transparent', border: '1px solid #64748b', color: '#cbd5e1', padding: '10px 20px', borderRadius: '6px', cursor: 'pointer' }}>Cancel</button>
                     <button type="submit" disabled={isCmsSubmitting} style={{ background: '#38bdf8', color: '#0f172a', border: 'none', padding: '10px 30px', borderRadius: '6px', fontWeight: 'bold', cursor: 'pointer' }}>{isCmsSubmitting ? 'Syncing...' : 'Save Matrix'}</button>
