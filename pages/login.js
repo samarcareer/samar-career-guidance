@@ -3,7 +3,7 @@ import { useRouter } from 'next/router';
 import Head from 'next/head';
 import { supabase } from '../utils/supabase';
 
-// --- ERROR BOUNDARY FOR MAXIMUM STABILITY ---
+// --- ERROR BOUNDARY ---
 class ErrorBoundary extends Component {
   constructor(props) { super(props); this.state = { hasError: false }; }
   static getDerivedStateFromError(error) { return { hasError: true }; }
@@ -23,7 +23,6 @@ const t = {
     sendOtp: "Send Secure OTP", verifyOtp: "Verify & Login",
     otpLabel: "Enter 6-Digit Security PIN", otpSentTo: "OTP securely sent to",
     changeEmail: "Change Email",
-    // Overlay Texts
     helloFriend: "Hello, Future Leader!",
     helloDesc: "Enter your personal details and start your career discovery journey with us.",
     welcomeBack: "Welcome Back!",
@@ -38,7 +37,6 @@ const t = {
     sendOtp: "او ٹی پی بھیجیں", verifyOtp: "تصدیق کریں",
     otpLabel: "6 ہندسوں کا پن درج کریں", otpSentTo: "او ٹی پی بھیج دیا گیا ہے",
     changeEmail: "ای میل تبدیل کریں",
-    // Overlay Texts
     helloFriend: "خوش آمدید، مستقبل کے لیڈر!",
     helloDesc: "اپنی ذاتی تفصیلات درج کریں اور ہمارے ساتھ کیریئر دریافت کرنے کا سفر شروع کریں۔",
     welcomeBack: "خوش آمدید!",
@@ -52,8 +50,9 @@ export default function StudentLogin() {
   const [lang, setLang] = useState('en');
   
   // UI States
-  const [isSignUp, setIsSignUp] = useState(false); // Controls the slider
+  const [isSignUp, setIsSignUp] = useState(false); 
   const [step, setStep] = useState('form'); // 'form' or 'otp'
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   
   // Input States
   const [email, setEmail] = useState('');
@@ -62,10 +61,9 @@ export default function StudentLogin() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
 
-  // Check if already logged in
   useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => {
-      if (session) router.push('/assessment'); // Redirect to profile/assessment if logged in
+      if (session) router.push('/assessment'); 
     });
   }, []);
 
@@ -79,17 +77,14 @@ export default function StudentLogin() {
     const cleanEmail = email.trim().toLowerCase();
 
     try {
-      // In Supabase, signInWithOtp works for both Login and Signup.
-      // If user doesn't exist, it creates them. We can pass custom metadata during signup.
       const authOptions = isSignUp ? { data: { full_name: fullName } } : {};
-      
       const { error: otpError } = await supabase.auth.signInWithOtp({ 
         email: cleanEmail,
         options: authOptions
       });
 
       if (otpError) throw otpError;
-      setStep('otp'); // Lock slider and move to OTP step
+      setStep('otp'); 
 
     } catch (err) {
       setError(err.message || "Failed to send OTP. Try again.");
@@ -110,7 +105,7 @@ export default function StudentLogin() {
       if (verifyError) throw verifyError;
       
       if (data?.session) {
-        router.push('/assessment'); // Success! Redirect to profile/assessment
+        router.push('/assessment'); 
       }
     } catch (err) {
       setError("Invalid or expired OTP. Please try again.");
@@ -131,7 +126,7 @@ export default function StudentLogin() {
           <title>Student Login | {t[lang].brand}</title>
         </Head>
 
-        {/* CSS FOR PURE CSS SLIDING ANIMATION (NO LIBRARIES NEEDED) */}
+        {/* --- STRICT PURE CSS FOR UI ISOLATION --- */}
         <style dangerouslySetInnerHTML={{__html: `
           * { box-sizing: border-box; margin: 0; padding: 0; }
           .nav-top-row { display: flex; justify-content: space-between; align-items: center; padding: 15px 5%; background: rgba(30, 64, 175, 0.7); backdrop-filter: blur(20px); border-bottom: 1px solid rgba(147, 197, 253, 0.2); }
@@ -139,50 +134,46 @@ export default function StudentLogin() {
           .lang-toggle-indicator { position: absolute; top: 4px; left: ${lang === 'en' ? '4px' : '40px'}; width: 34px; height: 26px; background: #38bdf8; border-radius: 14px; transition: left 0.3s cubic-bezier(0.4, 0.0, 0.2, 1); }
           .lang-label { flex: 1; text-align: center; font-size: 0.75rem; font-weight: 700; color: #fff; z-index: 1; user-select: none; font-family: 'Segoe UI', sans-serif; }
           
-          /* Custom Scrollbar */
-          ::-webkit-scrollbar { width: 8px; }
-          ::-webkit-scrollbar-track { background: #0f172a; }
-          ::-webkit-scrollbar-thumb { background: #38bdf8; border-radius: 10px; }
-          
           .input-field { width: 100%; padding: 12px 15px; border-radius: 8px; background: rgba(15,23,42,0.6); border: 1px solid rgba(56,189,248,0.3); color: #fff; font-size: 1rem; margin-bottom: 15px; outline: none; transition: 0.3s; font-family: inherit; }
           .input-field:focus { border-color: #38bdf8; box-shadow: 0 0 10px rgba(56,189,248,0.2); }
           
           .auth-btn { width: 100%; padding: 14px; background: #3b82f6; color: #fff; border: none; border-radius: 8px; font-weight: bold; font-size: 1rem; cursor: pointer; transition: 0.3s; font-family: inherit; display: flex; justify-content: center; align-items: center; gap: 8px; }
           .auth-btn:hover { background: #2563eb; transform: translateY(-2px); box-shadow: 0 10px 20px rgba(59, 130, 246, 0.4); }
           
-          /* --- THE DOUBLE SLIDER LOGIC --- */
-          .auth-container { position: relative; width: 100%; max-width: 900px; height: 550px; background: rgba(30, 41, 59, 0.85); backdrop-filter: blur(10px); border: 1px solid rgba(56,189,248,0.3); border-radius: 20px; box-shadow: 0 25px 50px rgba(0,0,0,0.5); overflow: hidden; display: flex; }
+          /* MASTER CONTAINER */
+          .auth-container { position: relative; width: 100%; max-width: 900px; height: 550px; background: rgba(30, 41, 59, 0.85); backdrop-filter: blur(10px); border: 1px solid rgba(56,189,248,0.3); border-radius: 20px; box-shadow: 0 25px 50px rgba(0,0,0,0.5); overflow: hidden; margin: 0 auto; }
           
+          /* --- VIEW ISOLATION LOGIC --- */
+          .mobile-view { display: none; }
+          .desktop-view { display: block; height: 100%; width: 100%; position: relative; }
+          
+          @media (max-width: 850px) {
+            .mobile-view { display: block; width: 100%; }
+            .desktop-view { display: none !important; }
+            .auth-container { background: transparent; border: none; box-shadow: none; height: auto; min-height: 600px; overflow: visible; }
+            .mobile-card { background: rgba(30, 41, 59, 0.85); border: 1px solid rgba(56,189,248,0.3); border-radius: 16px; padding: 30px; box-shadow: 0 10px 25px rgba(0,0,0,0.5); width: 100%; }
+          }
+
+          /* --- DESKTOP DOUBLE SLIDER LOGIC --- */
           .form-container { position: absolute; top: 0; height: 100%; width: 50%; transition: all 0.6s ease-in-out; display: flex; flex-direction: column; justify-content: center; padding: 40px; }
           
-          /* SIGN IN FORM (LEFT SIDE) */
           .sign-in-container { left: 0; z-index: 2; opacity: ${isSignUp ? '0' : '1'}; transform: ${isSignUp ? 'translateX(100%)' : 'translateX(0)'}; pointer-events: ${isSignUp ? 'none' : 'auto'}; }
-          
-          /* SIGN UP FORM (RIGHT SIDE) */
           .sign-up-container { left: 0; z-index: 1; opacity: ${isSignUp ? '1' : '0'}; transform: ${isSignUp ? 'translateX(0)' : 'translateX(-100%)'}; pointer-events: ${isSignUp ? 'auto' : 'none'}; }
 
-          /* THE BLUE OVERLAY PANEL */
           .overlay-container { position: absolute; top: 0; left: 50%; width: 50%; height: 100%; overflow: hidden; transition: transform 0.6s ease-in-out; z-index: 100; transform: ${isSignUp ? 'translateX(-100%)' : 'translateX(0)'}; }
           
-          /* OVERLAY INNER BACKGROUND */
           .overlay { background: linear-gradient(135deg, #1e40af, #38bdf8); background-repeat: no-repeat; background-size: cover; color: #fff; position: relative; left: -100%; height: 100%; width: 200%; transform: ${isSignUp ? 'translateX(50%)' : 'translateX(0)'}; transition: transform 0.6s ease-in-out; }
           
           .overlay-panel { position: absolute; display: flex; align-items: center; justify-content: center; flex-direction: column; padding: 0 40px; text-align: center; top: 0; height: 100%; width: 50%; transform: translateX(0); transition: transform 0.6s ease-in-out; }
-          
           .overlay-left { transform: ${isSignUp ? 'translateX(0)' : 'translateX(-20%)'}; }
           .overlay-right { right: 0; transform: ${isSignUp ? 'translateX(20%)' : 'translateX(0)'}; }
           
           .ghost-btn { background: transparent; border: 2px solid #fff; color: #fff; padding: 12px 35px; border-radius: 30px; font-weight: bold; font-size: 1rem; cursor: pointer; transition: 0.3s; margin-top: 20px; font-family: inherit; }
           .ghost-btn:hover { background: #fff; color: #1e40af; }
-
-          /* Mobile Stacking View */
-          @media (max-width: 768px) {
-            .auth-container { flex-direction: column; height: auto; min-height: 600px; display: block; overflow: visible; background: transparent; border: none; box-shadow: none; }
-            .form-container { width: 100%; position: relative; height: auto; padding: 20px; opacity: 1; transform: translateX(0) !important; z-index: 10; pointer-events: auto; }
-            .overlay-container { display: none; /* Hide slider on mobile, use simple conditional rendering instead */ }
-            .mobile-hide { display: none !important; }
-            .mobile-card { background: rgba(30, 41, 59, 0.85); border: 1px solid rgba(56,189,248,0.3); border-radius: 16px; padding: 30px; margin-top: 20px; box-shadow: 0 10px 25px rgba(0,0,0,0.5); }
-          }
+          
+          .mobile-menu { display: none; flex-direction: column; background: rgba(30, 64, 175, 0.95); position: absolute; width: 100%; top: 70px; left: 0; z-index: 1000; padding: 15px; border-bottom: 1px solid #38bdf8; }
+          .mobile-menu.open { display: flex; }
+          .mobile-link { color: #fff; padding: 10px; text-decoration: none; font-size: 1.1rem; border-bottom: 1px solid rgba(255,255,255,0.1); }
         `}} />
 
         {/* HEADER */}
@@ -193,102 +184,132 @@ export default function StudentLogin() {
               <h1 style={{ margin: 0, color: '#fff', fontSize: '1.2rem', fontWeight: '900', fontFamily: "'Segoe UI', sans-serif" }}>{t[lang].brand}</h1>
             </div>
           </div>
-          <div className="lang-toggle-container" onClick={toggleLanguage}>
-              <div className="lang-toggle-indicator"></div>
-              <span className="lang-label" style={{ color: lang === 'en' ? '#fff' : '#94a3b8' }}>EN</span>
-              <span className="lang-label" style={{ color: lang === 'ur' ? '#fff' : '#94a3b8' }}>UR</span>
+          <div style={{ display: 'flex', gap: '15px', alignItems: 'center' }}>
+            <div className="lang-toggle-container" onClick={toggleLanguage}>
+                <div className="lang-toggle-indicator"></div>
+                <span className="lang-label" style={{ color: lang === 'en' ? '#fff' : '#94a3b8' }}>EN</span>
+                <span className="lang-label" style={{ color: lang === 'ur' ? '#fff' : '#94a3b8' }}>UR</span>
+            </div>
+            <button style={{ background: 'transparent', border: 'none', color: '#fff', fontSize: '1.8rem', cursor: 'pointer' }} className="mobile-only-btn" onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}>
+              <i className={isMobileMenuOpen ? 'bx bx-x' : 'bx bx-menu'}></i>
+            </button>
           </div>
         </nav>
+
+        {/* MOBILE MENU DROPDOWN */}
+        <div className={`mobile-menu ${isMobileMenuOpen ? 'open' : ''}`}>
+          <a className="mobile-link" onClick={() => router.push('/')}>{t[lang].navHome}</a>
+          <a className="mobile-link" onClick={() => router.push('/about')}>{t[lang].navAbout}</a>
+          <a className="mobile-link" onClick={() => router.push('/assessment')}>{t[lang].navAssess}</a>
+        </div>
 
         {/* MAIN AUTH SECTION */}
         <main style={{ flex: 1, display: 'flex', justifyContent: 'center', alignItems: 'center', padding: '20px' }}>
           
           <div className="auth-container">
             
-            {/* ----------------- MOBILE VIEW ONLY ----------------- */}
-            {/* On mobile, we ditch the slider for a smooth stacked view */}
-            <div className="hidden md:hidden w-full" style={{ display: 'block' }}>
-               <div className="mobile-card" style={{ display: (isSignUp && step === 'form') ? 'block' : 'none' }}>
-                  <h2 style={{ color: '#fff', fontSize: '2rem', marginBottom: '20px' }}>{t[lang].signUp}</h2>
+            {/* =========================================
+                MOBILE VIEW (Stacked Cards)
+            ========================================== */}
+            <div className="mobile-view">
+               {step === 'form' ? (
+                 <>
+                   {isSignUp ? (
+                     <div className="mobile-card">
+                        <h2 style={{ color: '#fff', fontSize: '2rem', marginBottom: '20px' }}>{t[lang].signUp}</h2>
+                        {error && <p style={{ color: '#ef4444', marginBottom: '15px', fontSize:'0.9rem' }}>{error}</p>}
+                        <form onSubmit={handleSendOtp}>
+                          <input type="text" className="input-field" placeholder={t[lang].nameLabel} value={fullName} onChange={(e)=>setFullName(e.target.value)} required />
+                          <input type="email" className="input-field" placeholder={t[lang].emailLabel} value={email} onChange={(e)=>setEmail(e.target.value)} required dir="ltr" />
+                          <button className="auth-btn" type="submit" disabled={loading}>{loading ? <i className='bx bx-loader-alt bx-spin'></i> : t[lang].sendOtp}</button>
+                        </form>
+                        <p style={{ color: '#94a3b8', marginTop: '20px', textAlign: 'center', fontSize: '0.9rem' }}>Already have an account? <span style={{ color: '#38bdf8', cursor: 'pointer', fontWeight:'bold' }} onClick={()=>setIsSignUp(false)}>Sign In</span></p>
+                     </div>
+                   ) : (
+                     <div className="mobile-card">
+                        <h2 style={{ color: '#fff', fontSize: '2rem', marginBottom: '20px' }}>{t[lang].signIn}</h2>
+                        {error && <p style={{ color: '#ef4444', marginBottom: '15px', fontSize:'0.9rem' }}>{error}</p>}
+                        <form onSubmit={handleSendOtp}>
+                          <input type="email" className="input-field" placeholder={t[lang].emailLabel} value={email} onChange={(e)=>setEmail(e.target.value)} required dir="ltr" />
+                          <button className="auth-btn" type="submit" disabled={loading}>{loading ? <i className='bx bx-loader-alt bx-spin'></i> : t[lang].sendOtp}</button>
+                        </form>
+                        <p style={{ color: '#94a3b8', marginTop: '20px', textAlign: 'center', fontSize: '0.9rem' }}>New here? <span style={{ color: '#38bdf8', cursor: 'pointer', fontWeight:'bold' }} onClick={()=>setIsSignUp(true)}>Sign Up</span></p>
+                     </div>
+                   )}
+                 </>
+               ) : (
+                 <div className="mobile-card" style={{textAlign: 'center'}}>
+                    <div style={{ fontSize: '3rem', color: '#10b981', marginBottom: '10px' }}><i className='bx bx-check-shield'></i></div>
+                    <h2 style={{ color: '#fff', fontSize: '1.8rem', marginBottom: '10px' }}>{t[lang].verifyOtp}</h2>
+                    <p style={{ color: '#94a3b8', marginBottom: '20px', fontSize:'0.9rem' }}>{t[lang].otpSentTo} <br/><strong style={{ color: '#38bdf8' }}>{email}</strong></p>
+                    {error && <p style={{ color: '#ef4444', marginBottom: '15px', fontSize:'0.9rem' }}>{error}</p>}
+                    <form onSubmit={handleVerifyOtp}>
+                      <input type="text" maxLength="6" className="input-field" placeholder="••••••" value={otp} onChange={(e)=>setOtp(e.target.value)} required dir="ltr" style={{ fontSize: '1.8rem', textAlign: 'center', letterSpacing: '10px', fontWeight: 'bold' }} />
+                      <button className="auth-btn" type="submit" disabled={loading} style={{ background: '#10b981' }}>{loading ? <i className='bx bx-loader-alt bx-spin'></i> : t[lang].verifyOtp}</button>
+                      <button type="button" onClick={() => { setStep('form'); setOtp(''); setError(''); }} style={{ width: '100%', background: 'transparent', color: '#94a3b8', border: '1px solid #475569', padding: '12px', borderRadius: '8px', marginTop: '15px', cursor: 'pointer' }}>{t[lang].changeEmail}</button>
+                    </form>
+                 </div>
+               )}
+            </div>
+
+            {/* =========================================
+                DESKTOP VIEW (Double Slider)
+            ========================================== */}
+            <div className="desktop-view">
+                {/* SIGN UP FORM (Background Right) */}
+                <div className="form-container sign-up-container">
+                  <h2 style={{ color: '#fff', fontSize: '2.5rem', marginBottom: '20px', fontFamily: 'inherit' }}>{t[lang].signUp}</h2>
+                  {error && <p style={{ color: '#ef4444', marginBottom: '15px' }}>{error}</p>}
                   <form onSubmit={handleSendOtp}>
                     <input type="text" className="input-field" placeholder={t[lang].nameLabel} value={fullName} onChange={(e)=>setFullName(e.target.value)} required />
                     <input type="email" className="input-field" placeholder={t[lang].emailLabel} value={email} onChange={(e)=>setEmail(e.target.value)} required dir="ltr" />
                     <button className="auth-btn" type="submit" disabled={loading}>{loading ? <i className='bx bx-loader-alt bx-spin'></i> : t[lang].sendOtp}</button>
                   </form>
-                  <p style={{ color: '#94a3b8', marginTop: '20px', textAlign: 'center', fontSize: '0.9rem' }}>Already have an account? <span style={{ color: '#38bdf8', cursor: 'pointer' }} onClick={()=>setIsSignUp(false)}>Sign In</span></p>
-               </div>
-               
-               <div className="mobile-card" style={{ display: (!isSignUp && step === 'form') ? 'block' : 'none' }}>
-                  <h2 style={{ color: '#fff', fontSize: '2rem', marginBottom: '20px' }}>{t[lang].signIn}</h2>
+                </div>
+
+                {/* SIGN IN FORM (Background Left) */}
+                <div className="form-container sign-in-container">
+                  <h2 style={{ color: '#fff', fontSize: '2.5rem', marginBottom: '20px', fontFamily: 'inherit' }}>{t[lang].signIn}</h2>
+                  {error && <p style={{ color: '#ef4444', marginBottom: '15px' }}>{error}</p>}
                   <form onSubmit={handleSendOtp}>
                     <input type="email" className="input-field" placeholder={t[lang].emailLabel} value={email} onChange={(e)=>setEmail(e.target.value)} required dir="ltr" />
                     <button className="auth-btn" type="submit" disabled={loading}>{loading ? <i className='bx bx-loader-alt bx-spin'></i> : t[lang].sendOtp}</button>
                   </form>
-                  <p style={{ color: '#94a3b8', marginTop: '20px', textAlign: 'center', fontSize: '0.9rem' }}>New here? <span style={{ color: '#38bdf8', cursor: 'pointer' }} onClick={()=>setIsSignUp(true)}>Sign Up</span></p>
-               </div>
-            </div>
-
-            {/* ----------------- DESKTOP SLIDER VIEW ----------------- */}
-            
-            {/* RIGHT SIDE (Actually positioned left conceptually before slide) -> SIGN UP FORM */}
-            <div className={`form-container sign-up-container mobile-hide ${step === 'otp' ? 'hidden' : ''}`}>
-              <h2 style={{ color: '#fff', fontSize: '2.5rem', marginBottom: '20px', fontFamily: 'inherit' }}>{t[lang].signUp}</h2>
-              {error && <p style={{ color: '#ef4444', marginBottom: '15px' }}><i className='bx bx-error-circle'></i> {error}</p>}
-              <form onSubmit={handleSendOtp}>
-                <input type="text" className="input-field" placeholder={t[lang].nameLabel} value={fullName} onChange={(e)=>setFullName(e.target.value)} required />
-                <input type="email" className="input-field" placeholder={t[lang].emailLabel} value={email} onChange={(e)=>setEmail(e.target.value)} required dir="ltr" />
-                <button className="auth-btn" type="submit" disabled={loading}>{loading ? <i className='bx bx-loader-alt bx-spin'></i> : t[lang].sendOtp}</button>
-              </form>
-            </div>
-
-            {/* LEFT SIDE -> SIGN IN FORM */}
-            <div className={`form-container sign-in-container mobile-hide ${step === 'otp' ? 'hidden' : ''}`}>
-              <h2 style={{ color: '#fff', fontSize: '2.5rem', marginBottom: '20px', fontFamily: 'inherit' }}>{t[lang].signIn}</h2>
-              {error && <p style={{ color: '#ef4444', marginBottom: '15px' }}><i className='bx bx-error-circle'></i> {error}</p>}
-              <form onSubmit={handleSendOtp}>
-                <input type="email" className="input-field" placeholder={t[lang].emailLabel} value={email} onChange={(e)=>setEmail(e.target.value)} required dir="ltr" />
-                <button className="auth-btn" type="submit" disabled={loading}>{loading ? <i className='bx bx-loader-alt bx-spin'></i> : t[lang].sendOtp}</button>
-              </form>
-            </div>
-
-            {/* THE MAGIC SLIDING BLUE OVERLAY */}
-            <div className={`overlay-container mobile-hide ${step === 'otp' ? 'hidden' : ''}`}>
-              <div className="overlay">
-                {/* Left Panel of Overlay (Visible when Signed Up pane is open) */}
-                <div className="overlay-panel overlay-left">
-                  <h1 style={{ fontSize: '2.2rem', marginBottom: '10px' }}>{t[lang].welcomeBack}</h1>
-                  <p style={{ fontSize: '1rem', opacity: 0.9 }}>{t[lang].welcomeDesc}</p>
-                  <button className="ghost-btn" onClick={() => { setIsSignUp(false); setError(''); }}>{t[lang].slideBtnSignIn}</button>
                 </div>
-                {/* Right Panel of Overlay (Visible when Signed In pane is open) */}
-                <div className="overlay-panel overlay-right">
-                  <h1 style={{ fontSize: '2.2rem', marginBottom: '10px' }}>{t[lang].helloFriend}</h1>
-                  <p style={{ fontSize: '1rem', opacity: 0.9 }}>{t[lang].helloDesc}</p>
-                  <button className="ghost-btn" onClick={() => { setIsSignUp(true); setError(''); }}>{t[lang].slideBtnSignUp}</button>
-                </div>
-              </div>
-            </div>
 
-            {/* ----------------- STEP 2: OTP VERIFICATION (CENTERED OVERRIDE) ----------------- */}
-            {step === 'otp' && (
-              <div style={{ position: 'absolute', inset: 0, zIndex: 200, background: 'rgba(30, 41, 59, 0.95)', backdropFilter: 'blur(10px)', display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center', padding: '40px' }}>
-                 <div style={{ fontSize: '4rem', color: '#10b981', marginBottom: '10px' }}><i className='bx bx-check-shield'></i></div>
-                 <h2 style={{ color: '#fff', fontSize: '2rem', marginBottom: '10px', fontFamily: 'inherit' }}>{t[lang].verifyOtp}</h2>
-                 <p style={{ color: '#94a3b8', marginBottom: '30px', textAlign: 'center' }}>{t[lang].otpSentTo} <strong style={{ color: '#38bdf8' }}>{email}</strong></p>
-                 
-                 {error && <p style={{ color: '#ef4444', marginBottom: '15px' }}><i className='bx bx-error-circle'></i> {error}</p>}
-                 
-                 <form onSubmit={handleVerifyOtp} style={{ width: '100%', maxWidth: '400px' }}>
-                    <input type="text" maxLength="6" className="input-field" placeholder="••••••" value={otp} onChange={(e)=>setOtp(e.target.value)} required dir="ltr" style={{ fontSize: '2rem', textAlign: 'center', letterSpacing: '15px', fontWeight: 'bold', padding: '20px' }} />
-                    <button className="auth-btn" type="submit" disabled={loading} style={{ background: '#10b981', marginTop: '10px' }}>
-                      {loading ? <><i className='bx bx-loader-alt bx-spin'></i> Processing...</> : t[lang].verifyOtp}
-                    </button>
-                    <button type="button" onClick={() => { setStep('form'); setOtp(''); setError(''); }} style={{ width: '100%', background: 'transparent', color: '#94a3b8', border: '1px solid #475569', padding: '12px', borderRadius: '8px', marginTop: '15px', cursor: 'pointer', transition: '0.3s' }}>
-                      {t[lang].changeEmail}
-                    </button>
-                 </form>
-              </div>
-            )}
+                {/* THE BLUE OVERLAY PANEL */}
+                <div className="overlay-container">
+                  <div className="overlay">
+                    {/* Overlay Left Content */}
+                    <div className="overlay-panel overlay-left">
+                      <h1 style={{ fontSize: '2.2rem', marginBottom: '10px' }}>{t[lang].welcomeBack}</h1>
+                      <p style={{ fontSize: '1rem', opacity: 0.9 }}>{t[lang].welcomeDesc}</p>
+                      <button className="ghost-btn" onClick={() => { setIsSignUp(false); setError(''); }}>{t[lang].slideBtnSignIn}</button>
+                    </div>
+                    {/* Overlay Right Content */}
+                    <div className="overlay-panel overlay-right">
+                      <h1 style={{ fontSize: '2.2rem', marginBottom: '10px' }}>{t[lang].helloFriend}</h1>
+                      <p style={{ fontSize: '1rem', opacity: 0.9 }}>{t[lang].helloDesc}</p>
+                      <button className="ghost-btn" onClick={() => { setIsSignUp(true); setError(''); }}>{t[lang].slideBtnSignUp}</button>
+                    </div>
+                  </div>
+                </div>
+
+                {/* OTP VERIFICATION LOCK SCREEN (Overrides Desktop View when active) */}
+                {step === 'otp' && (
+                  <div style={{ position: 'absolute', inset: 0, zIndex: 200, background: 'rgba(30, 41, 59, 0.95)', backdropFilter: 'blur(10px)', display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center', padding: '40px' }}>
+                     <div style={{ fontSize: '4rem', color: '#10b981', marginBottom: '10px' }}><i className='bx bx-check-shield'></i></div>
+                     <h2 style={{ color: '#fff', fontSize: '2rem', marginBottom: '10px', fontFamily: 'inherit' }}>{t[lang].verifyOtp}</h2>
+                     <p style={{ color: '#94a3b8', marginBottom: '30px', textAlign: 'center' }}>{t[lang].otpSentTo} <strong style={{ color: '#38bdf8' }}>{email}</strong></p>
+                     {error && <p style={{ color: '#ef4444', marginBottom: '15px' }}>{error}</p>}
+                     <form onSubmit={handleVerifyOtp} style={{ width: '100%', maxWidth: '400px' }}>
+                        <input type="text" maxLength="6" className="input-field" placeholder="••••••" value={otp} onChange={(e)=>setOtp(e.target.value)} required dir="ltr" style={{ fontSize: '2.5rem', textAlign: 'center', letterSpacing: '15px', fontWeight: 'bold', padding: '20px' }} />
+                        <button className="auth-btn" type="submit" disabled={loading} style={{ background: '#10b981', marginTop: '10px' }}>{loading ? <i className='bx bx-loader-alt bx-spin'></i> : t[lang].verifyOtp}</button>
+                        <button type="button" onClick={() => { setStep('form'); setOtp(''); setError(''); }} style={{ width: '100%', background: 'transparent', color: '#94a3b8', border: '1px solid #475569', padding: '12px', borderRadius: '8px', marginTop: '15px', cursor: 'pointer' }}>{t[lang].changeEmail}</button>
+                     </form>
+                  </div>
+                )}
+            </div>
 
           </div>
         </main>
