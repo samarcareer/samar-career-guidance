@@ -128,7 +128,6 @@ export default function AdminDashboard() {
             fetchCMSData();
             fetchQnaData();
           } else {
-            // Un-authorize silently if student logs into admin page
             await supabase.auth.signOut();
             setIsAuthenticated(false);
           }
@@ -216,7 +215,7 @@ export default function AdminDashboard() {
     try {
       const { data, error } = await supabase.from('user_assessments').select('*').order('created_at', { ascending: false }); 
       if (error) console.error("DB Error:", error);
-      setStudentsData(Array.isArray(data) ? data : []); // Strict Array Fallback
+      setStudentsData(Array.isArray(data) ? data : []); 
     } catch (err) { console.error("Error fetching CRM data"); }
   };
 
@@ -224,7 +223,7 @@ export default function AdminDashboard() {
     try {
       const { data, error } = await supabase.from('matrix_content').select('*').order('created_at', { ascending: true });
       if (error) console.error("CMS read error:", error);
-      setMatrixContent(Array.isArray(data) ? data : []); // Strict Array Fallback
+      setMatrixContent(Array.isArray(data) ? data : []); 
     } catch (err) { console.error("Error fetching CMS data"); }
   };
 
@@ -232,7 +231,7 @@ export default function AdminDashboard() {
     try {
       const { data, error } = await supabase.from('diagnostic_questions').select('*').order('created_at', { ascending: true });
       if (error) console.error("QNA read error:", error);
-      setQuestionsData(Array.isArray(data) ? data : []); // Strict Array Fallback
+      setQuestionsData(Array.isArray(data) ? data : []); 
     } catch (err) { console.error("Error fetching QNA data"); }
   };
 
@@ -269,21 +268,39 @@ export default function AdminDashboard() {
     }
   };
 
-  // --- Q&A Handlers ---
+  // --- Q&A Handlers (FIXED ID CREATION LOGIC) ---
   const handleOpenQnaEdit = (item) => { setQnaFormData(item); setIsQnaModalOpen(true); };
   const handleOpenQnaAdd = () => { setQnaFormData(blankQnaForm); setIsQnaModalOpen(true); };
 
   const handleQnaSave = async (e) => {
     e.preventDefault();
     setIsQnaSubmitting(true);
-    if (qnaFormData.id) {
-      await supabase.from('diagnostic_questions').update(qnaFormData).eq('id', qnaFormData.id);
-    } else {
-      await supabase.from('diagnostic_questions').insert([qnaFormData]);
+
+    // Create a clean payload, remove 'id' if it's a new question so DB auto-generates it
+    const payload = { ...qnaFormData };
+    if (!payload.id) {
+      delete payload.id; 
     }
+
+    try {
+      if (qnaFormData.id) {
+        // Edit existing question
+        const { error } = await supabase.from('diagnostic_questions').update(payload).eq('id', qnaFormData.id);
+        if (error) throw error;
+      } else {
+        // Insert new question
+        const { error } = await supabase.from('diagnostic_questions').insert([payload]);
+        if (error) throw error;
+      }
+      
+      setIsQnaModalOpen(false); 
+      fetchQnaData();
+    } catch (error) {
+      alert("Database Error: " + error.message);
+      console.error("Save Error:", error);
+    }
+    
     setIsQnaSubmitting(false);
-    setIsQnaModalOpen(false); 
-    fetchQnaData();
   };
 
   const toggleQuestionStatus = async (id, currentStatus) => {
@@ -294,7 +311,6 @@ export default function AdminDashboard() {
   // --- EXTREME SANITIZED VARIABLES FOR RENDERING ---
   const handleStatusChange = (studentEmail, newStatus) => { setStatusMap(prev => ({ ...prev, [studentEmail]: newStatus })); };
 
-  // Guarantee arrays to prevent mapping crashes
   const safeStudentsData = Array.isArray(studentsData) ? studentsData : [];
   const safeMatrixContent = Array.isArray(matrixContent) ? matrixContent : [];
   const safeQuestionsData = Array.isArray(questionsData) ? questionsData : [];
