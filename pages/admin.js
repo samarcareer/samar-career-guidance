@@ -40,7 +40,7 @@ export default function AdminDashboard() {
   const [isMobile, setIsMobile] = useState(false);
   const [session, setSession] = useState(null);
 
-  // AUTH STATE (New OTP System)
+  // AUTH STATE
   const [email, setEmail] = useState('');
   const [otp, setOtp] = useState('');
   const [otpSent, setOtpSent] = useState(false);
@@ -92,7 +92,6 @@ export default function AdminDashboard() {
     const checkSession = async () => {
       const { data: { session } } = await supabase.auth.getSession();
       if (session) {
-        // Verify if the logged-in session belongs to an authorized admin
         const { data: adminUser } = await supabase
           .from('admin_users')
           .select('email')
@@ -106,7 +105,7 @@ export default function AdminDashboard() {
           fetchCMSData();
           fetchQnaData();
         } else {
-          await supabase.auth.signOut(); // Kick out unauthorized users
+          await supabase.auth.signOut();
         }
       }
     };
@@ -126,7 +125,7 @@ export default function AdminDashboard() {
   
   const toggleLanguage = () => setLang(prev => prev === 'en' ? 'ur' : 'en');
 
-  // --- NEW SECURE OTP LOGIN FLOW ---
+  // --- SECURE OTP LOGIN FLOW ---
   const handleSendOtp = async (e) => {
     e.preventDefault();
     setError('');
@@ -134,7 +133,6 @@ export default function AdminDashboard() {
     const cleanEmail = email.trim().toLowerCase();
 
     try {
-      // 1. Check if email exists in our secure admin_users table
       const { data: adminUser, error: dbError } = await supabase
         .from('admin_users')
         .select('email')
@@ -147,11 +145,7 @@ export default function AdminDashboard() {
         return;
       }
 
-      // 2. If authorized, trigger Supabase OTP Email
-      const { error: otpError } = await supabase.auth.signInWithOtp({
-        email: cleanEmail,
-      });
-
+      const { error: otpError } = await supabase.auth.signInWithOtp({ email: cleanEmail });
       if (otpError) throw otpError;
 
       setOtpSent(true);
@@ -196,7 +190,7 @@ export default function AdminDashboard() {
       const { data, error } = await supabase.from('user_assessments').select('*').order('created_at', { ascending: false }); 
       if (error) throw error;
       if (data) setStudentsData(data);
-    } catch (err) { alert("Error fetching CRM data: " + err.message); }
+    } catch (err) { console.error("Error fetching CRM data: " + err.message); }
     setLoading(false);
   };
 
@@ -271,12 +265,17 @@ export default function AdminDashboard() {
     if (!error) fetchQnaData();
   };
 
-  // --- CRM Handlers ---
+  // --- CRM Handlers (BULLETPROOF SAFE FILTERING) ---
   const handleStatusChange = (studentEmail, newStatus) => { setStatusMap(prev => ({ ...prev, [studentEmail]: newStatus })); };
 
+  // SAFE: Handling null/undefined emails and streams gracefully
   const filteredData = studentsData.filter(s => {
-    const matchesSearch = s.email?.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesStream = filterStream ? s.interest_area?.toLowerCase() === filterStream.toLowerCase() : true;
+    const safeEmail = s?.email || '';
+    const safeStream = s?.interest_area || '';
+    
+    const matchesSearch = safeEmail.toLowerCase().includes(searchTerm.toLowerCase());
+    const matchesStream = filterStream ? safeStream.toLowerCase() === filterStream.toLowerCase() : true;
+    
     return matchesSearch && matchesStream;
   });
 
@@ -284,10 +283,14 @@ export default function AdminDashboard() {
     if (filteredData.length === 0) return alert("No data to download!");
     const headers = "Date,Email,Selected Stream,Language,Lead Status\n";
     const rows = filteredData.map(s => {
-      const date = new Date(s.created_at).toLocaleDateString('en-IN');
-      const status = statusMap[s.email] || 'New Lead';
-      return `"${date}","${s.email}","${s.interest_area || 'N/A'}","${s.preferred_language || 'N/A'}","${status}"`;
+      const date = new Date(s.created_at || Date.now()).toLocaleDateString('en-IN');
+      const safeEmail = s?.email || 'N/A';
+      const safeStream = s?.interest_area || 'N/A';
+      const safeLang = s?.preferred_language || 'N/A';
+      const status = statusMap[safeEmail] || 'New Lead';
+      return `"${date}","${safeEmail}","${safeStream}","${safeLang}","${status}"`;
     }).join("\n");
+    
     const csvContent = "data:text/csv;charset=utf-8," + headers + rows;
     const encodedUri = encodeURI(csvContent);
     const link = document.createElement("a");
@@ -295,9 +298,10 @@ export default function AdminDashboard() {
     document.body.appendChild(link); link.click(); document.body.removeChild(link);
   };
 
+  // SAFE COUNTS
   const totalStudents = studentsData.length;
-  const scienceCount = studentsData.filter(s => s.interest_area === 'science').length;
-  const commerceCount = studentsData.filter(s => s.interest_area === 'commerce').length;
+  const scienceCount = studentsData.filter(s => (s?.interest_area || '').toLowerCase() === 'science').length;
+  const commerceCount = studentsData.filter(s => (s?.interest_area || '').toLowerCase() === 'commerce').length;
   const otherCount = totalStudents - scienceCount - commerceCount;
 
   return (
@@ -391,7 +395,7 @@ export default function AdminDashboard() {
             <button className="nav-link" onClick={() => router.push('/')}>{t[lang].navHome}</button>
             <button className="nav-link" onClick={() => router.push('/about')}>{t[lang].navAbout}</button>
             <div className="nav-dropdown-container" onMouseEnter={() => !isMobile && setShowGuidanceDropdown(true)} onMouseLeave={() => !isMobile && setShowGuidanceDropdown(false)}>
-                <button className="nav-link" onClick={() => setIsMobile && setShowGuidanceDropdown(!showGuidanceDropdown)} style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
+                <button className="nav-link" onClick={() => isMobile && setShowGuidanceDropdown(!showGuidanceDropdown)} style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
                     {t[lang].navCareer} <i className='bx bx-chevron-down'></i>
                 </button>
                 <div className={`nav-dropdown-menu ${showGuidanceDropdown ? 'active' : ''}`}>
@@ -410,7 +414,7 @@ export default function AdminDashboard() {
           <p style={{ color: '#94a3b8', margin: 0, fontSize: '1rem', fontFamily: 'inherit' }}>{t[lang].adminSub}</p>
         </header>
 
-        {/* --- NEW OTP LOGIN SYSTEM UI --- */}
+        {/* --- OTP LOGIN SYSTEM UI --- */}
         {!isAuthenticated ? (
           <div className="admin-card">
             <h2 style={{ color: '#fff', marginBottom: '15px', fontSize: '1.5rem', fontFamily: 'inherit' }}>Secure Authorization</h2>
@@ -478,11 +482,12 @@ export default function AdminDashboard() {
                       <thead><tr><th>{t[lang].date}</th><th>{t[lang].studentId}</th><th>{t[lang].matrix}</th><th>{t[lang].crmStatus}</th><th>{t[lang].action}</th></tr></thead>
                       <tbody>
                         {filteredData.length > 0 ? filteredData.map((s, idx) => {
-                          const currentStatus = statusMap[s.email] || 'new';
+                          const safeEmail = s?.email || 'Unknown';
+                          const currentStatus = statusMap[safeEmail] || 'new';
                           return (
                             <tr key={idx}>
-                              <td className="en-text">{new Date(s.created_at).toLocaleDateString('en-IN')}</td><td className="en-text">{s.email}</td><td className="en-text" style={{ color: '#38bdf8', fontWeight: 'bold' }}>{s.interest_area || 'Pending'}</td>
-                              <td><select className={`status-select ${currentStatus}`} value={currentStatus} onChange={(e) => handleStatusChange(s.email, e.target.value)}><option value="new">🔴 New</option><option value="counseled">🟡 Counseled</option><option value="admitted">🟢 Admitted</option></select></td>
+                              <td className="en-text">{new Date(s.created_at || Date.now()).toLocaleDateString('en-IN')}</td><td className="en-text">{safeEmail}</td><td className="en-text" style={{ color: '#38bdf8', fontWeight: 'bold' }}>{s?.interest_area || 'Pending'}</td>
+                              <td><select className={`status-select ${currentStatus}`} value={currentStatus} onChange={(e) => handleStatusChange(safeEmail, e.target.value)}><option value="new">🔴 New</option><option value="counseled">🟡 Counseled</option><option value="admitted">🟢 Admitted</option></select></td>
                               <td><button className="view-btn" onClick={() => setSelectedStudent(s)} title="View Report"><i className='bx bx-show'></i></button></td>
                             </tr>
                           );
@@ -559,19 +564,19 @@ export default function AdminDashboard() {
             <div style={{ display: 'grid', gap: '15px', color: '#e2e8f0' }}>
               <div style={{ background: '#0f172a', padding: '15px', borderRadius: '8px', border: '1px solid #334155' }}>
                 <p style={{ margin: '0 0 5px 0', color: '#94a3b8', fontSize: '0.85rem' }}>Student Email ID</p>
-                <h3 style={{ margin: 0, fontSize: '1.2rem' }}>{selectedStudent.email}</h3>
+                <h3 style={{ margin: 0, fontSize: '1.2rem' }}>{selectedStudent?.email || 'N/A'}</h3>
               </div>
               <div style={{ background: '#0f172a', padding: '15px', borderRadius: '8px', border: '1px solid #334155' }}>
                 <p style={{ margin: '0 0 5px 0', color: '#94a3b8', fontSize: '0.85rem' }}>AI Suggested Target Stream</p>
-                <h3 style={{ margin: 0, fontSize: '1.2rem', color: '#10b981', textTransform: 'capitalize' }}>{selectedStudent.interest_area || 'Not finalized yet'}</h3>
+                <h3 style={{ margin: 0, fontSize: '1.2rem', color: '#10b981', textTransform: 'capitalize' }}>{selectedStudent?.interest_area || 'Not finalized yet'}</h3>
               </div>
               <div style={{ background: '#0f172a', padding: '15px', borderRadius: '8px', border: '1px solid #334155' }}>
                 <p style={{ margin: '0 0 5px 0', color: '#94a3b8', fontSize: '0.85rem' }}>Registration Date</p>
-                <h3 style={{ margin: 0, fontSize: '1.2rem' }}>{new Date(selectedStudent.created_at).toLocaleString('en-IN')}</h3>
+                <h3 style={{ margin: 0, fontSize: '1.2rem' }}>{new Date(selectedStudent?.created_at || Date.now()).toLocaleString('en-IN')}</h3>
               </div>
             </div>
             <div style={{ marginTop: '20px', textAlign: 'right' }}>
-              <a href={`mailto:${selectedStudent.email}`} style={{ display: 'inline-block', background: '#38bdf8', color: '#0f172a', padding: '10px 20px', borderRadius: '8px', textDecoration: 'none', fontWeight: 'bold' }}><i className='bx bx-envelope'></i> Send Email</a>
+              <a href={`mailto:${selectedStudent?.email || ''}`} style={{ display: 'inline-block', background: '#38bdf8', color: '#0f172a', padding: '10px 20px', borderRadius: '8px', textDecoration: 'none', fontWeight: 'bold' }}><i className='bx bx-envelope'></i> Send Email</a>
             </div>
           </div>
         </div>
@@ -605,26 +610,6 @@ export default function AdminDashboard() {
                 <button type="button" onClick={() => setIsQnaModalOpen(false)} style={{ background: 'transparent', border: '1px solid #64748b', color: '#cbd5e1', padding: '10px 20px', borderRadius: '6px', cursor: 'pointer' }}>Cancel</button>
                 <button type="submit" disabled={isQnaSubmitting} style={{ background: '#a855f7', color: '#fff', border: 'none', padding: '10px 30px', borderRadius: '6px', fontWeight: 'bold', cursor: 'pointer' }}>{isQnaSubmitting ? 'Saving...' : 'Save Question'}</button>
               </div>
-            </form>
-          </div>
-        </div>
-      )}
-
-      {/* EXISTING CMS MODAL (Hidden to save space in text but kept functionally complete in code) */}
-      {isModalOpen && (
-        <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.85)', display: 'flex', justifyContent: 'center', alignItems: 'center', zIndex: 9999, padding: '20px', backdropFilter:'blur(5px)' }}>
-          <div style={{ background: '#1e293b', border: '1px solid #334155', borderRadius: '12px', padding: '30px', width: '100%', maxWidth: '850px', maxHeight: '90vh', overflowY: 'auto' }} dir="ltr">
-            <h2 style={{ marginTop: 0, color: '#38bdf8', marginBottom:'20px' }}>{formData.id ? 'Edit Matrix' : 'Add New Matrix'}</h2>
-            <form onSubmit={handleCmsSave} style={{ display: 'flex', flexDirection: 'column', gap: '15px' }}>
-                <input required placeholder="Stream Key (e.g. 10th)" value={formData.stream_key} onChange={(e) => setFormData({...formData, stream_key: e.target.value})} style={{ padding: '10px', background: '#0f172a', border: '1px solid #334155', color: '#fff', borderRadius: '6px' }} />
-                <div style={{ display: 'flex', gap: '15px' }}>
-                    <input required placeholder="Title (EN)" value={formData.title_en} onChange={(e) => setFormData({...formData, title_en: e.target.value})} style={{ flex: 1, padding: '10px', background: '#0f172a', border: '1px solid #334155', color: '#fff', borderRadius: '6px' }} />
-                    <input required placeholder="Title (UR)" value={formData.title_ur} onChange={(e) => setFormData({...formData, title_ur: e.target.value})} dir="rtl" style={{ flex: 1, padding: '10px', background: '#0f172a', border: '1px solid #334155', color: '#fff', borderRadius: '6px' }} />
-                </div>
-                <div style={{ display: 'flex', gap: '15px', justifyContent: 'flex-end', marginTop: '10px' }}>
-                    <button type="button" onClick={() => setIsModalOpen(false)} style={{ background: 'transparent', border: '1px solid #64748b', color: '#cbd5e1', padding: '10px 20px', borderRadius: '6px', cursor: 'pointer' }}>Cancel</button>
-                    <button type="submit" disabled={isCmsSubmitting} style={{ background: '#38bdf8', color: '#0f172a', border: 'none', padding: '10px 30px', borderRadius: '6px', fontWeight: 'bold', cursor: 'pointer' }}>{isCmsSubmitting ? 'Syncing...' : 'Save Matrix'}</button>
-                </div>
             </form>
           </div>
         </div>
