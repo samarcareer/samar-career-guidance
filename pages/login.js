@@ -51,7 +51,7 @@ export default function StudentLogin() {
   
   // UI States
   const [isSignUp, setIsSignUp] = useState(false); 
-  const [step, setStep] = useState('form'); // 'form' or 'otp'
+  const [step, setStep] = useState('form'); 
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   
   // Input States
@@ -122,6 +122,8 @@ export default function StudentLogin() {
         backgroundSize: '30px 30px', minHeight: '100vh', color: '#f8fafc', display: 'flex', flexDirection: 'column'
       }}>
         <Head>
+          {/* THE FIX FOR MOBILE SQUISHED VIEW */}
+          <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1" />
           <link href="https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css" rel="stylesheet" />
           <title>Student Login | {t[lang].brand}</title>
         </Head>
@@ -154,11 +156,22 @@ export default function StudentLogin() {
             .mobile-card { background: rgba(30, 41, 59, 0.85); border: 1px solid rgba(56,189,248,0.3); border-radius: 16px; padding: 30px; box-shadow: 0 10px 25px rgba(0,0,0,0.5); width: 100%; }
           }
 
-          /* --- DESKTOP DOUBLE SLIDER LOGIC --- */
+          /* --- DESKTOP DOUBLE SLIDER LOGIC (MATH FIXED) --- */
           .form-container { position: absolute; top: 0; height: 100%; width: 50%; transition: all 0.6s ease-in-out; display: flex; flex-direction: column; justify-content: center; padding: 40px; }
           
-          .sign-in-container { left: 0; z-index: 2; opacity: ${isSignUp ? '0' : '1'}; transform: ${isSignUp ? 'translateX(100%)' : 'translateX(0)'}; pointer-events: ${isSignUp ? 'none' : 'auto'}; }
-          .sign-up-container { left: 0; z-index: 1; opacity: ${isSignUp ? '1' : '0'}; transform: ${isSignUp ? 'translateX(0)' : 'translateX(-100%)'}; pointer-events: ${isSignUp ? 'auto' : 'none'}; }
+          .sign-in-container { 
+             left: 0; z-index: 2; 
+             opacity: ${isSignUp ? '0' : '1'}; 
+             transform: ${isSignUp ? 'translateX(100%)' : 'translateX(0)'}; 
+             pointer-events: ${isSignUp ? 'none' : 'auto'}; 
+          }
+          
+          .sign-up-container { 
+             left: 0; z-index: 1; 
+             opacity: ${isSignUp ? '1' : '0'}; 
+             transform: ${isSignUp ? 'translateX(100%)' : 'translateX(0)'}; /* BUG FIXED: Ab dono cross me properly slide honge */
+             pointer-events: ${isSignUp ? 'auto' : 'none'}; 
+          }
 
           .overlay-container { position: absolute; top: 0; left: 50%; width: 50%; height: 100%; overflow: hidden; transition: transform 0.6s ease-in-out; z-index: 100; transform: ${isSignUp ? 'translateX(-100%)' : 'translateX(0)'}; }
           
@@ -190,7 +203,7 @@ export default function StudentLogin() {
                 <span className="lang-label" style={{ color: lang === 'en' ? '#fff' : '#94a3b8' }}>EN</span>
                 <span className="lang-label" style={{ color: lang === 'ur' ? '#fff' : '#94a3b8' }}>UR</span>
             </div>
-            <button style={{ background: 'transparent', border: 'none', color: '#fff', fontSize: '1.8rem', cursor: 'pointer' }} className="mobile-only-btn" onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}>
+            <button style={{ background: 'transparent', border: 'none', color: '#fff', fontSize: '1.8rem', cursor: 'pointer' }} className="mobile-only-btn mobile-view" onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}>
               <i className={isMobileMenuOpen ? 'bx bx-x' : 'bx bx-menu'}></i>
             </button>
           </div>
@@ -256,7 +269,7 @@ export default function StudentLogin() {
                 DESKTOP VIEW (Double Slider)
             ========================================== */}
             <div className="desktop-view">
-                {/* SIGN UP FORM (Background Right) */}
+                {/* SIGN UP FORM */}
                 <div className="form-container sign-up-container">
                   <h2 style={{ color: '#fff', fontSize: '2.5rem', marginBottom: '20px', fontFamily: 'inherit' }}>{t[lang].signUp}</h2>
                   {error && <p style={{ color: '#ef4444', marginBottom: '15px' }}>{error}</p>}
@@ -267,7 +280,7 @@ export default function StudentLogin() {
                   </form>
                 </div>
 
-                {/* SIGN IN FORM (Background Left) */}
+                {/* SIGN IN FORM */}
                 <div className="form-container sign-in-container">
                   <h2 style={{ color: '#fff', fontSize: '2.5rem', marginBottom: '20px', fontFamily: 'inherit' }}>{t[lang].signIn}</h2>
                   {error && <p style={{ color: '#ef4444', marginBottom: '15px' }}>{error}</p>}
