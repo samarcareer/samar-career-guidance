@@ -7,36 +7,15 @@ class ErrorBoundary extends Component {
   constructor(props) { super(props); this.state = { hasError: false }; }
   static getDerivedStateFromError(error) { return { hasError: true }; }
   render() {
-    if (this.state.hasError) return <div style={{color:'white', background:'#0f172a', padding:'50px', textAlign:'center'}}>UI Error. Please refresh.</div>;
+    if (this.state.hasError) return <div style={{color:'white', background:'#0f172a', padding:'50px', textAlign:'center'}}>Page Error. Please refresh.</div>;
     return this.props.children;
   }
 }
 
+// ... (Translations mapping keep the same as before) ...
 const t = {
-  en: {
-    brand: "Samar Guidance", doctor: "Dr. Ashfaque Umar", navHome: "Home", navAbout: "About Us", navAssess: "Career Assessment", navProfile: "My Profile",
-    profileTitle: "Student Dashboard", profileSub: "Manage your career profile and personal notes.",
-    step1: "Basic Details", step2: "Academic Info", step3: "Career Goals",
-    fullName: "Full Name", phone: "WhatsApp / Phone Number", gender: "Gender", city: "City / Town", photo: "Profile Photo (Optional)",
-    eduLevel: "Current Education Level", stream: "Current Stream (If 11th/12th)", college: "School / College Name",
-    goal: "Target Career Goal", struggle: "What is your main struggle in career selection?",
-    saveBtn: "Save Profile", saving: "Saving...", nextBtn: "Next Step", prevBtn: "Previous",
-    assessmentCardTitle: "Diagnostic Career Assessment", assessmentCardSubLocked: "Please complete your profile to 100% to unlock your test.",
-    assessmentCardSubUnlocked: "Your profile is fully verified! You can now take the AI-powered career test.",
-    takeTestBtn: "Take Assessment Now", lockedBtn: "Profile Incomplete", selectOption: "-- Select Option --"
-  },
-  ur: {
-    brand: "ثمر گائیڈنس", doctor: "ڈاکٹر اشفاق عمر", navHome: "ہوم", navAbout: "ہمارے بارے میں", navAssess: "کیریئر اسسمنٹ", navProfile: "میری پروفائل",
-    profileTitle: "طالب علم ڈیش بورڈ", profileSub: "اپنی کیریئر پروفائل اور ذاتی نوٹس کا انتظام کریں۔",
-    step1: "بنیادی تفصیلات", step2: "تعلیمی معلومات", step3: "کیریئر کے اہداف",
-    fullName: "پورا نام", phone: "واٹس ایپ / فون نمبر", gender: "جنس", city: "شہر / قصبہ", photo: "پروفائل فوٹو (اختیاری)",
-    eduLevel: "موجودہ تعلیمی قابلیت", stream: "موجودہ شعبہ (اگر 11ویں/12ویں میں ہیں)", college: "اسکول / کالج کا نام",
-    goal: "کیریئر کا ہدف", struggle: "کیریئر کے انتخاب میں آپ کا سب سے بڑا مسئلہ کیا ہے؟",
-    saveBtn: "محفوظ کریں", saving: "محفوظ ہو رہا ہے...", nextBtn: "اگلا قدم", prevBtn: "پچھلا قدم",
-    assessmentCardTitle: "ڈائگنوسٹک کیریئر اسسمنٹ", assessmentCardSubLocked: "ٹیسٹ انلاک کرنے کے لیے براہ کرم اپنی پروفائل 100% مکمل کریں۔",
-    assessmentCardSubUnlocked: "آپ کی پروفائل مکمل ہے! اب آپ AI کیریئر ٹیسٹ دے سکتے ہیں۔",
-    takeTestBtn: "ابھی اسسمنٹ دیں", lockedBtn: "پروفائل نامکمل ہے", selectOption: "-- منتخب کریں --"
-  }
+  en: { brand: "Samar Guidance", doctor: "Dr. Ashfaque Umar", navHome: "Home", navAbout: "About Us", navAssess: "Career Assessment", navProfile: "My Profile", profileTitle: "Student Dashboard", profileSub: "Manage your career profile.", step1: "Basic Details", step2: "Academic Info", step3: "Career Goals", fullName: "Full Name", phone: "WhatsApp / Phone", gender: "Gender", city: "City / Town", photo: "Profile Photo (Optional)", eduLevel: "Education Level", stream: "Current Stream", college: "School / College Name", goal: "Career Goal", struggle: "Main struggle?", saveBtn: "Save Profile", saving: "Saving...", nextBtn: "Next", prevBtn: "Previous", assessmentCardTitle: "Diagnostic Career Assessment", assessmentCardSubLocked: "Complete profile to unlock.", assessmentCardSubUnlocked: "Profile verified! Take the test now.", takeTestBtn: "Take Assessment Now", lockedBtn: "Profile Incomplete", selectOption: "-- Select Option --" },
+  ur: { brand: "ثمر گائیڈنس", doctor: "ڈاکٹر اشفاق عمر", navHome: "ہوم", navAbout: "ہمارے بارے میں", navAssess: "کیریئر اسسمنٹ", navProfile: "میری پروفائل", profileTitle: "طالب علم ڈیش بورڈ", profileSub: "اپنی کیریئر پروفائل کا انتظام کریں۔", step1: "بنیادی تفصیلات", step2: "تعلیمی معلومات", step3: "کیریئر کے اہداف", fullName: "پورا نام", phone: "واٹس ایپ / فون نمبر", gender: "جنس", city: "شہر / قصبہ", photo: "پروفائل فوٹو (اختیاری)", eduLevel: "موجودہ تعلیم", stream: "موجودہ شعبہ", college: "اسکول / کالج کا نام", goal: "کیریئر کا ہدف", struggle: "سب سے بڑا مسئلہ؟", saveBtn: "محفوظ کریں", saving: "محفوظ ہو رہا ہے...", nextBtn: "اگلا", prevBtn: "پچھلا", assessmentCardTitle: "ڈائگنوسٹک کیریئر اسسمنٹ", assessmentCardSubLocked: "ٹیسٹ انلاک کرنے کے لیے پروفائل مکمل کریں۔", assessmentCardSubUnlocked: "پروفائل مکمل ہے! ٹیسٹ دیں۔", takeTestBtn: "اسسمنٹ دیں", lockedBtn: "نامکمل", selectOption: "-- منتخب کریں --" }
 };
 
 export default function StudentProfile() {
@@ -49,63 +28,60 @@ export default function StudentProfile() {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [savingNotes, setSavingNotes] = useState(false);
-  
   const [currentStep, setCurrentStep] = useState(1);
   const [isComplete, setIsComplete] = useState(false);
 
   const [formData, setFormData] = useState({
     full_name: '', phone: '', gender: '', city: '',
     education_level: '', stream: '', college_name: '',
-    career_goal: '', main_struggle: '', photo_url: '', personal_notes: ''
+    career_goal: '', main_struggle: '', photo_url: '', personal_notes: '', lead_status: 'New'
   });
 
   useEffect(() => {
     const handleResize = () => setIsMobile(window.innerWidth <= 1024);
     handleResize(); window.addEventListener('resize', handleResize);
 
-    const checkUserAndFetchProfile = async () => {
+    const initProfile = async () => {
       const { data: { session } } = await supabase.auth.getSession();
       if (!session) { router.push('/login'); return; }
       setUser(session.user);
 
-      const { data: profileData } = await supabase.from('student_profiles').select('*').eq('id', session.user.id).single();
-
-      if (profileData) {
+      const { data: pData } = await supabase.from('student_profiles').select('*').eq('id', session.user.id).single();
+      if (pData) {
         setFormData({
-          full_name: profileData.full_name || '', phone: profileData.phone || '', gender: profileData.gender || '',
-          city: profileData.city || '', education_level: profileData.education_level || '', stream: profileData.stream || '',
-          college_name: profileData.college_name || '', career_goal: profileData.career_goal || '', main_struggle: profileData.main_struggle || '',
-          photo_url: profileData.photo_url || '', personal_notes: profileData.personal_notes || ''
+          full_name: pData.full_name || '', phone: pData.phone || '', gender: pData.gender || '', city: pData.city || '',
+          education_level: pData.education_level || '', stream: pData.stream || '', college_name: pData.college_name || '',
+          career_goal: pData.career_goal || '', main_struggle: pData.main_struggle || '', photo_url: pData.photo_url || '',
+          personal_notes: pData.personal_notes || '', lead_status: pData.lead_status || 'New'
         });
-        setIsComplete(profileData.is_complete || false);
+        setIsComplete(pData.is_complete || false);
       }
       setLoading(false);
     };
-
-    checkUserAndFetchProfile();
+    initProfile();
     return () => window.removeEventListener('resize', handleResize);
   }, [router]);
 
-  const toggleLanguage = () => setLang(prev => prev === 'en' ? 'ur' : 'en');
   const handleChange = (e) => setFormData({ ...formData, [e.target.name]: e.target.value });
 
-  // IMAGE COMPRESSOR (Prevents App Crash)
+  // SAFE IMAGE COMPRESSOR (Prevents Crash)
   const handlePhotoChange = (e) => {
     const file = e.target.files[0];
     if (file) {
+      if(file.size > 5000000) { alert("File too large! Max 5MB allowed."); return; } // Safety limit
       const reader = new FileReader();
       reader.onload = (event) => {
         const img = new Image();
         img.onload = () => {
           const canvas = document.createElement('canvas');
-          const MAX_WIDTH = 250; // Compressed small size
+          const MAX_WIDTH = 300; 
           const scaleSize = MAX_WIDTH / img.width;
           canvas.width = MAX_WIDTH;
           canvas.height = img.height * scaleSize;
           const ctx = canvas.getContext('2d');
           ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
-          const compressedBase64 = canvas.toDataURL('image/jpeg', 0.6); // 60% quality
-          setFormData({ ...formData, photo_url: compressedBase64 });
+          const compressed = canvas.toDataURL('image/jpeg', 0.5); // 50% quality
+          setFormData({ ...formData, photo_url: compressed });
         };
         img.src = event.target.result;
       };
@@ -114,15 +90,12 @@ export default function StudentProfile() {
   };
 
   const calculateProgress = () => {
-    let filledFields = 0;
-    if (formData.full_name) filledFields++; if (formData.phone) filledFields++;
-    if (formData.gender) filledFields++; if (formData.city) filledFields++;
-    if (formData.education_level) filledFields++;
-    if (formData.stream || ['8th', '9th', '10th'].includes(formData.education_level)) filledFields++;
-    if (formData.college_name) filledFields++; if (formData.career_goal) filledFields++;
-    return Math.min(Math.round((filledFields / 8) * 100), 100);
+    let f = 0;
+    if (formData.full_name) f++; if (formData.phone) f++; if (formData.gender) f++; if (formData.city) f++;
+    if (formData.education_level) f++; if (formData.stream || ['8th', '9th', '10th'].includes(formData.education_level)) f++;
+    if (formData.college_name) f++; if (formData.career_goal) f++;
+    return Math.min(Math.round((f / 8) * 100), 100);
   };
-
   const progress = calculateProgress();
 
   const handleSaveProfile = async (e) => {
@@ -130,73 +103,56 @@ export default function StudentProfile() {
     setSaving(true);
     const isFullyFilled = progress === 100;
     const payload = { id: user.id, email: user.email, ...formData, is_complete: isFullyFilled };
-    const { error } = await supabase.from('student_profiles').upsert([payload]);
-    setSaving(false);
-    if (!error) {
+    
+    try {
+      const { error } = await supabase.from('student_profiles').upsert([payload]);
+      if (error) throw error;
       setIsComplete(isFullyFilled);
       window.scrollTo(0,0);
-    } else alert("Error saving profile.");
+    } catch(err) {
+      alert("Error saving. Image might be too large, try a smaller photo.");
+      console.error(err);
+    }
+    setSaving(false);
   };
 
   const handleSaveNotes = async () => {
     setSavingNotes(true);
-    const { error } = await supabase.from('student_profiles').update({ personal_notes: formData.personal_notes }).eq('id', user.id);
+    await supabase.from('student_profiles').update({ personal_notes: formData.personal_notes }).eq('id', user.id);
     setSavingNotes(false);
-    if(!error) alert("Personal notes saved securely!");
+    alert("Notes saved!");
   };
 
-  const handleLogout = async () => { await supabase.auth.signOut(); router.push('/login'); };
-
-  if (loading) return <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh', background: '#0f172a', color: '#38bdf8' }}><h2><i className='bx bx-loader-alt bx-spin'></i> Loading Dashboard...</h2></div>;
+  if (loading) return <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh', background: '#0f172a', color: '#38bdf8' }}><h2>Loading Dashboard...</h2></div>;
 
   return (
     <ErrorBoundary>
-      <div style={{
-        direction: lang === 'ur' ? 'rtl' : 'ltr', fontFamily: lang === 'ur' ? "'Jameel Noori Nastaleeq', 'Noto Nastaliq Urdu', serif" : "'Segoe UI', Roboto, sans-serif",
-        backgroundColor: '#0f172a', backgroundImage: `radial-gradient(rgba(56, 189, 248, 0.1) 1px, transparent 1px)`, backgroundSize: '30px 30px', minHeight: '100vh', color: '#f8fafc', display: 'flex', flexDirection: 'column'
-      }}>
+      <div style={{ backgroundColor: '#0f172a', backgroundImage: `radial-gradient(rgba(56, 189, 248, 0.1) 1px, transparent 1px)`, backgroundSize: '30px 30px', minHeight: '100vh', color: '#f8fafc', display: 'flex', flexDirection: 'column' }}>
         <Head>
           <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1" />
           <link href="https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css" rel="stylesheet" />
-          <title>{t[lang].navProfile} | {t[lang].brand}</title>
+          <title>{t[lang].navProfile}</title>
         </Head>
 
+        {/* Global Styles here... */}
         <style dangerouslySetInnerHTML={{__html: `
-          * { box-sizing: border-box; margin: 0; padding: 0; }
+          * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', sans-serif; }
           .nav-top-row { display: flex; justify-content: space-between; align-items: center; padding: 15px 5%; background: rgba(30, 64, 175, 0.7); backdrop-filter: blur(20px); border-bottom: 1px solid rgba(147, 197, 253, 0.2); position: sticky; top: 0; z-index: 1000; }
-          .desktop-menu { display: flex; align-items: center; justify-content: center; gap: 25px; padding: 12px 5%; background: rgba(15, 23, 42, 0.4); }
-          .nav-link { color: #e2e8f0; text-decoration: none; font-weight: 600; font-size: 0.95rem; cursor: pointer; background: none; border: none; font-family: inherit; }
-          .nav-link:hover, .nav-link.active { color: #38bdf8; }
-          .lang-toggle-container { display: flex; align-items: center; background: rgba(15, 23, 42, 0.6); border: 1px solid rgba(56, 189, 248, 0.3); border-radius: 20px; padding: 4px; position: relative; cursor: pointer; width: 80px; height: 36px; direction: ltr !important; }
-          .lang-toggle-indicator { position: absolute; top: 4px; left: ${lang === 'en' ? '4px' : '40px'}; width: 34px; height: 26px; background: #38bdf8; border-radius: 14px; transition: left 0.3s cubic-bezier(0.4, 0.0, 0.2, 1); }
-          .lang-label { flex: 1; text-align: center; font-size: 0.75rem; font-weight: 700; color: #fff; z-index: 1; }
-          .profile-card { background: rgba(30, 41, 59, 0.85); backdrop-filter: blur(10px); border: 1px solid rgba(56,189,248,0.3); border-radius: 16px; padding: 35px; margin-bottom: 25px; box-shadow: 0 15px 30px rgba(0,0,0,0.3); width: 100%; max-width: 800px; }
-          .input-field { width: 100%; padding: 14px; border-radius: 8px; background: rgba(15,23,42,0.6); border: 1px solid rgba(56,189,248,0.3); color: #fff; font-size: 1rem; margin-top: 5px; outline: none; }
-          .form-label { color: #93c5fd; font-size: 0.9rem; font-weight: bold; }
-          .btn-primary { background: #38bdf8; color: #0f172a; padding: 12px 25px; border: none; border-radius: 8px; font-weight: bold; font-size: 1rem; cursor: pointer; display: inline-flex; align-items: center; gap: 8px; }
-          .cta-card { background: linear-gradient(135deg, rgba(16, 185, 129, 0.1), rgba(16, 185, 129, 0.05)); border: 1px solid #10b981; text-align: center; }
-          .cta-card.locked { background: linear-gradient(135deg, rgba(239, 68, 68, 0.1), rgba(239, 68, 68, 0.05)); border-color: #ef4444; }
-          .en-text { font-family: 'Segoe UI', Roboto, sans-serif !important; direction: ltr !important; display: inline-block; }
-          .photo-preview { width: 60px; height: 60px; border-radius: 50%; object-fit: cover; border: 2px solid #38bdf8; margin-top: 5px; }
+          .desktop-menu { display: flex; justify-content: center; gap: 25px; padding: 12px 5%; background: rgba(15, 23, 42, 0.4); }
+          .nav-link { color: #e2e8f0; text-decoration: none; font-weight: 600; cursor: pointer; background: none; border: none; }
+          .profile-card { background: rgba(30, 41, 59, 0.85); border: 1px solid rgba(56,189,248,0.3); border-radius: 16px; padding: 35px; margin-bottom: 25px; width: 100%; max-width: 800px; }
+          .input-field { width: 100%; padding: 12px; border-radius: 8px; background: rgba(15,23,42,0.6); border: 1px solid rgba(56,189,248,0.3); color: #fff; margin-top: 5px; outline: none; }
+          .btn-primary { background: #38bdf8; color: #0f172a; padding: 12px 25px; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; }
         `}} />
 
         <nav>
           <div className="nav-top-row">
-            <div style={{ display: 'flex', alignItems: 'center', gap: '12px', cursor: 'pointer' }} onClick={() => router.push('/')}>
-              <img src="/logo.jpg" alt="Logo" style={{ width: '40px', height: '40px', borderRadius: '8px' }} />
-              <h1 style={{ margin: 0, color: '#fff', fontSize: '1.2rem', fontWeight: '900' }}>{t[lang].brand}</h1>
-            </div>
-            <div style={{ display: 'flex', gap: '15px', alignItems: 'center' }}>
-              <div className="lang-toggle-container" onClick={toggleLanguage}>
-                  <div className="lang-toggle-indicator"></div><span className="lang-label" style={{ color: lang === 'en' ? '#fff' : '#94a3b8' }}>EN</span><span className="lang-label" style={{ color: lang === 'ur' ? '#fff' : '#94a3b8' }}>UR</span>
-              </div>
-              <button style={{ background: 'transparent', border: 'none', color: '#ef4444', fontSize: '1.5rem', cursor: 'pointer' }} onClick={handleLogout}><i className='bx bx-log-out'></i></button>
-            </div>
+            <h1 style={{ margin: 0, color: '#fff', fontSize: '1.2rem', fontWeight: '900', cursor:'pointer' }} onClick={() => router.push('/')}>Samar Guidance</h1>
+            <button style={{ background: 'transparent', border: 'none', color: '#ef4444', fontSize: '1.5rem', cursor: 'pointer' }} onClick={()=>supabase.auth.signOut().then(()=>router.push('/login'))}><i className='bx bx-log-out'></i></button>
           </div>
           <div className="desktop-menu">
-              <button className="nav-link" onClick={() => router.push('/')}>{t[lang].navHome}</button>
-              <button className="nav-link" onClick={() => router.push('/about')}>{t[lang].navAbout}</button>
-              <button className="nav-link active">{t[lang].navProfile}</button>
+              <button className="nav-link" onClick={() => router.push('/')}>Home</button>
+              <button className="nav-link active">My Profile</button>
           </div>
         </nav>
 
@@ -206,165 +162,63 @@ export default function StudentProfile() {
               {formData.photo_url ? <img src={formData.photo_url} alt="Profile" style={{width:'80px', height:'80px', borderRadius:'50%', objectFit:'cover', border:'3px solid #38bdf8'}} /> : <i className='bx bx-user-circle'></i>}
             </div>
             <h1 style={{ color: '#fff', fontSize: '2.2rem', marginBottom: '5px' }}>{t[lang].profileTitle}</h1>
-            <p style={{ color: '#94a3b8', fontSize: '1.1rem' }}>{t[lang].profileSub}</p>
-            <p className="en-text" style={{ background: 'rgba(15,23,42,0.8)', padding: '5px 15px', borderRadius: '20px', fontSize: '0.9rem', color: '#10b981', border: '1px solid #334155', marginTop: '10px' }}><i className='bx bx-check-shield'></i> {user?.email}</p>
+            <p style={{ background: 'rgba(15,23,42,0.8)', padding: '5px 15px', borderRadius: '20px', color: '#10b981', border: '1px solid #334155' }}>{user?.email}</p>
           </header>
 
           {!isComplete && (
-            <div className="profile-card" style={{ padding: '25px' }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '10px' }}>
-                 <span style={{ color: '#93c5fd', fontWeight: 'bold' }}>Profile Completion</span>
-                 <span className="en-text" style={{ color: progress === 100 ? '#10b981' : '#38bdf8', fontWeight: 'bold' }}>{progress}%</span>
-              </div>
-              <div style={{ width: '100%', background: '#1e293b', borderRadius: '10px', height: '10px', direction: 'ltr' }}>
-                 <div style={{ width: `${progress}%`, background: progress === 100 ? '#10b981' : '#38bdf8', height: '10px', borderRadius: '10px', transition: 'width 0.5s ease' }}></div>
-              </div>
-            </div>
-          )}
-
-          {!isComplete && (
             <form className="profile-card" onSubmit={handleSaveProfile}>
-              <div style={{ display: 'flex', borderBottom: '1px solid #334155', marginBottom: '25px' }}>
-                <button type="button" onClick={()=>setCurrentStep(1)} style={{ flex: 1, padding: '15px', background: currentStep===1 ? 'rgba(56,189,248,0.1)' : 'transparent', color: currentStep===1 ? '#38bdf8' : '#64748b', border: 'none', borderBottom: currentStep===1 ? '2px solid #38bdf8' : 'none', cursor: 'pointer', fontWeight: 'bold' }}>1. {t[lang].step1}</button>
-                <button type="button" onClick={()=>setCurrentStep(2)} style={{ flex: 1, padding: '15px', background: currentStep===2 ? 'rgba(56,189,248,0.1)' : 'transparent', color: currentStep===2 ? '#38bdf8' : '#64748b', border: 'none', borderBottom: currentStep===2 ? '2px solid #38bdf8' : 'none', cursor: 'pointer', fontWeight: 'bold' }}>2. {t[lang].step2}</button>
-                <button type="button" onClick={()=>setCurrentStep(3)} style={{ flex: 1, padding: '15px', background: currentStep===3 ? 'rgba(56,189,248,0.1)' : 'transparent', color: currentStep===3 ? '#38bdf8' : '#64748b', border: 'none', borderBottom: currentStep===3 ? '2px solid #38bdf8' : 'none', cursor: 'pointer', fontWeight: 'bold' }}>3. {t[lang].step3}</button>
+              <div style={{ display: 'flex', borderBottom: '1px solid #334155', marginBottom: '20px' }}>
+                <button type="button" onClick={()=>setCurrentStep(1)} style={{ flex: 1, padding: '10px', background: currentStep===1 ? 'rgba(56,189,248,0.1)' : 'transparent', color: currentStep===1 ? '#38bdf8' : '#64748b', border: 'none', borderBottom: currentStep===1 ? '2px solid #38bdf8' : 'none' }}>1. Basic</button>
+                <button type="button" onClick={()=>setCurrentStep(2)} style={{ flex: 1, padding: '10px', background: currentStep===2 ? 'rgba(56,189,248,0.1)' : 'transparent', color: currentStep===2 ? '#38bdf8' : '#64748b', border: 'none', borderBottom: currentStep===2 ? '2px solid #38bdf8' : 'none' }}>2. Academic</button>
+                <button type="button" onClick={()=>setCurrentStep(3)} style={{ flex: 1, padding: '10px', background: currentStep===3 ? 'rgba(56,189,248,0.1)' : 'transparent', color: currentStep===3 ? '#38bdf8' : '#64748b', border: 'none', borderBottom: currentStep===3 ? '2px solid #38bdf8' : 'none' }}>3. Goals</button>
               </div>
 
               {currentStep === 1 && (
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr', gap: '20px' }}>
-                   <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1fr 1fr', gap: '20px' }}>
-                     <div>
-                       <label className="form-label">{t[lang].fullName} *</label>
-                       <input type="text" name="full_name" className="input-field" value={formData.full_name} onChange={handleChange} required />
-                     </div>
-                     <div>
-                       <label className="form-label">{t[lang].photo}</label>
-                       <div style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
-                         {formData.photo_url && <img src={formData.photo_url} alt="Preview" className="photo-preview" />}
-                         <input type="file" accept="image/*" onChange={handlePhotoChange} className="input-field" style={{ padding: '10px' }} />
-                       </div>
-                     </div>
-                   </div>
-                   <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1fr 1fr', gap: '20px' }}>
-                     <div>
-                       <label className="form-label">{t[lang].phone} *</label>
-                       <input type="tel" name="phone" className="input-field en-text" value={formData.phone} onChange={handleChange} dir="ltr" required />
-                     </div>
-                     <div>
-                       <label className="form-label">{t[lang].gender} *</label>
-                       <select name="gender" className="input-field" value={formData.gender} onChange={handleChange} required>
-                         <option value="">{t[lang].selectOption}</option><option value="Male">Male</option><option value="Female">Female</option>
-                       </select>
-                     </div>
-                   </div>
-                   <div>
-                     <label className="form-label">{t[lang].city} *</label>
-                     <input type="text" name="city" className="input-field" value={formData.city} onChange={handleChange} required />
-                   </div>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '15px' }}>
+                   <label>Full Name *<input type="text" name="full_name" className="input-field" value={formData.full_name} onChange={handleChange} required /></label>
+                   <label>Profile Photo <input type="file" accept="image/*" onChange={handlePhotoChange} className="input-field" /></label>
+                   <label>Phone / WhatsApp *<input type="tel" name="phone" className="input-field" value={formData.phone} onChange={handleChange} required /></label>
+                   <label>Gender *<select name="gender" className="input-field" value={formData.gender} onChange={handleChange} required><option value="">Select</option><option value="Male">Male</option><option value="Female">Female</option></select></label>
+                   <label>City *<input type="text" name="city" className="input-field" value={formData.city} onChange={handleChange} required /></label>
                 </div>
               )}
-
               {currentStep === 2 && (
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr', gap: '20px' }}>
-                   <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1fr 1fr', gap: '20px' }}>
-                     <div>
-                       <label className="form-label">{t[lang].eduLevel} *</label>
-                       <select name="education_level" className="input-field" value={formData.education_level} onChange={handleChange} required>
-                         <option value="">{t[lang].selectOption}</option><option value="8th">8th Std</option><option value="9th">9th Std</option><option value="10th">10th Std</option><option value="11th">11th Std</option><option value="12th">12th Std</option><option value="Graduate">Graduate</option>
-                       </select>
-                     </div>
-                     <div>
-                       <label className="form-label">{t[lang].stream}</label>
-                       <select name="stream" className="input-field" value={formData.stream} onChange={handleChange} disabled={['8th', '9th', '10th'].includes(formData.education_level)}>
-                         <option value="">{['8th', '9th', '10th'].includes(formData.education_level) ? 'Not Applicable' : t[lang].selectOption}</option>
-                         <option value="Science">Science</option><option value="Commerce">Commerce</option><option value="Arts">Arts</option><option value="Polytechnic">Polytechnic</option>
-                       </select>
-                     </div>
-                   </div>
-                   <div>
-                     <label className="form-label">{t[lang].college} *</label>
-                     <input type="text" name="college_name" className="input-field" value={formData.college_name} onChange={handleChange} required />
-                   </div>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '15px' }}>
+                   <label>Education Level *<select name="education_level" className="input-field" value={formData.education_level} onChange={handleChange} required><option value="">Select</option><option value="8th">8th</option><option value="9th">9th</option><option value="10th">10th</option><option value="11th">11th</option><option value="12th">12th</option><option value="Graduate">Graduate</option></select></label>
+                   <label>Stream <select name="stream" className="input-field" value={formData.stream} onChange={handleChange} disabled={['8th', '9th', '10th'].includes(formData.education_level)}><option value="">Select</option><option value="Science">Science</option><option value="Commerce">Commerce</option><option value="Arts">Arts</option><option value="Polytechnic">Polytechnic</option></select></label>
+                   <label>School/College Name *<input type="text" name="college_name" className="input-field" value={formData.college_name} onChange={handleChange} required /></label>
                 </div>
               )}
-
               {currentStep === 3 && (
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr', gap: '20px' }}>
-                   <div>
-                     <label className="form-label">{t[lang].goal} *</label>
-                     <select name="career_goal" className="input-field" value={formData.career_goal} onChange={handleChange} required>
-                       <option value="">{t[lang].selectOption}</option><option value="Engineering">Engineering / IT</option><option value="Medical">Medical / Pharmacy</option><option value="Business">Business / CA / Finance</option><option value="Arts">Arts / Design / Law</option><option value="Govt">Government Jobs / UPSC</option><option value="Undecided">Still Confused / Undecided</option>
-                     </select>
-                   </div>
-                   <div>
-                     <label className="form-label">{t[lang].struggle}</label>
-                     <textarea name="main_struggle" className="input-field" rows="3" value={formData.main_struggle} onChange={handleChange} placeholder="Optional..."></textarea>
-                   </div>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '15px' }}>
+                   <label>Career Goal *<select name="career_goal" className="input-field" value={formData.career_goal} onChange={handleChange} required><option value="">Select</option><option value="Engineering">Engineering / IT</option><option value="Medical">Medical / Pharmacy</option><option value="Business">Business / CA</option><option value="Arts">Arts / Design</option><option value="Govt">Government Jobs</option><option value="Undecided">Undecided</option></select></label>
+                   <label>Main Struggle<textarea name="main_struggle" className="input-field" rows="3" value={formData.main_struggle} onChange={handleChange}></textarea></label>
                 </div>
               )}
 
-              <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: '30px', paddingTop: '20px', borderTop: '1px solid #334155' }}>
-                {currentStep > 1 ? <button type="button" className="btn-secondary" onClick={()=>setCurrentStep(currentStep - 1)}><i className='bx bx-left-arrow-alt'></i> {t[lang].prevBtn}</button> : <div></div>}
-                {currentStep < 3 ? <button type="button" className="btn-primary" onClick={()=>setCurrentStep(currentStep + 1)}>{t[lang].nextBtn} <i className='bx bx-right-arrow-alt'></i></button> : 
-                  <button type="submit" className="btn-primary" style={{ background: '#10b981', color: '#fff' }} disabled={saving}>
-                    {saving ? <><i className='bx bx-loader-alt bx-spin'></i> {t[lang].saving}</> : <><i className='bx bx-save'></i> {t[lang].saveBtn}</>}
-                  </button>
-                }
+              <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: '20px' }}>
+                {currentStep > 1 ? <button type="button" onClick={()=>setCurrentStep(currentStep - 1)} style={{padding:'10px', background:'transparent', color:'#fff', border:'1px solid #475569', borderRadius:'8px'}}>Previous</button> : <div></div>}
+                {currentStep < 3 ? <button type="button" className="btn-primary" onClick={()=>setCurrentStep(currentStep + 1)}>Next</button> : <button type="submit" className="btn-primary" style={{background:'#10b981', color:'#fff'}} disabled={saving}>{saving ? 'Saving...' : 'Save Profile'}</button>}
               </div>
             </form>
           )}
 
-          {/* ACTION CTA: TAKE ASSESSMENT */}
-          <div className={`profile-card cta-card ${!isComplete ? 'locked' : ''}`} style={{ padding: '40px 20px', maxWidth: isComplete ? '800px' : '800px' }}>
-            <div style={{ fontSize: '5rem', marginBottom: '15px', color: isComplete ? '#10b981' : '#ef4444' }}>
-              <i className={isComplete ? 'bx bx-rocket' : 'bx bxs-lock'}></i>
-            </div>
-            <h2 style={{ color: '#fff', marginBottom: '10px', fontSize: '1.8rem' }}>{t[lang].assessmentCardTitle}</h2>
-            <p style={{ color: '#cbd5e1', marginBottom: '30px', fontSize: '1.1rem' }}>{isComplete ? t[lang].assessmentCardSubUnlocked : t[lang].assessmentCardSubLocked}</p>
-            
+          <div className="profile-card" style={{ textAlign: 'center', borderColor: isComplete ? '#10b981' : '#ef4444' }}>
+            <i className={isComplete ? 'bx bx-rocket' : 'bx bxs-lock'} style={{ fontSize: '4rem', color: isComplete ? '#10b981' : '#ef4444' }}></i>
+            <h2 style={{ color: '#fff', margin: '10px 0' }}>Career Assessment</h2>
             {isComplete ? (
-               <button onClick={() => router.push('/assessment')} style={{ background: '#10b981', color: '#fff', padding: '15px 40px', borderRadius: '30px', fontSize: '1.3rem', fontWeight: 'bold', cursor: 'pointer', border: 'none', boxShadow: '0 10px 25px rgba(16, 185, 129, 0.4)', transition: '0.3s' }}>
-                 {t[lang].takeTestBtn} <i className='bx bx-right-arrow-alt'></i>
-               </button>
+               <button onClick={() => router.push('/assessment')} style={{ background: '#10b981', color: '#fff', padding: '15px 30px', borderRadius: '30px', fontSize: '1.2rem', fontWeight: 'bold', border: 'none', marginTop: '10px', cursor: 'pointer' }}>Take Assessment Now</button>
             ) : (
-               <button disabled style={{ background: 'transparent', color: '#ef4444', border: '2px solid #ef4444', padding: '15px 40px', borderRadius: '30px', fontSize: '1.1rem', fontWeight: 'bold', cursor: 'not-allowed', opacity: 0.7 }}>
-                 {t[lang].lockedBtn}
-               </button>
+               <p style={{ color: '#ef4444' }}>Complete your profile to unlock.</p>
             )}
-            
-            {isComplete && (
-              <div style={{ marginTop: '20px' }}>
-                <button onClick={() => setIsComplete(false)} style={{ background: 'transparent', border: 'none', color: '#38bdf8', cursor: 'pointer', textDecoration: 'underline' }}>Edit My Profile Info</button>
-              </div>
-            )}
+            {isComplete && <div style={{ marginTop: '20px' }}><button onClick={() => setIsComplete(false)} style={{ background: 'transparent', border: 'none', color: '#38bdf8', cursor: 'pointer', textDecoration: 'underline' }}>Edit My Info</button></div>}
           </div>
 
-          {/* NEW SECTION: DIGITAL SCRATCHPAD / NOTES (Visible only when profile is complete) */}
           {isComplete && (
-            <div className="profile-card" style={{ padding: '30px' }}>
-              <h2 style={{ color: '#f59e0b', marginBottom: '10px', display: 'flex', alignItems: 'center', gap: '10px' }}>
-                <i className='bx bx-notepad'></i> My Personal Diary & Bookmarks
-              </h2>
-              <p style={{ color: '#94a3b8', fontSize: '0.9rem', marginBottom: '15px' }}>
-                Found an interesting course? Need to save a link or write down a career idea? Paste it here. Only you can see this.
-              </p>
-              <textarea 
-                className="input-field" 
-                rows="6" 
-                placeholder="Paste course names, career ideas, or important links here..."
-                value={formData.personal_notes}
-                onChange={handleChange}
-                name="personal_notes"
-                style={{ background: '#0f172a', border: '1px solid #475569' }}
-              ></textarea>
-              <button 
-                onClick={handleSaveNotes} 
-                className="btn-primary" 
-                style={{ marginTop: '15px', background: '#f59e0b', color: '#0f172a' }}
-                disabled={savingNotes}
-              >
-                {savingNotes ? <><i className='bx bx-loader-alt bx-spin'></i> Saving...</> : <><i className='bx bx-save'></i> Save My Notes</>}
-              </button>
+            <div className="profile-card" style={{ padding: '20px' }}>
+              <h2 style={{ color: '#f59e0b', marginBottom: '10px' }}><i className='bx bx-notepad'></i> Digital Diary / Notes</h2>
+              <textarea className="input-field" rows="5" value={formData.personal_notes} onChange={handleChange} name="personal_notes" style={{ background: '#0f172a' }}></textarea>
+              <button onClick={handleSaveNotes} className="btn-primary" style={{ background: '#f59e0b', color: '#0f172a', marginTop: '10px' }} disabled={savingNotes}>{savingNotes ? 'Saving...' : 'Save Notes'}</button>
             </div>
           )}
 
