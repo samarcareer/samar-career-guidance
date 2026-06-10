@@ -14,30 +14,26 @@ class ErrorBoundary extends Component {
 
 const t = {
   en: {
-    brand: "Samar Guidance", doctor: "Dr. Ashfaque Umar",
-    navHome: "Home", navAbout: "About Us", navAssess: "Career Assessment", navProfile: "My Profile",
+    brand: "Samar Guidance", doctor: "Dr. Ashfaque Umar", navHome: "Home", navAbout: "About Us", navAssess: "Career Assessment", navProfile: "My Profile",
     profileTitle: "Student Dashboard", profileSub: "Complete your profile to unlock the career assessment.",
     step1: "Basic Details", step2: "Academic Info", step3: "Career Goals",
     fullName: "Full Name", phone: "WhatsApp / Phone Number", gender: "Gender", city: "City / Town", photo: "Profile Photo (Optional)",
     eduLevel: "Current Education Level", stream: "Current Stream (If 11th/12th)", college: "School / College Name",
     goal: "Target Career Goal", struggle: "What is your main struggle in career selection?",
     saveBtn: "Save & Continue", saving: "Saving...", nextBtn: "Next Step", prevBtn: "Previous",
-    assessmentCardTitle: "Diagnostic Career Assessment",
-    assessmentCardSubLocked: "Please complete your profile to 100% to unlock your test.",
+    assessmentCardTitle: "Diagnostic Career Assessment", assessmentCardSubLocked: "Please complete your profile to 100% to unlock your test.",
     assessmentCardSubUnlocked: "Your profile is fully verified! You can now take the AI-powered career test.",
     takeTestBtn: "Take Assessment Now", lockedBtn: "Profile Incomplete", selectOption: "-- Select Option --"
   },
   ur: {
-    brand: "ثمر گائیڈنس", doctor: "ڈاکٹر اشفاق عمر",
-    navHome: "ہوم", navAbout: "ہمارے بارے میں", navAssess: "کیریئر اسسمنٹ", navProfile: "میری پروفائل",
+    brand: "ثمر گائیڈنس", doctor: "ڈاکٹر اشفاق عمر", navHome: "ہوم", navAbout: "ہمارے بارے میں", navAssess: "کیریئر اسسمنٹ", navProfile: "میری پروفائل",
     profileTitle: "طالب علم ڈیش بورڈ", profileSub: "کیریئر اسسمنٹ انلاک کرنے کے لیے اپنی پروفائل مکمل کریں۔",
     step1: "بنیادی تفصیلات", step2: "تعلیمی معلومات", step3: "کیریئر کے اہداف",
     fullName: "پورا نام", phone: "واٹس ایپ / فون نمبر", gender: "جنس", city: "شہر / قصبہ", photo: "پروفائل فوٹو (اختیاری)",
     eduLevel: "موجودہ تعلیمی قابلیت", stream: "موجودہ شعبہ (اگر 11ویں/12ویں میں ہیں)", college: "اسکول / کالج کا نام",
     goal: "کیریئر کا ہدف", struggle: "کیریئر کے انتخاب میں آپ کا سب سے بڑا مسئلہ کیا ہے؟",
     saveBtn: "محفوظ کریں", saving: "محفوظ ہو رہا ہے...", nextBtn: "اگلا قدم", prevBtn: "پچھلا قدم",
-    assessmentCardTitle: "ڈائگنوسٹک کیریئر اسسمنٹ",
-    assessmentCardSubLocked: "ٹیسٹ انلاک کرنے کے لیے براہ کرم اپنی پروفائل 100% مکمل کریں۔",
+    assessmentCardTitle: "ڈائگنوسٹک کیریئر اسسمنٹ", assessmentCardSubLocked: "ٹیسٹ انلاک کرنے کے لیے براہ کرم اپنی پروفائل 100% مکمل کریں۔",
     assessmentCardSubUnlocked: "آپ کی پروفائل مکمل ہے! اب آپ AI کیریئر ٹیسٹ دے سکتے ہیں۔",
     takeTestBtn: "ابھی اسسمنٹ دیں", lockedBtn: "پروفائل نامکمل ہے", selectOption: "-- منتخب کریں --"
   }
@@ -59,13 +55,12 @@ export default function StudentProfile() {
   const [formData, setFormData] = useState({
     full_name: '', phone: '', gender: '', city: '',
     education_level: '', stream: '', college_name: '',
-    career_goal: '', main_struggle: ''
+    career_goal: '', main_struggle: '', photo_url: ''
   });
 
   useEffect(() => {
     const handleResize = () => setIsMobile(window.innerWidth <= 1024);
-    handleResize();
-    window.addEventListener('resize', handleResize);
+    handleResize(); window.addEventListener('resize', handleResize);
 
     const checkUserAndFetchProfile = async () => {
       const { data: { session } } = await supabase.auth.getSession();
@@ -78,7 +73,8 @@ export default function StudentProfile() {
         setFormData({
           full_name: profileData.full_name || '', phone: profileData.phone || '', gender: profileData.gender || '',
           city: profileData.city || '', education_level: profileData.education_level || '', stream: profileData.stream || '',
-          college_name: profileData.college_name || '', career_goal: profileData.career_goal || '', main_struggle: profileData.main_struggle || ''
+          college_name: profileData.college_name || '', career_goal: profileData.career_goal || '', main_struggle: profileData.main_struggle || '',
+          photo_url: profileData.photo_url || ''
         });
         setIsComplete(profileData.is_complete || false);
       }
@@ -91,6 +87,17 @@ export default function StudentProfile() {
 
   const toggleLanguage = () => setLang(prev => prev === 'en' ? 'ur' : 'en');
   const handleChange = (e) => setFormData({ ...formData, [e.target.name]: e.target.value });
+
+  // CONVERT PHOTO TO BASE64 FOR SAVING
+  const handlePhotoChange = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      if (file.size > 2000000) { alert("Photo size should be less than 2MB"); return; }
+      const reader = new FileReader();
+      reader.onloadend = () => setFormData({ ...formData, photo_url: reader.result });
+      reader.readAsDataURL(file);
+    }
+  };
 
   const calculateProgress = () => {
     let filledFields = 0;
@@ -111,7 +118,7 @@ export default function StudentProfile() {
     const payload = { id: user.id, email: user.email, ...formData, is_complete: isFullyFilled };
     const { error } = await supabase.from('student_profiles').upsert([payload]);
     setSaving(false);
-    if (!error) setIsComplete(isFullyFilled);
+    if (!error) setIsComplete(isFullyFilled); else alert("Error saving profile.");
   };
 
   const handleLogout = async () => { await supabase.auth.signOut(); router.push('/login'); };
@@ -146,6 +153,7 @@ export default function StudentProfile() {
           .cta-card { background: linear-gradient(135deg, rgba(16, 185, 129, 0.1), rgba(16, 185, 129, 0.05)); border: 1px solid #10b981; text-align: center; }
           .cta-card.locked { background: linear-gradient(135deg, rgba(239, 68, 68, 0.1), rgba(239, 68, 68, 0.05)); border-color: #ef4444; }
           .en-text { font-family: 'Segoe UI', Roboto, sans-serif !important; direction: ltr !important; display: inline-block; }
+          .photo-preview { width: 60px; height: 60px; border-radius: 50%; object-fit: cover; border: 2px solid #38bdf8; margin-top: 5px; }
         `}} />
 
         <nav>
@@ -169,15 +177,15 @@ export default function StudentProfile() {
         </nav>
 
         <main style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', padding: '40px 5%' }}>
-          
           <header style={{ textAlign: 'center', marginBottom: '30px' }}>
-            <div style={{ fontSize: '3rem', color: '#38bdf8', marginBottom: '10px' }}><i className='bx bx-user-circle'></i></div>
+            <div style={{ fontSize: '3rem', color: '#38bdf8', marginBottom: '10px' }}>
+              {formData.photo_url ? <img src={formData.photo_url} alt="Profile" style={{width:'80px', height:'80px', borderRadius:'50%', objectFit:'cover', border:'3px solid #38bdf8'}} /> : <i className='bx bx-user-circle'></i>}
+            </div>
             <h1 style={{ color: '#fff', fontSize: '2.2rem', marginBottom: '5px' }}>{t[lang].profileTitle}</h1>
             <p style={{ color: '#94a3b8', fontSize: '1.1rem' }}>{t[lang].profileSub}</p>
             <p className="en-text" style={{ background: 'rgba(15,23,42,0.8)', padding: '5px 15px', borderRadius: '20px', fontSize: '0.9rem', color: '#10b981', border: '1px solid #334155', marginTop: '10px' }}><i className='bx bx-check-shield'></i> {user?.email}</p>
           </header>
 
-          {/* PROGRESS BAR (Only show if not complete) */}
           {!isComplete && (
             <div className="profile-card" style={{ padding: '25px' }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '10px' }}>
@@ -190,7 +198,6 @@ export default function StudentProfile() {
             </div>
           )}
 
-          {/* 3-STEP WIZARD FORM (Hide when profile is complete) */}
           {!isComplete && (
             <form className="profile-card" onSubmit={handleSaveProfile}>
               <div style={{ display: 'flex', borderBottom: '1px solid #334155', marginBottom: '25px' }}>
@@ -208,7 +215,10 @@ export default function StudentProfile() {
                      </div>
                      <div>
                        <label className="form-label">{t[lang].photo}</label>
-                       <input type="file" accept="image/*" className="input-field" style={{ padding: '10px' }} />
+                       <div style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
+                         {formData.photo_url && <img src={formData.photo_url} alt="Preview" className="photo-preview" />}
+                         <input type="file" accept="image/*" onChange={handlePhotoChange} className="input-field" style={{ padding: '10px' }} />
+                       </div>
                      </div>
                    </div>
                    <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1fr 1fr', gap: '20px' }}>
@@ -298,14 +308,12 @@ export default function StudentProfile() {
                </button>
             )}
             
-            {/* Provide Edit Option if complete */}
             {isComplete && (
               <div style={{ marginTop: '20px' }}>
                 <button onClick={() => setIsComplete(false)} style={{ background: 'transparent', border: 'none', color: '#38bdf8', cursor: 'pointer', textDecoration: 'underline' }}>Edit My Profile</button>
               </div>
             )}
           </div>
-
         </main>
       </div>
     </ErrorBoundary>
