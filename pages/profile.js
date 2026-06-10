@@ -12,7 +12,6 @@ class ErrorBoundary extends Component {
   }
 }
 
-// ... (Translations mapping keep the same as before) ...
 const t = {
   en: { brand: "Samar Guidance", doctor: "Dr. Ashfaque Umar", navHome: "Home", navAbout: "About Us", navAssess: "Career Assessment", navProfile: "My Profile", profileTitle: "Student Dashboard", profileSub: "Manage your career profile.", step1: "Basic Details", step2: "Academic Info", step3: "Career Goals", fullName: "Full Name", phone: "WhatsApp / Phone", gender: "Gender", city: "City / Town", photo: "Profile Photo (Optional)", eduLevel: "Education Level", stream: "Current Stream", college: "School / College Name", goal: "Career Goal", struggle: "Main struggle?", saveBtn: "Save Profile", saving: "Saving...", nextBtn: "Next", prevBtn: "Previous", assessmentCardTitle: "Diagnostic Career Assessment", assessmentCardSubLocked: "Complete profile to unlock.", assessmentCardSubUnlocked: "Profile verified! Take the test now.", takeTestBtn: "Take Assessment Now", lockedBtn: "Profile Incomplete", selectOption: "-- Select Option --" },
   ur: { brand: "ثمر گائیڈنس", doctor: "ڈاکٹر اشفاق عمر", navHome: "ہوم", navAbout: "ہمارے بارے میں", navAssess: "کیریئر اسسمنٹ", navProfile: "میری پروفائل", profileTitle: "طالب علم ڈیش بورڈ", profileSub: "اپنی کیریئر پروفائل کا انتظام کریں۔", step1: "بنیادی تفصیلات", step2: "تعلیمی معلومات", step3: "کیریئر کے اہداف", fullName: "پورا نام", phone: "واٹس ایپ / فون نمبر", gender: "جنس", city: "شہر / قصبہ", photo: "پروفائل فوٹو (اختیاری)", eduLevel: "موجودہ تعلیم", stream: "موجودہ شعبہ", college: "اسکول / کالج کا نام", goal: "کیریئر کا ہدف", struggle: "سب سے بڑا مسئلہ؟", saveBtn: "محفوظ کریں", saving: "محفوظ ہو رہا ہے...", nextBtn: "اگلا", prevBtn: "پچھلا", assessmentCardTitle: "ڈائگنوسٹک کیریئر اسسمنٹ", assessmentCardSubLocked: "ٹیسٹ انلاک کرنے کے لیے پروفائل مکمل کریں۔", assessmentCardSubUnlocked: "پروفائل مکمل ہے! ٹیسٹ دیں۔", takeTestBtn: "اسسمنٹ دیں", lockedBtn: "نامکمل", selectOption: "-- منتخب کریں --" }
@@ -42,33 +41,47 @@ export default function StudentProfile() {
     handleResize(); window.addEventListener('resize', handleResize);
 
     const initProfile = async () => {
-      const { data: { session } } = await supabase.auth.getSession();
-      if (!session) { router.push('/login'); return; }
-      setUser(session.user);
+      try {
+        const { data: { session } } = await supabase.auth.getSession();
+        if (!session) { 
+          router.push('/login'); 
+          return; 
+        }
+        setUser(session.user);
 
-      const { data: pData } = await supabase.from('student_profiles').select('*').eq('id', session.user.id).single();
-      if (pData) {
-        setFormData({
-          full_name: pData.full_name || '', phone: pData.phone || '', gender: pData.gender || '', city: pData.city || '',
-          education_level: pData.education_level || '', stream: pData.stream || '', college_name: pData.college_name || '',
-          career_goal: pData.career_goal || '', main_struggle: pData.main_struggle || '', photo_url: pData.photo_url || '',
-          personal_notes: pData.personal_notes || '', lead_status: pData.lead_status || 'New'
-        });
-        setIsComplete(pData.is_complete || false);
+        // THE FIX: Use maybeSingle() instead of single() so new users don't crash the app
+        const { data: pData, error } = await supabase
+          .from('student_profiles')
+          .select('*')
+          .eq('id', session.user.id)
+          .maybeSingle();
+
+        if (pData) {
+          setFormData({
+            full_name: pData.full_name || '', phone: pData.phone || '', gender: pData.gender || '', city: pData.city || '',
+            education_level: pData.education_level || '', stream: pData.stream || '', college_name: pData.college_name || '',
+            career_goal: pData.career_goal || '', main_struggle: pData.main_struggle || '', photo_url: pData.photo_url || '',
+            personal_notes: pData.personal_notes || '', lead_status: pData.lead_status || 'New'
+          });
+          setIsComplete(pData.is_complete || false);
+        }
+      } catch (err) {
+        console.error("Profile Data Error:", err);
+      } finally {
+        setLoading(false); // Ensures the loading screen always goes away
       }
-      setLoading(false);
     };
+
     initProfile();
     return () => window.removeEventListener('resize', handleResize);
   }, [router]);
 
   const handleChange = (e) => setFormData({ ...formData, [e.target.name]: e.target.value });
 
-  // SAFE IMAGE COMPRESSOR (Prevents Crash)
   const handlePhotoChange = (e) => {
     const file = e.target.files[0];
     if (file) {
-      if(file.size > 5000000) { alert("File too large! Max 5MB allowed."); return; } // Safety limit
+      if(file.size > 5000000) { alert("File too large! Max 5MB allowed."); return; } 
       const reader = new FileReader();
       reader.onload = (event) => {
         const img = new Image();
@@ -80,7 +93,7 @@ export default function StudentProfile() {
           canvas.height = img.height * scaleSize;
           const ctx = canvas.getContext('2d');
           ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
-          const compressed = canvas.toDataURL('image/jpeg', 0.5); // 50% quality
+          const compressed = canvas.toDataURL('image/jpeg', 0.5); 
           setFormData({ ...formData, photo_url: compressed });
         };
         img.src = event.target.result;
@@ -110,7 +123,7 @@ export default function StudentProfile() {
       setIsComplete(isFullyFilled);
       window.scrollTo(0,0);
     } catch(err) {
-      alert("Error saving. Image might be too large, try a smaller photo.");
+      alert("Error saving profile. Please try again.");
       console.error(err);
     }
     setSaving(false);
@@ -120,7 +133,7 @@ export default function StudentProfile() {
     setSavingNotes(true);
     await supabase.from('student_profiles').update({ personal_notes: formData.personal_notes }).eq('id', user.id);
     setSavingNotes(false);
-    alert("Notes saved!");
+    alert("Notes saved successfully!");
   };
 
   if (loading) return <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh', background: '#0f172a', color: '#38bdf8' }}><h2>Loading Dashboard...</h2></div>;
@@ -134,7 +147,6 @@ export default function StudentProfile() {
           <title>{t[lang].navProfile}</title>
         </Head>
 
-        {/* Global Styles here... */}
         <style dangerouslySetInnerHTML={{__html: `
           * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', sans-serif; }
           .nav-top-row { display: flex; justify-content: space-between; align-items: center; padding: 15px 5%; background: rgba(30, 64, 175, 0.7); backdrop-filter: blur(20px); border-bottom: 1px solid rgba(147, 197, 253, 0.2); position: sticky; top: 0; z-index: 1000; }
