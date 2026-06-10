@@ -1,498 +1,416 @@
-import { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, Component } from 'react';
 import { useRouter } from 'next/router';
 import Head from 'next/head';
 import { supabase } from '../utils/supabase';
 
-// --- CAREER KNOWLEDGE BANK ---
-const careerKnowledgeBank = {
-  science: { title: "Science & Technology Framework", scope: "Bsc aur technical courses ke baad aap Research, Data Analytics, Space Science, Laboratory Tech, aur Civil Services mein ja sakte hain.", duration: "3 Years Standard Graduation", jobs: ["Data Scientist", "Lab Researcher", "Content Developer", "Forest Officer", "Forensic Expert"] },
-  commerce: { title: "Commerce & Financial Management", scope: "Finance, Auditing, Corporate Laws, Investment Banking aur Taxation sector mein commerce students ki high demand rehti hai.", duration: "3 to 5 Years Professional Route", jobs: ["Chartered Accountant (CA)", "Financial Analyst", "Company Secretary", "Tax Consultant", "Bank Manager"] },
-  paramedical: { title: "Paramedical & Nursing Allied Sciences", scope: "Hospitals, Diagnostics labs, Radiology centers aur Pharmacy lines mein immediate job placements milti hain.", duration: "2 to 4 Years (Diploma / Degree)", jobs: ["Pharmacist (D.Pharm/B.Pharm)", "Lab Technician", "X-Ray/Radiology Expert", "Physiotherapist"] },
-  btech: { title: "Engineering & Advanced Automation", scope: "Software industries, Automation & Robotics, Infrastructure developers aur Aerospace corporations mein high-paying tech jobs.", duration: "4 Years Professional Degree", jobs: ["Software Engineer", "Robotics Specialist", "Civil Engineer", "Automobile Designer"] },
-  polytechnic: { title: "Polytechnic & Diploma Engineering", scope: "Core technical hands-on experience in Mechanical, Civil, Electrical, and Computer domains for early industry entry.", duration: "3 Years Diploma", jobs: ["Junior Engineer", "Technical Supervisor", "Project Assistant", "CAD Designer"] }
-};
+// --- ERROR BOUNDARY ---
+class ErrorBoundary extends Component {
+  constructor(props) { super(props); this.state = { hasError: false }; }
+  static getDerivedStateFromError(error) { return { hasError: true }; }
+  render() {
+    if (this.state.hasError) return <div style={{color:'white', background:'#0f172a', padding:'50px', textAlign:'center'}}>UI Error. Please refresh.</div>;
+    return this.props.children;
+  }
+}
 
 // --- TRANSLATION DICTIONARY ---
 const t = {
   en: {
-    brand: "Samar Guidance",
-    doctor: "Dr. Ashfaque Umar",
-    searchPlaceholder: "Search matrix...",
-    navHome: "Home",
-    navAbout: "About Us",
-    navCareer: "Career Guidance",
-    courses10: "Courses After 10th",
-    courses12: "Courses After 12th",
-    coursesGrad: "Courses After Graduation",
-    coursesPost: "Courses After Post Graduation",
-    coursesOther: "Other Specializations",
-    navAssess: "Career Assessment",
-    navPersonality: "Personality Development",
-    navGallery: "Gallery",
-    navContact: "Contact Us",
-    footer: "© 2026 Samar Foundation. Enterprise-Grade Architecture Layer Protection Locked.",
-    
-    myProfile: "Student Dashboard",
-    syncing: "Syncing Profile Data...",
-    noAccount: "No Account Found!",
-    takeAssess: "Take Assessment",
-    studentAcc: "STUDENT ACCOUNT PROFILE",
-    roadmapTitle: "Roadmap Matrix:",
-    scope: "Scope:",
-    duration: "Duration:",
-    priority: "Priority Careers:",
-    pendingAnalytics: "Analytics fetching pending...",
-    
-    bookmarksTitle: "My Bookmarks & Highlights",
-    savedTopic: "Saved Topic",
-    highlightedPath: "Highlighted Career Path",
-    topic1: "UPSC Civil Services Strategy",
-    topic2: "AI & Data Analytics Scope",
-    topic3: "Top Colleges in Maharashtra",
-    exploreMore: "Explore More Topics",
-    uploading: "Uploading..."
+    brand: "Samar Guidance", doctor: "Dr. Ashfaque Umar",
+    navHome: "Home", navAbout: "About Us", navAssess: "Career Assessment", navProfile: "My Profile",
+    courses10: "Courses After 10th", courses12: "Courses After 12th",
+    profileTitle: "Student Dashboard", profileSub: "Complete your profile to unlock the career assessment.",
+    step1: "Basic Details", step2: "Academic Info", step3: "Career Goals",
+    fullName: "Full Name", phone: "WhatsApp / Phone Number", gender: "Gender", city: "City / Town",
+    eduLevel: "Current Education Level", stream: "Current Stream (If 11th/12th)", college: "School / College Name",
+    goal: "Target Career Goal", struggle: "What is your main struggle in career selection?",
+    saveBtn: "Save & Continue", saving: "Saving...",
+    nextBtn: "Next Step", prevBtn: "Previous",
+    assessmentCardTitle: "Diagnostic Career Assessment",
+    assessmentCardSubLocked: "Please complete your profile to 100% to unlock your test.",
+    assessmentCardSubUnlocked: "Your profile is complete! You can now take the AI-powered career test.",
+    takeTestBtn: "Take Assessment Now", lockedBtn: "Profile Incomplete",
+    selectOption: "-- Select Option --"
   },
   ur: {
-    brand: "ثمر گائیڈنس",
-    doctor: "ڈاکٹر اشفاق عمر",
-    searchPlaceholder: "تلاش کریں...",
-    navHome: "ہوم",
-    navAbout: "ہمارے بارے میں",
-    navCareer: "کیریئر گائیڈنس",
-    courses10: "دسویں کے بعد کورسز",
-    courses12: "بارہویں کے بعد کورسز",
-    coursesGrad: "گریجویشن کے بعد",
-    coursesPost: "پوسٹ گریجویشن کے بعد",
-    coursesOther: "دیگر مہارتیں",
-    navAssess: "کیریئر اسسمنٹ",
-    navPersonality: "شخصیت سازی",
-    navGallery: "گیلری",
-    navContact: "ہم سے رابطہ کریں",
-    footer: "© 2026 ثمر فاؤنڈیشن۔ انٹرپرائز گریڈ آرکیٹیکچر کے ذریعے محفوظ۔",
-    
-    myProfile: "طالب علم ڈیش بورڈ",
-    syncing: "پروفائل ڈیٹا سنک ہو رہا ہے...",
-    noAccount: "کوئی اکاؤنٹ نہیں ملا!",
-    takeAssess: "اسسمنٹ شروع کریں",
-    studentAcc: "طالب علم کی پروفائل",
-    roadmapTitle: "روڈ میپ میٹرکس:",
-    scope: "دائرہ کار:",
-    duration: "مدت:",
-    priority: "اہم کیریئر:",
-    pendingAnalytics: "اینالیٹکس کا انتظار ہے...",
-    
-    bookmarksTitle: "میرے بک مارکس اور ہائی لائٹس",
-    savedTopic: "محفوظ کردہ موضوع",
-    highlightedPath: "ہائی لائٹ کردہ کیریئر",
-    topic1: "یو پی ایس سی سول سروسز حکمت عملی",
-    topic2: "اے آئی اور ڈیٹا اینالیٹکس کا دائرہ کار",
-    topic3: "مہاراشٹر کے ٹاپ کالجز",
-    exploreMore: "مزید موضوعات دریافت کریں",
-    uploading: "اپ لوڈ ہو رہا ہے..."
+    brand: "ثمر گائیڈنس", doctor: "ڈاکٹر اشفاق عمر",
+    navHome: "ہوم", navAbout: "ہمارے بارے میں", navAssess: "کیریئر اسسمنٹ", navProfile: "میری پروفائل",
+    courses10: "دسویں کے بعد کورسز", courses12: "بارہویں کے بعد کورسز",
+    profileTitle: "طالب علم ڈیش بورڈ", profileSub: "کیریئر اسسمنٹ انلاک کرنے کے لیے اپنی پروفائل مکمل کریں۔",
+    step1: "بنیادی تفصیلات", step2: "تعلیمی معلومات", step3: "کیریئر کے اہداف",
+    fullName: "پورا نام", phone: "واٹس ایپ / فون نمبر", gender: "جنس", city: "شہر / قصبہ",
+    eduLevel: "موجودہ تعلیمی قابلیت", stream: "موجودہ شعبہ (اگر 11ویں/12ویں میں ہیں)", college: "اسکول / کالج کا نام",
+    goal: "کیریئر کا ہدف", struggle: "کیریئر کے انتخاب میں آپ کا سب سے بڑا مسئلہ کیا ہے؟",
+    saveBtn: "محفوظ کریں", saving: "محفوظ ہو رہا ہے...",
+    nextBtn: "اگلا قدم", prevBtn: "پچھلا قدم",
+    assessmentCardTitle: "ڈائگنوسٹک کیریئر اسسمنٹ",
+    assessmentCardSubLocked: "ٹیسٹ انلاک کرنے کے لیے براہ کرم اپنی پروفائل 100% مکمل کریں۔",
+    assessmentCardSubUnlocked: "آپ کی پروفائل مکمل ہے! اب آپ AI کیریئر ٹیسٹ دے سکتے ہیں۔",
+    takeTestBtn: "ابھی اسسمنٹ دیں", lockedBtn: "پروفائل نامکمل ہے",
+    selectOption: "-- منتخب کریں --"
   }
 };
 
 export default function StudentProfile() {
   const router = useRouter();
   const [lang, setLang] = useState('en');
-  
-  // --- States ---
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [showGuidanceDropdown, setShowGuidanceDropdown] = useState(false);
-  const [searchQuery, setSearchQuery] = useState('');
   const [isMobile, setIsMobile] = useState(false);
-  
+
+  // Auth & DB States
+  const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [session, setSession] = useState(null);
-  const [studentData, setStudentData] = useState(null);
-  const [streamDetails, setStreamDetails] = useState(null);
-  const [userName, setUserName] = useState("Student");
+  const [saving, setSaving] = useState(false);
   
-  // --- Photo Upload States ---
-  const [avatarUrl, setAvatarUrl] = useState(null);
-  const [isUploading, setIsUploading] = useState(false);
-  const fileInputRef = useRef(null);
+  // UI States
+  const [currentStep, setCurrentStep] = useState(1);
+  const [isComplete, setIsComplete] = useState(false);
+
+  // Form Data State
+  const [formData, setFormData] = useState({
+    full_name: '', phone: '', gender: '', city: '',
+    education_level: '', stream: '', college_name: '',
+    career_goal: '', main_struggle: ''
+  });
 
   useEffect(() => {
     const handleResize = () => setIsMobile(window.innerWidth <= 1024);
     handleResize();
     window.addEventListener('resize', handleResize);
 
-    const fetchProfile = async () => {
-      try {
-        const { data: { session } } = await supabase.auth.getSession();
-        
-        if (!session) {
-          router.push('/login');
-          return;
-        }
-
-        setSession(session);
-        const email = session.user.email;
-        
-        const metadata = session.user.user_metadata;
-        if (metadata?.full_name) {
-            setUserName(metadata.full_name);
-        } else {
-            setUserName(email.split('@')[0].toUpperCase());
-        }
-
-        if (metadata?.avatar_url) {
-            setAvatarUrl(metadata.avatar_url);
-        }
-
-        const { data, error } = await supabase
-          .from('user_assessments')
-          .select('*')
-          .eq('email', email.trim().toLowerCase())
-          .order('created_at', { ascending: false });
-
-        if (data && data.length > 0) {
-          setStudentData(data[0]);
-          if (careerKnowledgeBank[data[0].interest_area]) {
-              setStreamDetails(careerKnowledgeBank[data[0].interest_area]);
-          }
-        }
-      } catch (err) {
-        console.error("Error fetching data:", err);
-      } finally {
-        setLoading(false);
+    const checkUserAndFetchProfile = async () => {
+      const { data: { session } } = await supabase.auth.getSession();
+      
+      if (!session) {
+        router.push('/login'); // Not logged in? Go to login
+        return;
       }
+      
+      setUser(session.user);
+
+      // Fetch existing profile if any
+      const { data: profileData, error } = await supabase
+        .from('student_profiles')
+        .select('*')
+        .eq('id', session.user.id)
+        .single();
+
+      if (profileData) {
+        setFormData({
+          full_name: profileData.full_name || '',
+          phone: profileData.phone || '',
+          gender: profileData.gender || '',
+          city: profileData.city || '',
+          education_level: profileData.education_level || '',
+          stream: profileData.stream || '',
+          college_name: profileData.college_name || '',
+          career_goal: profileData.career_goal || '',
+          main_struggle: profileData.main_struggle || ''
+        });
+        setIsComplete(profileData.is_complete || false);
+      }
+      
+      setLoading(false);
     };
 
-    fetchProfile();
-
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
-      if (!session) router.push('/login');
-      else setSession(session);
-    });
-
-    return () => {
-      window.removeEventListener('resize', handleResize);
-      subscription.unsubscribe();
-    };
+    checkUserAndFetchProfile();
+    return () => window.removeEventListener('resize', handleResize);
   }, [router]);
+
+  const toggleLanguage = () => setLang(prev => prev === 'en' ? 'ur' : 'en');
+
+  const handleChange = (e) => {
+    setFormData({ ...formData, [e.target.name]: e.target.value });
+  };
+
+  // Calculate Progress %
+  const calculateProgress = () => {
+    const totalFields = 8; // Excluding 'main_struggle' as optional/extra
+    let filledFields = 0;
+    if (formData.full_name) filledFields++;
+    if (formData.phone) filledFields++;
+    if (formData.gender) filledFields++;
+    if (formData.city) filledFields++;
+    if (formData.education_level) filledFields++;
+    if (formData.stream || formData.education_level === '8th' || formData.education_level === '9th' || formData.education_level === '10th') filledFields++; // Stream not mandatory for low classes
+    if (formData.college_name) filledFields++;
+    if (formData.career_goal) filledFields++;
+    
+    return Math.min(Math.round((filledFields / totalFields) * 100), 100);
+  };
+
+  const progress = calculateProgress();
+
+  const handleSaveProfile = async (e) => {
+    if(e) e.preventDefault();
+    setSaving(true);
+
+    const isFullyFilled = progress === 100;
+    
+    const payload = {
+      id: user.id,
+      email: user.email,
+      ...formData,
+      is_complete: isFullyFilled
+    };
+
+    const { error } = await supabase.from('student_profiles').upsert([payload]);
+
+    setSaving(false);
+    
+    if (error) {
+      alert("Error saving profile: " + error.message);
+    } else {
+      setIsComplete(isFullyFilled);
+      if(isFullyFilled) alert("Profile Saved Successfully! You can now take the assessment.");
+    }
+  };
 
   const handleLogout = async () => {
     await supabase.auth.signOut();
-    router.push('/');
+    router.push('/login');
   };
 
-  const toggleLanguage = () => setLang(prev => prev === 'en' ? 'ur' : 'en');
-  
-  const handleSearchSubmit = (e) => {
-    e.preventDefault();
-    if (searchQuery.trim()) router.push(`/categories?search=${encodeURIComponent(searchQuery.trim().toLowerCase())}`);
-  };
-
-  const handlePhotoClick = () => {
-      if (!avatarUrl) fileInputRef.current.click();
-  };
-
-  const handlePhotoChange = async (e) => {
-      const file = e.target.files[0];
-      if (!file) return;
-
-      setIsUploading(true);
-      try {
-          const objectUrl = URL.createObjectURL(file);
-          setAvatarUrl(objectUrl);
-
-          const fileExt = file.name.split('.').pop();
-          const fileName = `${session.user.id}-${Math.random()}.${fileExt}`;
-          
-          const { error: uploadError } = await supabase.storage.from('avatars').upload(fileName, file);
-          
-          if (!uploadError) {
-              const { data: { publicUrl } } = supabase.storage.from('avatars').getPublicUrl(fileName);
-              await supabase.auth.updateUser({ data: { avatar_url: publicUrl } });
-              setAvatarUrl(publicUrl);
-          }
-      } catch (error) {
-          console.error("Upload error:", error);
-      } finally {
-          setIsUploading(false);
-      }
-  };
-
-  if (loading) return (
-    <div style={{ display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center', height: '100vh', backgroundColor: '#0f172a', color: '#38bdf8' }}>
-        <i className='bx bx-loader-alt bx-spin' style={{ fontSize: '4rem', marginBottom: '20px' }}></i>
-        <h2 style={{ fontFamily: "'Segoe UI', sans-serif" }}>{t[lang].syncing}</h2>
-    </div>
-  );
+  if (loading) {
+    return <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh', background: '#0f172a', color: '#38bdf8' }}><h2><i className='bx bx-loader-alt bx-spin'></i> Loading Dashboard...</h2></div>;
+  }
 
   return (
-    <div style={{
-      direction: lang === 'ur' ? 'rtl' : 'ltr',
-      fontFamily: lang === 'ur' ? "'Jameel Noori Nastaleeq', 'Noto Nastaliq Urdu', serif" : "'Segoe UI', Roboto, sans-serif",
-      backgroundColor: '#0f172a',
-      backgroundImage: `radial-gradient(rgba(56, 189, 248, 0.1) 1px, transparent 1px), radial-gradient(rgba(56, 189, 248, 0.1) 1px, #0f172a 1px)`,
-      backgroundSize: '30px 30px',
-      minHeight: '100vh',
-      color: '#f8fafc',
-      display: 'flex', flexDirection: 'column', width: '100vw', maxWidth: '100%', overflowX: 'hidden', margin: 0, padding: 0
-    }}>
-      <Head>
-        <link href="https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css" rel="stylesheet" />
-        <link href="https://fonts.googleapis.com/css2?family=Noto+Nastaliq+Urdu:wght@400;700&display=swap" rel="stylesheet" />
-        <title>{t[lang].myProfile} | {t[lang].brand}</title>
-      </Head>
+    <ErrorBoundary>
+      <div style={{
+        direction: lang === 'ur' ? 'rtl' : 'ltr',
+        fontFamily: lang === 'ur' ? "'Jameel Noori Nastaleeq', 'Noto Nastaliq Urdu', serif" : "'Segoe UI', Roboto, sans-serif",
+        backgroundColor: '#0f172a', backgroundImage: `radial-gradient(rgba(56, 189, 248, 0.1) 1px, transparent 1px)`,
+        backgroundSize: '30px 30px', minHeight: '100vh', color: '#f8fafc', display: 'flex', flexDirection: 'column'
+      }}>
+        <Head>
+          <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1" />
+          <link href="https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css" rel="stylesheet" />
+          <title>{t[lang].navProfile} | {t[lang].brand}</title>
+        </Head>
 
-      <style dangerouslySetInnerHTML={{__html: `
-        * { box-sizing: border-box; margin: 0; padding: 0; }
-        body, html { overflow-x: hidden; width: 100%; background-color: #0f172a; scroll-behavior: smooth; }
+        {/* --- GLOBAL STYLES --- */}
+        <style dangerouslySetInnerHTML={{__html: `
+          * { box-sizing: border-box; margin: 0; padding: 0; }
+          body, html { overflow-x: hidden; scroll-behavior: smooth; }
+          .en-text { font-family: 'Segoe UI', Roboto, sans-serif !important; direction: ltr !important; display: inline-block; }
+          
+          /* NAVBAR */
+          .nav-top-row { display: flex; justify-content: space-between; align-items: center; padding: 15px 5%; background: rgba(30, 64, 175, 0.7); backdrop-filter: blur(20px); border-bottom: 1px solid rgba(147, 197, 253, 0.2); position: sticky; top: 0; z-index: 1000; }
+          .desktop-menu { display: flex; align-items: center; justify-content: center; gap: 25px; padding: 12px 5%; background: rgba(15, 23, 42, 0.4); }
+          .nav-link { color: #e2e8f0; text-decoration: none; font-weight: 600; font-size: 0.95rem; transition: all 0.3s ease; cursor: pointer; background: none; border: none; font-family: inherit; }
+          .nav-link:hover, .nav-link.active { color: #38bdf8; }
+          
+          /* LANG TOGGLE */
+          .lang-toggle-container { display: flex; align-items: center; background: rgba(15, 23, 42, 0.6); border: 1px solid rgba(56, 189, 248, 0.3); border-radius: 20px; padding: 4px; position: relative; cursor: pointer; width: 80px; height: 36px; direction: ltr !important; }
+          .lang-toggle-indicator { position: absolute; top: 4px; left: ${lang === 'en' ? '4px' : '40px'}; width: 34px; height: 26px; background: #38bdf8; border-radius: 14px; transition: left 0.3s cubic-bezier(0.4, 0.0, 0.2, 1); }
+          .lang-label { flex: 1; text-align: center; font-size: 0.75rem; font-weight: 700; color: #fff; z-index: 1; user-select: none; font-family: 'Segoe UI', sans-serif; }
+          
+          /* FORMS & CARDS */
+          .profile-card { background: rgba(30, 41, 59, 0.85); backdrop-filter: blur(10px); border: 1px solid rgba(56,189,248,0.3); border-radius: 16px; padding: 35px; margin-bottom: 25px; box-shadow: 0 15px 30px rgba(0,0,0,0.3); width: 100%; max-width: 800px; }
+          .input-field { width: 100%; padding: 14px; border-radius: 8px; background: rgba(15,23,42,0.6); border: 1px solid rgba(56,189,248,0.3); color: #fff; font-size: 1rem; margin-top: 5px; outline: none; transition: 0.3s; font-family: inherit; }
+          .input-field:focus { border-color: #38bdf8; box-shadow: 0 0 10px rgba(56,189,248,0.2); }
+          .form-label { color: #93c5fd; font-size: 0.9rem; font-weight: bold; }
+          
+          .btn-primary { background: #38bdf8; color: #0f172a; padding: 12px 25px; border: none; border-radius: 8px; font-weight: bold; font-size: 1rem; cursor: pointer; transition: 0.3s; font-family: inherit; display: inline-flex; align-items: center; gap: 8px; }
+          .btn-primary:hover { background: #0284c7; color: #fff; }
+          .btn-secondary { background: transparent; color: #94a3b8; border: 1px solid #475569; padding: 12px 25px; border-radius: 8px; font-weight: bold; cursor: pointer; transition: 0.3s; font-family: inherit; }
+          .btn-secondary:hover { background: rgba(255,255,255,0.1); color: #fff; }
+          
+          /* CTA CARD */
+          .cta-card { background: linear-gradient(135deg, rgba(16, 185, 129, 0.1), rgba(16, 185, 129, 0.05)); border: 1px solid #10b981; text-align: center; }
+          .cta-card.locked { background: linear-gradient(135deg, rgba(239, 68, 68, 0.1), rgba(239, 68, 68, 0.05)); border-color: #ef4444; }
+          
+          .mobile-menu { display: none; flex-direction: column; background: rgba(30, 64, 175, 0.98); position: absolute; width: 100%; top: 70px; left: 0; z-index: 1000; padding: 15px; }
+          .mobile-menu.open { display: flex; }
+          
+          @media (max-width: 1024px) {
+            .desktop-menu { display: none; }
+          }
+        `}} />
 
-        /* --- ENGLISH FONT FIX UTILITY --- */
-        .en-text { font-family: 'Segoe UI', Roboto, sans-serif !important; direction: ltr !important; display: inline-block; }
-
-        .glass-navbar { width: 100%; background: rgba(30, 64, 175, 0.7); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); border-bottom: 1px solid rgba(147, 197, 253, 0.2); position: sticky; top: 0; z-index: 1000; display: flex; flex-direction: column; }
-        .nav-top-row { display: flex; justify-content: space-between; align-items: center; padding: 15px 5%; border-bottom: 1px solid rgba(147, 197, 253, 0.1); }
-        .nav-brand-container { display: flex; align-items: center; gap: 12px; cursor: pointer; }
-        .desktop-menu { display: flex; align-items: center; justify-content: center; gap: 25px; padding: 12px 5%; background: rgba(15, 23, 42, 0.4); }
-        .nav-link { color: #e2e8f0; text-decoration: none; font-weight: 600; font-size: 0.95rem; transition: all 0.3s ease; cursor: pointer; position: relative; background: none; border: none; padding: 5px 0; white-space: nowrap; font-family: inherit; }
-        .nav-link:hover { color: #38bdf8; }
-        .nav-link::after { content: ''; position: absolute; width: 0; height: 2px; bottom: 0; left: 0; background-color: #38bdf8; transition: width 0.3s ease; }
-        .nav-link:hover::after { width: 100%; }
-        
-        .nav-dropdown-container { position: relative; }
-        .nav-dropdown-menu { position: absolute; top: 100%; left: 0; background: rgba(30, 64, 175, 0.95); backdrop-filter: blur(16px); border: 1px solid rgba(147, 197, 253, 0.2); border-radius: 8px; min-width: 260px; box-shadow: 0 15px 30px rgba(0,0,0,0.6); padding: 10px 0; display: flex; flex-direction: column; opacity: 0; visibility: hidden; transform: translateY(10px); transition: all 0.3s ease; z-index: 200; }
-        .nav-dropdown-container:hover .nav-dropdown-menu, .nav-dropdown-menu.active { opacity: 1; visibility: visible; transform: translateY(0); }
-        .dropdown-item { padding: 12px 20px; color: #fff; text-decoration: none; font-size: 0.9rem; font-weight: 500; transition: 0.2s; border-bottom: 1px solid rgba(255,255,255,0.05); text-align: left; background: transparent; border-left: none; border-right: none; border-top: none; width: 100%; cursor: pointer; font-family: inherit; }
-        .dropdown-item:hover { background: rgba(56, 189, 248, 0.2); color: #38bdf8; padding-left: 25px; }
-
-        .lang-toggle-container { display: flex; align-items: center; background: rgba(15, 23, 42, 0.6); border: 1px solid rgba(56, 189, 248, 0.3); border-radius: 20px; padding: 4px; position: relative; cursor: pointer; width: 80px; height: 36px; box-shadow: inset 0 2px 4px rgba(0,0,0,0.3); direction: ltr !important; }
-        .lang-toggle-indicator { position: absolute; top: 4px; left: ${lang === 'en' ? '4px' : '40px'}; width: 34px; height: 26px; background: #38bdf8; border-radius: 14px; transition: left 0.3s cubic-bezier(0.4, 0.0, 0.2, 1); box-shadow: 0 2px 8px rgba(56, 189, 248, 0.5); }
-        .lang-label { flex: 1; text-align: center; font-size: 0.75rem; font-weight: 700; color: #fff; z-index: 1; user-select: none; transition: color 0.3s; font-family: 'Segoe UI', sans-serif; }
-
-        .auth-icon-btn { width: 40px; height: 40px; border-radius: 50%; display: flex; justify-content: center; align-items: center; font-size: 1.4rem; cursor: pointer; border: 1px solid rgba(255,255,255,0.1); background: rgba(15, 23, 42, 0.6); backdrop-filter: blur(8px); transition: all 0.3s ease; }
-        .logout-btn { color: #ef4444; } .logout-btn:hover { background: rgba(239, 68, 68, 0.15); border-color: #ef4444; box-shadow: 0 0 15px rgba(239, 68, 68, 0.3); transform: translateY(-2px); }
-
-        .mobile-search-wrapper { display: none; width: 100%; padding-bottom: 15px; border-bottom: 1px solid rgba(255,255,255,0.1); margin-bottom: 10px; }
-        .desktop-search-wrapper { display: block; flex: 0.6; max-width: 400px; }
-        .mobile-toggle { display: none; background: transparent; border: none; color: #fff; font-size: 2rem; cursor: pointer; }
-
-        .profile-container { padding: 40px 5%; width: 100%; max-width: 1400px; margin: 0 auto; display: grid; gap: 40px; }
-        
-        .profile-header { background: rgba(15, 23, 42, 0.85); border: 1px solid rgba(255,255,255,0.1); border-radius: 16px; padding: 40px; box-shadow: 0 15px 35px rgba(0,0,0,0.4); display: flex; flex-direction: row; gap: 30px; align-items: center; backdrop-filter: blur(10px); }
-        
-        .avatar-lg { width: 130px; height: 130px; background-color: #1e293b; border-radius: 50%; display: flex; justify-content: center; align-items: center; border: 4px solid #38bdf8; overflow: hidden; position: relative; font-size: 4rem; color: #38bdf8; flex-shrink: 0; transition: 0.3s; }
-        .avatar-lg.uploadable:hover { border-color: #10b981; color: #10b981; transform: scale(1.05); }
-        .verified-badge { position: absolute; bottom: 0; width: 100%; background: #10b981; color: #fff; font-size: 0.75rem; font-weight: bold; text-align: center; padding: 4px 0; font-family: 'Segoe UI', sans-serif; z-index: 2; }
-        .upload-overlay { position: absolute; inset: 0; background: rgba(0,0,0,0.6); display: flex; justify-content: center; align-items: center; opacity: 0; transition: 0.3s; font-size: 1rem; font-weight: bold; color: #fff; z-index: 1; }
-        .avatar-lg.uploadable:hover .upload-overlay { opacity: 1; }
-        
-        .text-container { flex: 1; min-width: 0; display: flex; flex-direction: column; align-items: flex-start; justify-content: center; }
-        .student-name { font-size: clamp(1.6rem, 4vw, 2.5rem); color: #fff; margin: 10px 0 0 0; font-weight: 900; word-break: break-word; overflow-wrap: anywhere; line-height: 1.2; }
-        .account-badge { display: inline-block; font-size: 0.85rem; background: rgba(56, 189, 248, 0.15); color: #38bdf8; padding: 6px 12px; border-radius: 6px; font-weight: bold; font-family: inherit; }
-
-        .roadmap-card { background: rgba(15, 23, 42, 0.85); border: 1px solid rgba(255,255,255,0.1); border-radius: 16px; padding: 40px; box-shadow: 0 15px 35px rgba(0,0,0,0.4); backdrop-filter: blur(10px); }
-        .job-pill { background: rgba(255,122,0,0.1); border: 1px solid rgba(255,122,0,0.3); padding: 12px 20px; border-radius: 8px; font-size: 1.05rem; font-weight: bold; color: #fff; font-family: inherit; }
-        .roadmap-header-desktop { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 20px; flex-wrap: wrap; gap: 15px; }
-
-        .bookmark-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px; margin-top: 20px; }
-        .bookmark-item { background: rgba(15, 23, 42, 0.6); border: 1px solid rgba(56, 189, 248, 0.15); border-radius: 12px; padding: 20px; transition: 0.3s; cursor: pointer; display: flex; flex-direction: column; gap: 10px; }
-        .bookmark-item:hover { transform: translateY(-5px); border-color: #38bdf8; background: rgba(56, 189, 248, 0.05); box-shadow: 0 10px 20px rgba(56, 189, 248, 0.1); }
-        .bookmark-header { display: flex; justify-content: space-between; align-items: center; }
-        .bookmark-icon { width: 45px; height: 45px; border-radius: 10px; background: rgba(16, 185, 129, 0.1); color: #10b981; display: flex; justify-content: center; align-items: center; font-size: 1.8rem; }
-        
-        .btn-outline { background: transparent; border: 1px solid #38bdf8; color: #38bdf8; padding: 12px 25px; border-radius: 8px; font-weight: bold; cursor: pointer; transition: 0.3s; font-size: 1rem; font-family: inherit; display: inline-flex; justify-content: center; align-items: center; gap: 8px; }
-        .btn-outline:hover { background: rgba(56, 189, 248, 0.1); }
-
-        @media (max-width: 1024px) {
-          .desktop-search-wrapper { display: none !important; }
-          .mobile-search-wrapper { display: block; }
-          .desktop-menu { display: ${isMobileMenuOpen ? 'flex' : 'none'}; flex-direction: column; align-items: flex-start; position: absolute; top: 100%; left: 0; width: 100%; background: rgba(30, 64, 175, 0.98); border-bottom: 1px solid rgba(56,189,248,0.3); padding: 20px 5%; gap: 15px; box-shadow: 0 20px 40px rgba(0,0,0,0.5); }
-          .mobile-toggle { display: block; }
-          .nav-dropdown-menu { position: static; box-shadow: none; border: none; background: rgba(0,0,0,0.2); margin-top: 10px; width: 100%; display: ${showGuidanceDropdown ? 'flex' : 'none'}; opacity: 1; visibility: visible; transform: none; }
-          [dir="rtl"] .nav-dropdown-menu { text-align: right; }
-          .nav-link { width: 100%; text-align: left; padding: 10px 0; border-bottom: 1px solid rgba(255,255,255,0.1); }
-          [dir="rtl"] .nav-link { text-align: right; }
-          .nav-link::after { display: none; }
-        }
-
-        @media (max-width: 768px) {
-          .profile-header { flex-direction: column; text-align: center; justify-content: center; padding: 30px 15px; gap: 20px; }
-          .text-container { align-items: center; width: 100%; }
-          .student-name { font-size: 1.6rem; text-align: center; }
-          .roadmap-card { padding: 25px 20px; }
-          .roadmap-header-mobile { flex-direction: column !important; align-items: flex-start !important; gap: 15px; }
-          .roadmap-header-mobile button { width: 100%; }
-          .bookmark-grid { grid-template-columns: 1fr; }
-        }
-      `}} />
-
-      <nav className="glass-navbar">
-        <div className="nav-top-row">
-          <div className="nav-brand-container" onClick={() => router.push('/')}>
-            <img src="/logo.jpg" alt="Logo" style={{ width: '45px', height: '45px', borderRadius: '8px' }} />
-            <div>
-              <h1 style={{ margin: 0, color: '#fff', fontSize: '1.4rem', fontWeight: '900', letterSpacing: '0.5px', fontFamily: 'inherit' }}>{t[lang].brand}</h1>
-              <small style={{ color: '#93c5fd', fontWeight: 'bold', display: 'block', fontFamily: 'inherit' }}>{t[lang].doctor}</small>
+        {/* HEADER */}
+        <nav>
+          <div className="nav-top-row">
+            <div style={{ display: 'flex', alignItems: 'center', gap: '12px', cursor: 'pointer' }} onClick={() => router.push('/')}>
+              <img src="/logo.jpg" alt="Logo" style={{ width: '40px', height: '40px', borderRadius: '8px' }} />
+              <div>
+                <h1 style={{ margin: 0, color: '#fff', fontSize: '1.2rem', fontWeight: '900', fontFamily: "'Segoe UI', sans-serif" }}>{t[lang].brand}</h1>
+              </div>
             </div>
-          </div>
-
-          <form className="desktop-search-wrapper" onSubmit={handleSearchSubmit}>
-            <input type="text" value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} placeholder={t[lang].searchPlaceholder} style={{ width: '100%', padding: '10px 18px', borderRadius: '25px', border: '1px solid rgba(147,197,253,0.3)', background: 'rgba(0,0,0,0.2)', color: '#fff', outline: 'none', fontFamily: 'inherit' }} />
-          </form>
-
-          <div style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
-            <div className="lang-toggle-container" onClick={toggleLanguage} title="Switch Language">
-                <div className="lang-toggle-indicator"></div>
-                <span className="lang-label" style={{ color: lang === 'en' ? '#fff' : '#94a3b8' }}>EN</span>
-                <span className="lang-label" style={{ color: lang === 'ur' ? '#fff' : '#94a3b8' }}>UR</span>
-            </div>
-
-            <button onClick={handleLogout} className="auth-icon-btn logout-btn" title="Logout"><i className='bx bx-log-out'></i></button>
-            
-            <button className="mobile-toggle" onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}>
-              {isMobileMenuOpen ? <i className='bx bx-x'></i> : <i className='bx bx-menu'></i>}
-            </button>
-          </div>
-        </div>
-
-        <div className="desktop-menu">
-          <form className="mobile-search-wrapper" onSubmit={handleSearchSubmit}>
-            <input type="text" value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} placeholder={t[lang].searchPlaceholder} style={{ width: '100%', padding: '10px 18px', borderRadius: '8px', border: '1px solid rgba(147,197,253,0.3)', background: 'rgba(0,0,0,0.2)', color: '#fff', outline: 'none', fontFamily: 'inherit' }} />
-          </form>
-
-          <button className="nav-link" onClick={() => router.push('/')}>{t[lang].navHome}</button>
-          <button className="nav-link" onClick={() => router.push('/about')}>{t[lang].navAbout}</button>
-          <div className="nav-dropdown-container" onMouseEnter={() => !isMobile && setShowGuidanceDropdown(true)} onMouseLeave={() => !isMobile && setShowGuidanceDropdown(false)}>
-            <button className="nav-link" onClick={() => setIsMobile && setShowGuidanceDropdown(!showGuidanceDropdown)} style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>{t[lang].navCareer} <i className='bx bx-chevron-down'></i></button>
-            <div className={`nav-dropdown-menu ${showGuidanceDropdown ? 'active' : ''}`}>
-              <button className="dropdown-item" onClick={() => router.push('/guidance?level=10th')}>{t[lang].courses10}</button>
-              <button className="dropdown-item" onClick={() => router.push('/guidance?level=12th')}>{t[lang].courses12}</button>
-              <button className="dropdown-item" onClick={() => router.push('/guidance?level=graduation')}>{t[lang].coursesGrad}</button>
-              <button className="dropdown-item" onClick={() => router.push('/guidance?level=postgrad')}>{t[lang].coursesPost}</button>
-              <button className="dropdown-item" onClick={() => router.push('/guidance?level=other')}>{t[lang].coursesOther}</button>
-            </div>
-          </div>
-          <button className="nav-link" onClick={() => router.push('/assessment')}>{t[lang].navAssess}</button>
-          <button className="nav-link" onClick={() => router.push('/personality')}>{t[lang].navPersonality}</button>
-          <button className="nav-link" onClick={() => router.push('/gallery')}>{t[lang].navGallery}</button>
-        </div>
-      </nav>
-
-      <div className="profile-container">
-        
-        {!studentData ? (
-           <div style={{ background: 'rgba(15, 23, 42, 0.85)', borderRadius: '16px', padding: '60px', textAlign: 'center', border: '1px solid rgba(239,68,68,0.3)', boxShadow: '0 15px 35px rgba(0,0,0,0.4)' }}>
-              <i className='bx bx-error-circle' style={{ fontSize: '5rem', color: '#ef4444', marginBottom: '20px' }}></i>
-              <h3 style={{ fontSize: '2rem', color: '#fff', marginBottom: '20px', fontFamily: 'inherit' }}>{t[lang].noAccount}</h3>
-              <button onClick={() => router.push('/assessment')} style={{ padding: '15px 30px', background: '#38bdf8', border: 'none', borderRadius: '8px', cursor: 'pointer', fontSize: '1.1rem', fontWeight: 'bold', color: '#fff', fontFamily: 'inherit' }}>
-                {t[lang].takeAssess}
+            <div style={{ display: 'flex', gap: '15px', alignItems: 'center' }}>
+              <div className="lang-toggle-container" onClick={toggleLanguage}>
+                  <div className="lang-toggle-indicator"></div>
+                  <span className="lang-label" style={{ color: lang === 'en' ? '#fff' : '#94a3b8' }}>EN</span>
+                  <span className="lang-label" style={{ color: lang === 'ur' ? '#fff' : '#94a3b8' }}>UR</span>
+              </div>
+              <button style={{ background: 'transparent', border: 'none', color: '#ef4444', fontSize: '1.5rem', cursor: 'pointer' }} onClick={handleLogout} title="Logout">
+                <i className='bx bx-log-out'></i>
               </button>
-          </div>
-        ) : (
-          <>
-            <section className="profile-header">
-              <input type="file" accept="image/*" ref={fileInputRef} onChange={handlePhotoChange} style={{ display: 'none' }} />
-              
-              <div 
-                  className={`avatar-lg ${!avatarUrl ? 'uploadable' : ''}`} 
-                  onClick={handlePhotoClick}
-                  style={{ cursor: !avatarUrl ? 'pointer' : 'default' }}
-              >
-                  {isUploading ? (
-                      <i className='bx bx-loader-alt bx-spin' style={{ fontSize: '2.5rem' }}></i>
-                  ) : avatarUrl ? (
-                      <img src={avatarUrl} alt="Profile" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-                  ) : (
-                      <>
-                          <i className='bx bx-camera'></i>
-                          <div className="upload-overlay"><i className='bx bx-upload'></i></div>
-                      </>
-                  )}
-                  <div className="verified-badge">VERIFIED</div>
-              </div>
-
-              <div className="text-container">
-                <span className="account-badge">
-                    {t[lang].studentAcc}
-                </span>
-                {/* Applied .en-text strictly for the name */}
-                <h2 className="student-name en-text">{userName}</h2>
-                <p style={{ margin: '10px 0 0 0', color: '#94a3b8', fontSize: '1rem', fontFamily: 'inherit' }}>
-                    <span className="en-text" style={{ color: '#cbd5e1' }}>{studentData.email}</span>
-                </p>
-              </div>
-            </section>
-
-            <section className="roadmap-card">
-              <div style={{ borderBottom: '1px solid rgba(255,255,255,0.1)', paddingBottom: '20px', marginBottom: '30px' }}>
-                <h3 style={{ margin: '0', fontSize: '2rem', color: '#fff', fontWeight: '900', fontFamily: 'inherit', display: 'flex', alignItems: 'center', gap: '10px', flexWrap: 'wrap' }}>
-                  {t[lang].roadmapTitle} 
-                  {/* Applied .en-text strictly for the interest area e.g., POLYTECHNIC */}
-                  <span className="en-text" style={{ color: '#38bdf8' }}>{studentData.interest_area.toUpperCase()}</span>
-                </h3>
-              </div>
-
-              {streamDetails ? (
-                <div>
-                  <p style={{ color: '#cbd5e1', fontSize: '1.1rem', lineHeight: '1.8', marginBottom: '25px', fontFamily: 'inherit' }}><strong style={{ color: '#38bdf8' }}>{t[lang].scope}</strong> {streamDetails.scope}</p>
-                  <p style={{ color: '#fff', fontSize: '1.1rem', marginBottom: '30px', fontFamily: 'inherit' }}><strong style={{ color: '#38bdf8' }}>{t[lang].duration}</strong> {streamDetails.duration}</p>
-                  <h5 style={{ color: '#ff7a00', fontSize: '1.3rem', marginBottom: '15px', fontFamily: 'inherit' }}>{t[lang].priority}</h5>
-                  <div style={{ display: 'flex', flexWrap: 'wrap', gap: '15px' }}>
-                    {streamDetails.jobs.map((job, idx) => <span key={idx} className="job-pill">💼 <span className="en-text">{job}</span></span>)}
-                  </div>
-                </div>
-              ) : <p style={{ color: '#94a3b8', fontFamily: 'inherit' }}>{t[lang].pendingAnalytics}</p>}
-            </section>
-
-            <section className="roadmap-card">
-               <div className="roadmap-header-desktop roadmap-header-mobile">
-                <h3 style={{ margin: '0', fontSize: '1.8rem', color: '#fff', fontWeight: '800', fontFamily: 'inherit', display: 'flex', alignItems: 'center', gap: '10px' }}>
-                  <i className='bx bx-bookmark-star' style={{ color: '#f59e0b' }}></i> {t[lang].bookmarksTitle}
-                </h3>
-                <button className="btn-outline" onClick={() => router.push('/categories')}>
-                  {t[lang].exploreMore} <i className={`bx bx-${lang === 'ur' ? 'left' : 'right'}-arrow-alt`}></i>
+              {isMobile && (
+                <button style={{ background: 'transparent', border: 'none', color: '#fff', fontSize: '2rem', cursor: 'pointer' }} onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}>
+                  <i className={isMobileMenuOpen ? 'bx bx-x' : 'bx bx-menu'}></i>
                 </button>
+              )}
+            </div>
+          </div>
+          <div className="desktop-menu">
+              <button className="nav-link" onClick={() => router.push('/')}>{t[lang].navHome}</button>
+              <button className="nav-link" onClick={() => router.push('/about')}>{t[lang].navAbout}</button>
+              <button className="nav-link active" onClick={() => router.push('/profile')}>{t[lang].navProfile}</button>
+          </div>
+          {/* MOBILE MENU */}
+          <div className={`mobile-menu ${isMobileMenuOpen ? 'open' : ''}`}>
+            <a onClick={() => router.push('/')} style={{color:'#fff', padding:'10px', textDecoration:'none', borderBottom:'1px solid rgba(255,255,255,0.1)'}}>{t[lang].navHome}</a>
+            <a onClick={() => router.push('/profile')} style={{color:'#38bdf8', padding:'10px', textDecoration:'none', borderBottom:'1px solid rgba(255,255,255,0.1)'}}>{t[lang].navProfile}</a>
+          </div>
+        </nav>
+
+        {/* MAIN DASHBOARD CONTENT */}
+        <main style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', padding: '40px 5%' }}>
+          
+          <header style={{ textAlign: 'center', marginBottom: '30px' }}>
+            <div style={{ fontSize: '3rem', color: '#38bdf8', marginBottom: '10px' }}><i className='bx bx-user-circle'></i></div>
+            <h1 style={{ color: '#fff', fontSize: '2.2rem', marginBottom: '5px', fontFamily: 'inherit' }}>{t[lang].profileTitle}</h1>
+            <p style={{ color: '#94a3b8', fontSize: '1.1rem', fontFamily: 'inherit' }}>{t[lang].profileSub}</p>
+            <p className="en-text" style={{ background: 'rgba(15,23,42,0.8)', padding: '5px 15px', borderRadius: '20px', fontSize: '0.9rem', color: '#10b981', border: '1px solid #334155', marginTop: '10px' }}>
+              <i className='bx bx-check-shield'></i> Logged in as: {user?.email}
+            </p>
+          </header>
+
+          {/* PROGRESS BAR */}
+          <div className="profile-card" style={{ padding: '25px' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '10px' }}>
+               <span style={{ color: '#93c5fd', fontWeight: 'bold' }}>Profile Completion</span>
+               <span className="en-text" style={{ color: progress === 100 ? '#10b981' : '#38bdf8', fontWeight: 'bold' }}>{progress}%</span>
+            </div>
+            <div style={{ width: '100%', background: '#1e293b', borderRadius: '10px', height: '10px', direction: 'ltr' }}>
+               <div style={{ width: `${progress}%`, background: progress === 100 ? '#10b981' : '#38bdf8', height: '10px', borderRadius: '10px', transition: 'width 0.5s ease' }}></div>
+            </div>
+          </div>
+
+          {/* 3-STEP WIZARD FORM */}
+          <form className="profile-card" onSubmit={handleSaveProfile}>
+            
+            {/* WIZARD TABS */}
+            <div style={{ display: 'flex', borderBottom: '1px solid #334155', marginBottom: '25px' }}>
+              <button type="button" onClick={()=>setCurrentStep(1)} style={{ flex: 1, padding: '15px', background: currentStep===1 ? 'rgba(56,189,248,0.1)' : 'transparent', color: currentStep===1 ? '#38bdf8' : '#64748b', border: 'none', borderBottom: currentStep===1 ? '2px solid #38bdf8' : 'none', cursor: 'pointer', fontWeight: 'bold', fontFamily: 'inherit' }}>1. {t[lang].step1}</button>
+              <button type="button" onClick={()=>setCurrentStep(2)} style={{ flex: 1, padding: '15px', background: currentStep===2 ? 'rgba(56,189,248,0.1)' : 'transparent', color: currentStep===2 ? '#38bdf8' : '#64748b', border: 'none', borderBottom: currentStep===2 ? '2px solid #38bdf8' : 'none', cursor: 'pointer', fontWeight: 'bold', fontFamily: 'inherit' }}>2. {t[lang].step2}</button>
+              <button type="button" onClick={()=>setCurrentStep(3)} style={{ flex: 1, padding: '15px', background: currentStep===3 ? 'rgba(56,189,248,0.1)' : 'transparent', color: currentStep===3 ? '#38bdf8' : '#64748b', border: 'none', borderBottom: currentStep===3 ? '2px solid #38bdf8' : 'none', cursor: 'pointer', fontWeight: 'bold', fontFamily: 'inherit' }}>3. {t[lang].step3}</button>
+            </div>
+
+            {/* STEP 1: BASIC INFO */}
+            {currentStep === 1 && (
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr', gap: '20px' }}>
+                 <div>
+                   <label className="form-label">{t[lang].fullName} *</label>
+                   <input type="text" name="full_name" className="input-field" value={formData.full_name} onChange={handleChange} required />
+                 </div>
+                 <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1fr 1fr', gap: '20px' }}>
+                   <div>
+                     <label className="form-label">{t[lang].phone} *</label>
+                     <input type="tel" name="phone" className="input-field en-text" value={formData.phone} onChange={handleChange} dir="ltr" required />
+                   </div>
+                   <div>
+                     <label className="form-label">{t[lang].gender} *</label>
+                     <select name="gender" className="input-field" value={formData.gender} onChange={handleChange} required>
+                       <option value="">{t[lang].selectOption}</option><option value="Male">Male</option><option value="Female">Female</option>
+                     </select>
+                   </div>
+                 </div>
+                 <div>
+                   <label className="form-label">{t[lang].city} *</label>
+                   <input type="text" name="city" className="input-field" value={formData.city} onChange={handleChange} required />
+                 </div>
               </div>
+            )}
 
-              <div className="bookmark-grid">
-                <div className="bookmark-item" onClick={() => router.push('/guidance?level=graduation')}>
-                  <div className="bookmark-header">
-                    <div className="bookmark-icon"><i className='bx bxs-institution'></i></div>
-                    <i className='bx bxs-bookmark' style={{ color: '#38bdf8', fontSize: '1.2rem' }}></i>
-                  </div>
-                  <div>
-                    <h4 style={{ color: '#fff', margin: '0 0 5px 0', fontSize: '1.1rem', fontFamily: 'inherit' }}>{t[lang].topic1}</h4>
-                    <p style={{ color: '#94a3b8', margin: 0, fontSize: '0.9rem', fontFamily: 'inherit' }}>{t[lang].highlightedPath}</p>
-                  </div>
-                </div>
-
-                <div className="bookmark-item" onClick={() => router.push('/guidance?level=12th')} style={{ borderColor: 'rgba(244, 114, 182, 0.3)' }}>
-                  <div className="bookmark-header">
-                    <div className="bookmark-icon" style={{ background: 'rgba(244, 114, 182, 0.1)', color: '#f472b6' }}><i className='bx bx-data'></i></div>
-                    <i className='bx bxs-bookmark' style={{ color: '#f472b6', fontSize: '1.2rem' }}></i>
-                  </div>
-                  <div>
-                    <h4 style={{ color: '#fff', margin: '0 0 5px 0', fontSize: '1.1rem', fontFamily: 'inherit' }}>{t[lang].topic2}</h4>
-                    <p style={{ color: '#94a3b8', margin: 0, fontSize: '0.9rem', fontFamily: 'inherit' }}>{t[lang].savedTopic}</p>
-                  </div>
-                </div>
-
-                <div className="bookmark-item" onClick={() => router.push('/guidance?level=10th')} style={{ borderColor: 'rgba(16, 185, 129, 0.3)' }}>
-                  <div className="bookmark-header">
-                    <div className="bookmark-icon" style={{ background: 'rgba(16, 185, 129, 0.1)', color: '#10b981' }}><i className='bx bxs-school'></i></div>
-                    <i className='bx bxs-bookmark' style={{ color: '#10b981', fontSize: '1.2rem' }}></i>
-                  </div>
-                  <div>
-                    <h4 style={{ color: '#fff', margin: '0 0 5px 0', fontSize: '1.1rem', fontFamily: 'inherit' }}>{t[lang].topic3}</h4>
-                    <p style={{ color: '#94a3b8', margin: 0, fontSize: '0.9rem', fontFamily: 'inherit' }}>{t[lang].savedTopic}</p>
-                  </div>
-                </div>
+            {/* STEP 2: ACADEMIC INFO */}
+            {currentStep === 2 && (
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr', gap: '20px' }}>
+                 <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1fr 1fr', gap: '20px' }}>
+                   <div>
+                     <label className="form-label">{t[lang].eduLevel} *</label>
+                     <select name="education_level" className="input-field" value={formData.education_level} onChange={handleChange} required>
+                       <option value="">{t[lang].selectOption}</option>
+                       <option value="8th">8th Std</option><option value="9th">9th Std</option><option value="10th">10th Std</option>
+                       <option value="11th">11th Std</option><option value="12th">12th Std</option><option value="Graduate">Graduate</option>
+                     </select>
+                   </div>
+                   <div>
+                     <label className="form-label">{t[lang].stream}</label>
+                     <select name="stream" className="input-field" value={formData.stream} onChange={handleChange} disabled={['8th', '9th', '10th'].includes(formData.education_level)}>
+                       <option value="">{['8th', '9th', '10th'].includes(formData.education_level) ? 'Not Applicable' : t[lang].selectOption}</option>
+                       <option value="Science">Science</option><option value="Commerce">Commerce</option><option value="Arts">Arts</option><option value="Polytechnic">Polytechnic</option>
+                     </select>
+                   </div>
+                 </div>
+                 <div>
+                   <label className="form-label">{t[lang].college} *</label>
+                   <input type="text" name="college_name" className="input-field" value={formData.college_name} onChange={handleChange} required />
+                 </div>
               </div>
-            </section>
-          </>
-        )}
+            )}
+
+            {/* STEP 3: CAREER GOALS */}
+            {currentStep === 3 && (
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr', gap: '20px' }}>
+                 <div>
+                   <label className="form-label">{t[lang].goal} *</label>
+                   <select name="career_goal" className="input-field" value={formData.career_goal} onChange={handleChange} required>
+                     <option value="">{t[lang].selectOption}</option>
+                     <option value="Engineering">Engineering / IT</option><option value="Medical">Medical / Pharmacy</option>
+                     <option value="Business">Business / CA / Finance</option><option value="Arts">Arts / Design / Law</option>
+                     <option value="Govt">Government Jobs / UPSC</option><option value="Undecided">Still Confused / Undecided</option>
+                   </select>
+                 </div>
+                 <div>
+                   <label className="form-label">{t[lang].struggle}</label>
+                   <textarea name="main_struggle" className="input-field" rows="3" value={formData.main_struggle} onChange={handleChange} placeholder="Optional..."></textarea>
+                 </div>
+              </div>
+            )}
+
+            {/* NAVIGATION BUTTONS */}
+            <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: '30px', paddingTop: '20px', borderTop: '1px solid #334155' }}>
+              {currentStep > 1 ? (
+                <button type="button" className="btn-secondary" onClick={()=>setCurrentStep(currentStep - 1)}><i className='bx bx-left-arrow-alt'></i> {t[lang].prevBtn}</button>
+              ) : <div></div>}
+              
+              {currentStep < 3 ? (
+                <button type="button" className="btn-primary" onClick={()=>setCurrentStep(currentStep + 1)}>{t[lang].nextBtn} <i className='bx bx-right-arrow-alt'></i></button>
+              ) : (
+                <button type="submit" className="btn-primary" style={{ background: '#10b981', color: '#fff' }} disabled={saving}>
+                  {saving ? <><i className='bx bx-loader-alt bx-spin'></i> {t[lang].saving}</> : <><i className='bx bx-save'></i> {t[lang].saveBtn}</>}
+                </button>
+              )}
+            </div>
+          </form>
+
+          {/* ACTION CTA: TAKE ASSESSMENT */}
+          <div className={`profile-card cta-card ${!isComplete ? 'locked' : ''}`} style={{ padding: '40px 20px' }}>
+            <div style={{ fontSize: '4rem', marginBottom: '15px', color: isComplete ? '#10b981' : '#ef4444' }}>
+              <i className={isComplete ? 'bx bx-rocket' : 'bx bxs-lock'}></i>
+            </div>
+            <h2 style={{ color: '#fff', marginBottom: '10px', fontSize: '1.8rem', fontFamily: 'inherit' }}>{t[lang].assessmentCardTitle}</h2>
+            <p style={{ color: '#cbd5e1', marginBottom: '30px', fontSize: '1.1rem', fontFamily: 'inherit' }}>
+              {isComplete ? t[lang].assessmentCardSubUnlocked : t[lang].assessmentCardSubLocked}
+            </p>
+            
+            {isComplete ? (
+               <button onClick={() => router.push('/assessment')} style={{ background: '#10b981', color: '#fff', padding: '15px 40px', borderRadius: '30px', fontSize: '1.2rem', fontWeight: 'bold', cursor: 'pointer', border: 'none', boxShadow: '0 10px 25px rgba(16, 185, 129, 0.4)', transition: '0.3s', fontFamily: 'inherit' }}>
+                 {t[lang].takeTestBtn} <i className='bx bx-right-arrow-alt'></i>
+               </button>
+            ) : (
+               <button disabled style={{ background: 'transparent', color: '#ef4444', border: '2px solid #ef4444', padding: '15px 40px', borderRadius: '30px', fontSize: '1.1rem', fontWeight: 'bold', cursor: 'not-allowed', fontFamily: 'inherit', opacity: 0.7 }}>
+                 {t[lang].lockedBtn}
+               </button>
+            )}
+          </div>
+
+        </main>
       </div>
-
-      <footer style={{ width: '100%', background: 'rgba(30, 64, 175, 0.6)', backdropFilter: 'blur(16px)', padding: '20px', textAlign: 'center', fontSize: '0.9rem', color: '#bfdbfe', fontWeight: '700', marginTop: 'auto', position: 'relative', fontFamily: 'inherit' }}>
-        {t[lang].footer}
-        <i className='bx bxs-shield-alt-2' onClick={() => router.push('/admin')} style={{ position: 'absolute', right: lang === 'ur' ? 'auto' : '20px', left: lang === 'ur' ? '20px' : 'auto', bottom: '20px', cursor: 'pointer', opacity: 0.3, fontSize: '1.2rem', transition: '0.3s' }} title="Security Protected"></i>
-      </footer>
-    </div>
+    </ErrorBoundary>
   );
 }
