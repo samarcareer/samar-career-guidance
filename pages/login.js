@@ -3,225 +3,328 @@ import { useRouter } from 'next/router';
 import Head from 'next/head';
 import { supabase } from '../utils/supabase';
 
+// --- ERROR BOUNDARY ---
 class ErrorBoundary extends Component {
   constructor(props) { super(props); this.state = { hasError: false }; }
   static getDerivedStateFromError(error) { return { hasError: true }; }
   render() {
-    if (this.state.hasError) return <div style={{color:'white', background:'#0f172a', padding:'50px', textAlign:'center'}}>Page Error. Please refresh.</div>;
+    if (this.state.hasError) return <div style={{color:'white', background:'#0f172a', padding:'50px', textAlign:'center'}}>UI Error. Please refresh.</div>;
     return this.props.children;
   }
 }
 
-// ... (Translations mapping keep the same as before) ...
+// --- TRANSLATION DICTIONARY ---
 const t = {
-  en: { brand: "Samar Guidance", doctor: "Dr. Ashfaque Umar", navHome: "Home", navAbout: "About Us", navAssess: "Career Assessment", navProfile: "My Profile", profileTitle: "Student Dashboard", profileSub: "Manage your career profile.", step1: "Basic Details", step2: "Academic Info", step3: "Career Goals", fullName: "Full Name", phone: "WhatsApp / Phone", gender: "Gender", city: "City / Town", photo: "Profile Photo (Optional)", eduLevel: "Education Level", stream: "Current Stream", college: "School / College Name", goal: "Career Goal", struggle: "Main struggle?", saveBtn: "Save Profile", saving: "Saving...", nextBtn: "Next", prevBtn: "Previous", assessmentCardTitle: "Diagnostic Career Assessment", assessmentCardSubLocked: "Complete profile to unlock.", assessmentCardSubUnlocked: "Profile verified! Take the test now.", takeTestBtn: "Take Assessment Now", lockedBtn: "Profile Incomplete", selectOption: "-- Select Option --" },
-  ur: { brand: "ثمر گائیڈنس", doctor: "ڈاکٹر اشفاق عمر", navHome: "ہوم", navAbout: "ہمارے بارے میں", navAssess: "کیریئر اسسمنٹ", navProfile: "میری پروفائل", profileTitle: "طالب علم ڈیش بورڈ", profileSub: "اپنی کیریئر پروفائل کا انتظام کریں۔", step1: "بنیادی تفصیلات", step2: "تعلیمی معلومات", step3: "کیریئر کے اہداف", fullName: "پورا نام", phone: "واٹس ایپ / فون نمبر", gender: "جنس", city: "شہر / قصبہ", photo: "پروفائل فوٹو (اختیاری)", eduLevel: "موجودہ تعلیم", stream: "موجودہ شعبہ", college: "اسکول / کالج کا نام", goal: "کیریئر کا ہدف", struggle: "سب سے بڑا مسئلہ؟", saveBtn: "محفوظ کریں", saving: "محفوظ ہو رہا ہے...", nextBtn: "اگلا", prevBtn: "پچھلا", assessmentCardTitle: "ڈائگنوسٹک کیریئر اسسمنٹ", assessmentCardSubLocked: "ٹیسٹ انلاک کرنے کے لیے پروفائل مکمل کریں۔", assessmentCardSubUnlocked: "پروفائل مکمل ہے! ٹیسٹ دیں۔", takeTestBtn: "اسسمنٹ دیں", lockedBtn: "نامکمل", selectOption: "-- منتخب کریں --" }
+  en: {
+    brand: "Samar Guidance", doctor: "Dr. Ashfaque Umar",
+    navHome: "Home", navAbout: "About Us", navAssess: "Career Assessment",
+    signIn: "Sign In", signUp: "Create Account",
+    nameLabel: "Full Name", emailLabel: "Email Address",
+    sendOtp: "Send Secure OTP", verifyOtp: "Verify & Login",
+    otpLabel: "Enter 6-Digit Security PIN", otpSentTo: "OTP securely sent to",
+    changeEmail: "Change Email",
+    helloFriend: "Hello, Future Leader!",
+    helloDesc: "Enter your personal details and start your career discovery journey with us.",
+    welcomeBack: "Welcome Back!",
+    welcomeDesc: "To keep connected with us please login with your registered email.",
+    slideBtnSignIn: "Sign In Instead", slideBtnSignUp: "Sign Up Now"
+  },
+  ur: {
+    brand: "ثمر گائیڈنس", doctor: "ڈاکٹر اشفاق عمر",
+    navHome: "ہوم", navAbout: "ہمارے بارے میں", navAssess: "کیریئر اسسمنٹ",
+    signIn: "لاگ ان کریں", signUp: "اکاؤنٹ بنائیں",
+    nameLabel: "پورا نام", emailLabel: "ای میل ایڈریس",
+    sendOtp: "او ٹی پی بھیجیں", verifyOtp: "تصدیق کریں",
+    otpLabel: "6 ہندسوں کا پن درج کریں", otpSentTo: "او ٹی پی بھیج دیا گیا ہے",
+    changeEmail: "ای میل تبدیل کریں",
+    helloFriend: "خوش آمدید، مستقبل کے لیڈر!",
+    helloDesc: "اپنی ذاتی تفصیلات درج کریں اور ہمارے ساتھ کیریئر دریافت کرنے کا سفر شروع کریں۔",
+    welcomeBack: "خوش آمدید!",
+    welcomeDesc: "ہمارے ساتھ جڑے رہنے کے لیے براہ کرم اپنے رجسٹرڈ ای میل سے لاگ ان کریں۔",
+    slideBtnSignIn: "لاگ ان کریں", slideBtnSignUp: "نیا اکاؤنٹ بنائیں"
+  }
 };
 
-export default function StudentProfile() {
+export default function StudentLogin() {
   const router = useRouter();
   const [lang, setLang] = useState('en');
+  
+  // UI States
+  const [isSignUp, setIsSignUp] = useState(false); 
+  const [step, setStep] = useState('form'); 
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-  const [isMobile, setIsMobile] = useState(false);
+  
+  // Input States
+  const [email, setEmail] = useState('');
+  const [fullName, setFullName] = useState('');
+  const [otp, setOtp] = useState('');
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
 
-  const [user, setUser] = useState(null);
-  const [loading, setLoading] = useState(true);
-  const [saving, setSaving] = useState(false);
-  const [savingNotes, setSavingNotes] = useState(false);
-  const [currentStep, setCurrentStep] = useState(1);
-  const [isComplete, setIsComplete] = useState(false);
-
-  const [formData, setFormData] = useState({
-    full_name: '', phone: '', gender: '', city: '',
-    education_level: '', stream: '', college_name: '',
-    career_goal: '', main_struggle: '', photo_url: '', personal_notes: '', lead_status: 'New'
-  });
-
+  // 🔴 FIX: Redirect to /profile if already logged in
   useEffect(() => {
-    const handleResize = () => setIsMobile(window.innerWidth <= 1024);
-    handleResize(); window.addEventListener('resize', handleResize);
-
-    const initProfile = async () => {
-      const { data: { session } } = await supabase.auth.getSession();
-      if (!session) { router.push('/login'); return; }
-      setUser(session.user);
-
-      const { data: pData } = await supabase.from('student_profiles').select('*').eq('id', session.user.id).single();
-      if (pData) {
-        setFormData({
-          full_name: pData.full_name || '', phone: pData.phone || '', gender: pData.gender || '', city: pData.city || '',
-          education_level: pData.education_level || '', stream: pData.stream || '', college_name: pData.college_name || '',
-          career_goal: pData.career_goal || '', main_struggle: pData.main_struggle || '', photo_url: pData.photo_url || '',
-          personal_notes: pData.personal_notes || '', lead_status: pData.lead_status || 'New'
-        });
-        setIsComplete(pData.is_complete || false);
-      }
-      setLoading(false);
-    };
-    initProfile();
-    return () => window.removeEventListener('resize', handleResize);
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      if (session) router.push('/profile'); 
+    });
   }, [router]);
 
-  const handleChange = (e) => setFormData({ ...formData, [e.target.name]: e.target.value });
+  const toggleLanguage = () => setLang(prev => prev === 'en' ? 'ur' : 'en');
 
-  // SAFE IMAGE COMPRESSOR (Prevents Crash)
-  const handlePhotoChange = (e) => {
-    const file = e.target.files[0];
-    if (file) {
-      if(file.size > 5000000) { alert("File too large! Max 5MB allowed."); return; } // Safety limit
-      const reader = new FileReader();
-      reader.onload = (event) => {
-        const img = new Image();
-        img.onload = () => {
-          const canvas = document.createElement('canvas');
-          const MAX_WIDTH = 300; 
-          const scaleSize = MAX_WIDTH / img.width;
-          canvas.width = MAX_WIDTH;
-          canvas.height = img.height * scaleSize;
-          const ctx = canvas.getContext('2d');
-          ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
-          const compressed = canvas.toDataURL('image/jpeg', 0.5); // 50% quality
-          setFormData({ ...formData, photo_url: compressed });
-        };
-        img.src = event.target.result;
-      };
-      reader.readAsDataURL(file);
-    }
-  };
+  // --- SECURE OTP AUTHENTICATION ---
+  const handleSendOtp = async (e) => {
+    e.preventDefault();
+    setError('');
+    setLoading(true);
+    const cleanEmail = email.trim().toLowerCase();
 
-  const calculateProgress = () => {
-    let f = 0;
-    if (formData.full_name) f++; if (formData.phone) f++; if (formData.gender) f++; if (formData.city) f++;
-    if (formData.education_level) f++; if (formData.stream || ['8th', '9th', '10th'].includes(formData.education_level)) f++;
-    if (formData.college_name) f++; if (formData.career_goal) f++;
-    return Math.min(Math.round((f / 8) * 100), 100);
-  };
-  const progress = calculateProgress();
-
-  const handleSaveProfile = async (e) => {
-    if(e) e.preventDefault();
-    setSaving(true);
-    const isFullyFilled = progress === 100;
-    const payload = { id: user.id, email: user.email, ...formData, is_complete: isFullyFilled };
-    
     try {
-      const { error } = await supabase.from('student_profiles').upsert([payload]);
-      if (error) throw error;
-      setIsComplete(isFullyFilled);
-      window.scrollTo(0,0);
-    } catch(err) {
-      alert("Error saving. Image might be too large, try a smaller photo.");
-      console.error(err);
+      const authOptions = isSignUp ? { data: { full_name: fullName } } : {};
+      const { error: otpError } = await supabase.auth.signInWithOtp({ 
+        email: cleanEmail,
+        options: authOptions
+      });
+
+      if (otpError) throw otpError;
+      setStep('otp'); 
+
+    } catch (err) {
+      setError(err.message || "Failed to send OTP. Try again.");
     }
-    setSaving(false);
+    setLoading(false);
   };
 
-  const handleSaveNotes = async () => {
-    setSavingNotes(true);
-    await supabase.from('student_profiles').update({ personal_notes: formData.personal_notes }).eq('id', user.id);
-    setSavingNotes(false);
-    alert("Notes saved!");
+  const handleVerifyOtp = async (e) => {
+    e.preventDefault();
+    setError('');
+    setLoading(true);
+    try {
+      const { data, error: verifyError } = await supabase.auth.verifyOtp({
+        email: email.trim().toLowerCase(),
+        token: otp,
+        type: 'email'
+      });
+      if (verifyError) throw verifyError;
+      
+      // 🔴 FIX: Redirect to /profile after successful OTP
+      if (data?.session) {
+        router.push('/profile'); 
+      }
+    } catch (err) {
+      setError("Invalid or expired OTP. Please try again.");
+    }
+    setLoading(false);
   };
-
-  if (loading) return <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh', background: '#0f172a', color: '#38bdf8' }}><h2>Loading Dashboard...</h2></div>;
 
   return (
     <ErrorBoundary>
-      <div style={{ backgroundColor: '#0f172a', backgroundImage: `radial-gradient(rgba(56, 189, 248, 0.1) 1px, transparent 1px)`, backgroundSize: '30px 30px', minHeight: '100vh', color: '#f8fafc', display: 'flex', flexDirection: 'column' }}>
+      <div style={{
+        direction: lang === 'ur' ? 'rtl' : 'ltr',
+        fontFamily: lang === 'ur' ? "'Jameel Noori Nastaleeq', 'Noto Nastaliq Urdu', serif" : "'Segoe UI', Roboto, sans-serif",
+        backgroundColor: '#0f172a', backgroundImage: `radial-gradient(rgba(56, 189, 248, 0.1) 1px, transparent 1px)`,
+        backgroundSize: '30px 30px', minHeight: '100vh', color: '#f8fafc', display: 'flex', flexDirection: 'column'
+      }}>
         <Head>
           <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1" />
           <link href="https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css" rel="stylesheet" />
-          <title>{t[lang].navProfile}</title>
+          <title>Student Login | {t[lang].brand}</title>
         </Head>
 
-        {/* Global Styles here... */}
+        {/* --- STRICT PURE CSS FOR UI ISOLATION --- */}
         <style dangerouslySetInnerHTML={{__html: `
-          * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', sans-serif; }
-          .nav-top-row { display: flex; justify-content: space-between; align-items: center; padding: 15px 5%; background: rgba(30, 64, 175, 0.7); backdrop-filter: blur(20px); border-bottom: 1px solid rgba(147, 197, 253, 0.2); position: sticky; top: 0; z-index: 1000; }
-          .desktop-menu { display: flex; justify-content: center; gap: 25px; padding: 12px 5%; background: rgba(15, 23, 42, 0.4); }
-          .nav-link { color: #e2e8f0; text-decoration: none; font-weight: 600; cursor: pointer; background: none; border: none; }
-          .profile-card { background: rgba(30, 41, 59, 0.85); border: 1px solid rgba(56,189,248,0.3); border-radius: 16px; padding: 35px; margin-bottom: 25px; width: 100%; max-width: 800px; }
-          .input-field { width: 100%; padding: 12px; border-radius: 8px; background: rgba(15,23,42,0.6); border: 1px solid rgba(56,189,248,0.3); color: #fff; margin-top: 5px; outline: none; }
-          .btn-primary { background: #38bdf8; color: #0f172a; padding: 12px 25px; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; }
+          * { box-sizing: border-box; margin: 0; padding: 0; }
+          .nav-top-row { display: flex; justify-content: space-between; align-items: center; padding: 15px 5%; background: rgba(30, 64, 175, 0.7); backdrop-filter: blur(20px); border-bottom: 1px solid rgba(147, 197, 253, 0.2); }
+          .lang-toggle-container { display: flex; align-items: center; background: rgba(15, 23, 42, 0.6); border: 1px solid rgba(56, 189, 248, 0.3); border-radius: 20px; padding: 4px; position: relative; cursor: pointer; width: 80px; height: 36px; direction: ltr !important; }
+          .lang-toggle-indicator { position: absolute; top: 4px; left: ${lang === 'en' ? '4px' : '40px'}; width: 34px; height: 26px; background: #38bdf8; border-radius: 14px; transition: left 0.3s cubic-bezier(0.4, 0.0, 0.2, 1); }
+          .lang-label { flex: 1; text-align: center; font-size: 0.75rem; font-weight: 700; color: #fff; z-index: 1; user-select: none; font-family: 'Segoe UI', sans-serif; }
+          
+          .input-field { width: 100%; padding: 12px 15px; border-radius: 8px; background: rgba(15,23,42,0.6); border: 1px solid rgba(56,189,248,0.3); color: #fff; font-size: 1rem; margin-bottom: 15px; outline: none; transition: 0.3s; font-family: inherit; }
+          .input-field:focus { border-color: #38bdf8; box-shadow: 0 0 10px rgba(56,189,248,0.2); }
+          
+          .auth-btn { width: 100%; padding: 14px; background: #3b82f6; color: #fff; border: none; border-radius: 8px; font-weight: bold; font-size: 1rem; cursor: pointer; transition: 0.3s; font-family: inherit; display: flex; justify-content: center; align-items: center; gap: 8px; }
+          .auth-btn:hover { background: #2563eb; transform: translateY(-2px); box-shadow: 0 10px 20px rgba(59, 130, 246, 0.4); }
+          
+          /* MASTER CONTAINER */
+          .auth-container { position: relative; width: 100%; max-width: 900px; height: 550px; background: rgba(30, 41, 59, 0.85); backdrop-filter: blur(10px); border: 1px solid rgba(56,189,248,0.3); border-radius: 20px; box-shadow: 0 25px 50px rgba(0,0,0,0.5); overflow: hidden; margin: 0 auto; }
+          
+          /* --- VIEW ISOLATION LOGIC --- */
+          .mobile-view { display: none; }
+          .desktop-view { display: block; height: 100%; width: 100%; position: relative; }
+          
+          @media (max-width: 850px) {
+            .mobile-view { display: block; width: 100%; }
+            .desktop-view { display: none !important; }
+            .auth-container { background: transparent; border: none; box-shadow: none; height: auto; min-height: 600px; overflow: visible; }
+            .mobile-card { background: rgba(30, 41, 59, 0.85); border: 1px solid rgba(56,189,248,0.3); border-radius: 16px; padding: 30px; box-shadow: 0 10px 25px rgba(0,0,0,0.5); width: 100%; }
+          }
+
+          /* --- DESKTOP DOUBLE SLIDER LOGIC --- */
+          .form-container { position: absolute; top: 0; height: 100%; width: 50%; transition: all 0.6s ease-in-out; display: flex; flex-direction: column; justify-content: center; padding: 40px; }
+          
+          .sign-in-container { 
+             left: 0; z-index: 2; 
+             opacity: ${isSignUp ? '0' : '1'}; 
+             transform: ${isSignUp ? 'translateX(100%)' : 'translateX(0)'}; 
+             pointer-events: ${isSignUp ? 'none' : 'auto'}; 
+          }
+          
+          .sign-up-container { 
+             left: 0; z-index: 1; 
+             opacity: ${isSignUp ? '1' : '0'}; 
+             transform: ${isSignUp ? 'translateX(100%)' : 'translateX(0)'}; 
+             pointer-events: ${isSignUp ? 'auto' : 'none'}; 
+          }
+
+          .overlay-container { position: absolute; top: 0; left: 50%; width: 50%; height: 100%; overflow: hidden; transition: transform 0.6s ease-in-out; z-index: 100; transform: ${isSignUp ? 'translateX(-100%)' : 'translateX(0)'}; }
+          
+          .overlay { background: linear-gradient(135deg, #1e40af, #38bdf8); background-repeat: no-repeat; background-size: cover; color: #fff; position: relative; left: -100%; height: 100%; width: 200%; transform: ${isSignUp ? 'translateX(50%)' : 'translateX(0)'}; transition: transform 0.6s ease-in-out; }
+          
+          .overlay-panel { position: absolute; display: flex; align-items: center; justify-content: center; flex-direction: column; padding: 0 40px; text-align: center; top: 0; height: 100%; width: 50%; transform: translateX(0); transition: transform 0.6s ease-in-out; }
+          .overlay-left { transform: ${isSignUp ? 'translateX(0)' : 'translateX(-20%)'}; }
+          .overlay-right { right: 0; transform: ${isSignUp ? 'translateX(20%)' : 'translateX(0)'}; }
+          
+          .ghost-btn { background: transparent; border: 2px solid #fff; color: #fff; padding: 12px 35px; border-radius: 30px; font-weight: bold; font-size: 1rem; cursor: pointer; transition: 0.3s; margin-top: 20px; font-family: inherit; }
+          .ghost-btn:hover { background: #fff; color: #1e40af; }
+          
+          .mobile-menu { display: none; flex-direction: column; background: rgba(30, 64, 175, 0.95); position: absolute; width: 100%; top: 70px; left: 0; z-index: 1000; padding: 15px; border-bottom: 1px solid #38bdf8; }
+          .mobile-menu.open { display: flex; }
+          .mobile-link { color: #fff; padding: 10px; text-decoration: none; font-size: 1.1rem; border-bottom: 1px solid rgba(255,255,255,0.1); }
         `}} />
 
-        <nav>
-          <div className="nav-top-row">
-            <h1 style={{ margin: 0, color: '#fff', fontSize: '1.2rem', fontWeight: '900', cursor:'pointer' }} onClick={() => router.push('/')}>Samar Guidance</h1>
-            <button style={{ background: 'transparent', border: 'none', color: '#ef4444', fontSize: '1.5rem', cursor: 'pointer' }} onClick={()=>supabase.auth.signOut().then(()=>router.push('/login'))}><i className='bx bx-log-out'></i></button>
+        {/* HEADER */}
+        <nav className="nav-top-row">
+          <div style={{ display: 'flex', alignItems: 'center', gap: '12px', cursor: 'pointer' }} onClick={() => router.push('/')}>
+            <img src="/logo.jpg" alt="Logo" style={{ width: '40px', height: '40px', borderRadius: '8px' }} />
+            <div>
+              <h1 style={{ margin: 0, color: '#fff', fontSize: '1.2rem', fontWeight: '900', fontFamily: "'Segoe UI', sans-serif" }}>{t[lang].brand}</h1>
+            </div>
           </div>
-          <div className="desktop-menu">
-              <button className="nav-link" onClick={() => router.push('/')}>Home</button>
-              <button className="nav-link active">My Profile</button>
+          <div style={{ display: 'flex', gap: '15px', alignItems: 'center' }}>
+            <div className="lang-toggle-container" onClick={toggleLanguage}>
+                <div className="lang-toggle-indicator"></div>
+                <span className="lang-label" style={{ color: lang === 'en' ? '#fff' : '#94a3b8' }}>EN</span>
+                <span className="lang-label" style={{ color: lang === 'ur' ? '#fff' : '#94a3b8' }}>UR</span>
+            </div>
+            <button style={{ background: 'transparent', border: 'none', color: '#fff', fontSize: '1.8rem', cursor: 'pointer' }} className="mobile-only-btn mobile-view" onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}>
+              <i className={isMobileMenuOpen ? 'bx bx-x' : 'bx bx-menu'}></i>
+            </button>
           </div>
         </nav>
 
-        <main style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', padding: '40px 5%' }}>
-          <header style={{ textAlign: 'center', marginBottom: '30px' }}>
-            <div style={{ fontSize: '3rem', color: '#38bdf8', marginBottom: '10px' }}>
-              {formData.photo_url ? <img src={formData.photo_url} alt="Profile" style={{width:'80px', height:'80px', borderRadius:'50%', objectFit:'cover', border:'3px solid #38bdf8'}} /> : <i className='bx bx-user-circle'></i>}
+        {/* MOBILE MENU DROPDOWN */}
+        <div className={`mobile-menu ${isMobileMenuOpen ? 'open' : ''}`}>
+          <a className="mobile-link" onClick={() => router.push('/')}>{t[lang].navHome}</a>
+          <a className="mobile-link" onClick={() => router.push('/about')}>{t[lang].navAbout}</a>
+        </div>
+
+        {/* MAIN AUTH SECTION */}
+        <main style={{ flex: 1, display: 'flex', justifyContent: 'center', alignItems: 'center', padding: '20px' }}>
+          
+          <div className="auth-container">
+            
+            {/* =========================================
+                MOBILE VIEW (Stacked Cards)
+            ========================================== */}
+            <div className="mobile-view">
+               {step === 'form' ? (
+                 <>
+                   {isSignUp ? (
+                     <div className="mobile-card">
+                        <h2 style={{ color: '#fff', fontSize: '2rem', marginBottom: '20px' }}>{t[lang].signUp}</h2>
+                        {error && <p style={{ color: '#ef4444', marginBottom: '15px', fontSize:'0.9rem' }}>{error}</p>}
+                        <form onSubmit={handleSendOtp}>
+                          <input type="text" className="input-field" placeholder={t[lang].nameLabel} value={fullName} onChange={(e)=>setFullName(e.target.value)} required />
+                          <input type="email" className="input-field" placeholder={t[lang].emailLabel} value={email} onChange={(e)=>setEmail(e.target.value)} required dir="ltr" />
+                          <button className="auth-btn" type="submit" disabled={loading}>{loading ? <i className='bx bx-loader-alt bx-spin'></i> : t[lang].sendOtp}</button>
+                        </form>
+                        <p style={{ color: '#94a3b8', marginTop: '20px', textAlign: 'center', fontSize: '0.9rem' }}>Already have an account? <span style={{ color: '#38bdf8', cursor: 'pointer', fontWeight:'bold' }} onClick={()=>setIsSignUp(false)}>Sign In</span></p>
+                     </div>
+                   ) : (
+                     <div className="mobile-card">
+                        <h2 style={{ color: '#fff', fontSize: '2rem', marginBottom: '20px' }}>{t[lang].signIn}</h2>
+                        {error && <p style={{ color: '#ef4444', marginBottom: '15px', fontSize:'0.9rem' }}>{error}</p>}
+                        <form onSubmit={handleSendOtp}>
+                          <input type="email" className="input-field" placeholder={t[lang].emailLabel} value={email} onChange={(e)=>setEmail(e.target.value)} required dir="ltr" />
+                          <button className="auth-btn" type="submit" disabled={loading}>{loading ? <i className='bx bx-loader-alt bx-spin'></i> : t[lang].sendOtp}</button>
+                        </form>
+                        <p style={{ color: '#94a3b8', marginTop: '20px', textAlign: 'center', fontSize: '0.9rem' }}>New here? <span style={{ color: '#38bdf8', cursor: 'pointer', fontWeight:'bold' }} onClick={()=>setIsSignUp(true)}>Sign Up</span></p>
+                     </div>
+                   )}
+                 </>
+               ) : (
+                 <div className="mobile-card" style={{textAlign: 'center'}}>
+                    <div style={{ fontSize: '3rem', color: '#10b981', marginBottom: '10px' }}><i className='bx bx-check-shield'></i></div>
+                    <h2 style={{ color: '#fff', fontSize: '1.8rem', marginBottom: '10px' }}>{t[lang].verifyOtp}</h2>
+                    <p style={{ color: '#94a3b8', marginBottom: '20px', fontSize:'0.9rem' }}>{t[lang].otpSentTo} <br/><strong style={{ color: '#38bdf8' }}>{email}</strong></p>
+                    {error && <p style={{ color: '#ef4444', marginBottom: '15px', fontSize:'0.9rem' }}>{error}</p>}
+                    <form onSubmit={handleVerifyOtp}>
+                      <input type="text" maxLength="6" className="input-field" placeholder="••••••" value={otp} onChange={(e)=>setOtp(e.target.value)} required dir="ltr" style={{ fontSize: '1.8rem', textAlign: 'center', letterSpacing: '10px', fontWeight: 'bold' }} />
+                      <button className="auth-btn" type="submit" disabled={loading} style={{ background: '#10b981' }}>{loading ? <i className='bx bx-loader-alt bx-spin'></i> : t[lang].verifyOtp}</button>
+                      <button type="button" onClick={() => { setStep('form'); setOtp(''); setError(''); }} style={{ width: '100%', background: 'transparent', color: '#94a3b8', border: '1px solid #475569', padding: '12px', borderRadius: '8px', marginTop: '15px', cursor: 'pointer' }}>{t[lang].changeEmail}</button>
+                    </form>
+                 </div>
+               )}
             </div>
-            <h1 style={{ color: '#fff', fontSize: '2.2rem', marginBottom: '5px' }}>{t[lang].profileTitle}</h1>
-            <p style={{ background: 'rgba(15,23,42,0.8)', padding: '5px 15px', borderRadius: '20px', color: '#10b981', border: '1px solid #334155' }}>{user?.email}</p>
-          </header>
 
-          {!isComplete && (
-            <form className="profile-card" onSubmit={handleSaveProfile}>
-              <div style={{ display: 'flex', borderBottom: '1px solid #334155', marginBottom: '20px' }}>
-                <button type="button" onClick={()=>setCurrentStep(1)} style={{ flex: 1, padding: '10px', background: currentStep===1 ? 'rgba(56,189,248,0.1)' : 'transparent', color: currentStep===1 ? '#38bdf8' : '#64748b', border: 'none', borderBottom: currentStep===1 ? '2px solid #38bdf8' : 'none' }}>1. Basic</button>
-                <button type="button" onClick={()=>setCurrentStep(2)} style={{ flex: 1, padding: '10px', background: currentStep===2 ? 'rgba(56,189,248,0.1)' : 'transparent', color: currentStep===2 ? '#38bdf8' : '#64748b', border: 'none', borderBottom: currentStep===2 ? '2px solid #38bdf8' : 'none' }}>2. Academic</button>
-                <button type="button" onClick={()=>setCurrentStep(3)} style={{ flex: 1, padding: '10px', background: currentStep===3 ? 'rgba(56,189,248,0.1)' : 'transparent', color: currentStep===3 ? '#38bdf8' : '#64748b', border: 'none', borderBottom: currentStep===3 ? '2px solid #38bdf8' : 'none' }}>3. Goals</button>
-              </div>
-
-              {currentStep === 1 && (
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '15px' }}>
-                   <label>Full Name *<input type="text" name="full_name" className="input-field" value={formData.full_name} onChange={handleChange} required /></label>
-                   <label>Profile Photo <input type="file" accept="image/*" onChange={handlePhotoChange} className="input-field" /></label>
-                   <label>Phone / WhatsApp *<input type="tel" name="phone" className="input-field" value={formData.phone} onChange={handleChange} required /></label>
-                   <label>Gender *<select name="gender" className="input-field" value={formData.gender} onChange={handleChange} required><option value="">Select</option><option value="Male">Male</option><option value="Female">Female</option></select></label>
-                   <label>City *<input type="text" name="city" className="input-field" value={formData.city} onChange={handleChange} required /></label>
+            {/* =========================================
+                DESKTOP VIEW (Double Slider)
+            ========================================== */}
+            <div className="desktop-view">
+                {/* SIGN UP FORM */}
+                <div className="form-container sign-up-container">
+                  <h2 style={{ color: '#fff', fontSize: '2.5rem', marginBottom: '20px', fontFamily: 'inherit' }}>{t[lang].signUp}</h2>
+                  {error && <p style={{ color: '#ef4444', marginBottom: '15px' }}>{error}</p>}
+                  <form onSubmit={handleSendOtp}>
+                    <input type="text" className="input-field" placeholder={t[lang].nameLabel} value={fullName} onChange={(e)=>setFullName(e.target.value)} required />
+                    <input type="email" className="input-field" placeholder={t[lang].emailLabel} value={email} onChange={(e)=>setEmail(e.target.value)} required dir="ltr" />
+                    <button className="auth-btn" type="submit" disabled={loading}>{loading ? <i className='bx bx-loader-alt bx-spin'></i> : t[lang].sendOtp}</button>
+                  </form>
                 </div>
-              )}
-              {currentStep === 2 && (
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '15px' }}>
-                   <label>Education Level *<select name="education_level" className="input-field" value={formData.education_level} onChange={handleChange} required><option value="">Select</option><option value="8th">8th</option><option value="9th">9th</option><option value="10th">10th</option><option value="11th">11th</option><option value="12th">12th</option><option value="Graduate">Graduate</option></select></label>
-                   <label>Stream <select name="stream" className="input-field" value={formData.stream} onChange={handleChange} disabled={['8th', '9th', '10th'].includes(formData.education_level)}><option value="">Select</option><option value="Science">Science</option><option value="Commerce">Commerce</option><option value="Arts">Arts</option><option value="Polytechnic">Polytechnic</option></select></label>
-                   <label>School/College Name *<input type="text" name="college_name" className="input-field" value={formData.college_name} onChange={handleChange} required /></label>
-                </div>
-              )}
-              {currentStep === 3 && (
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '15px' }}>
-                   <label>Career Goal *<select name="career_goal" className="input-field" value={formData.career_goal} onChange={handleChange} required><option value="">Select</option><option value="Engineering">Engineering / IT</option><option value="Medical">Medical / Pharmacy</option><option value="Business">Business / CA</option><option value="Arts">Arts / Design</option><option value="Govt">Government Jobs</option><option value="Undecided">Undecided</option></select></label>
-                   <label>Main Struggle<textarea name="main_struggle" className="input-field" rows="3" value={formData.main_struggle} onChange={handleChange}></textarea></label>
-                </div>
-              )}
 
-              <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: '20px' }}>
-                {currentStep > 1 ? <button type="button" onClick={()=>setCurrentStep(currentStep - 1)} style={{padding:'10px', background:'transparent', color:'#fff', border:'1px solid #475569', borderRadius:'8px'}}>Previous</button> : <div></div>}
-                {currentStep < 3 ? <button type="button" className="btn-primary" onClick={()=>setCurrentStep(currentStep + 1)}>Next</button> : <button type="submit" className="btn-primary" style={{background:'#10b981', color:'#fff'}} disabled={saving}>{saving ? 'Saving...' : 'Save Profile'}</button>}
-              </div>
-            </form>
-          )}
+                {/* SIGN IN FORM */}
+                <div className="form-container sign-in-container">
+                  <h2 style={{ color: '#fff', fontSize: '2.5rem', marginBottom: '20px', fontFamily: 'inherit' }}>{t[lang].signIn}</h2>
+                  {error && <p style={{ color: '#ef4444', marginBottom: '15px' }}>{error}</p>}
+                  <form onSubmit={handleSendOtp}>
+                    <input type="email" className="input-field" placeholder={t[lang].emailLabel} value={email} onChange={(e)=>setEmail(e.target.value)} required dir="ltr" />
+                    <button className="auth-btn" type="submit" disabled={loading}>{loading ? <i className='bx bx-loader-alt bx-spin'></i> : t[lang].sendOtp}</button>
+                  </form>
+                </div>
 
-          <div className="profile-card" style={{ textAlign: 'center', borderColor: isComplete ? '#10b981' : '#ef4444' }}>
-            <i className={isComplete ? 'bx bx-rocket' : 'bx bxs-lock'} style={{ fontSize: '4rem', color: isComplete ? '#10b981' : '#ef4444' }}></i>
-            <h2 style={{ color: '#fff', margin: '10px 0' }}>Career Assessment</h2>
-            {isComplete ? (
-               <button onClick={() => router.push('/assessment')} style={{ background: '#10b981', color: '#fff', padding: '15px 30px', borderRadius: '30px', fontSize: '1.2rem', fontWeight: 'bold', border: 'none', marginTop: '10px', cursor: 'pointer' }}>Take Assessment Now</button>
-            ) : (
-               <p style={{ color: '#ef4444' }}>Complete your profile to unlock.</p>
-            )}
-            {isComplete && <div style={{ marginTop: '20px' }}><button onClick={() => setIsComplete(false)} style={{ background: 'transparent', border: 'none', color: '#38bdf8', cursor: 'pointer', textDecoration: 'underline' }}>Edit My Info</button></div>}
+                {/* THE BLUE OVERLAY PANEL */}
+                <div className="overlay-container">
+                  <div className="overlay">
+                    {/* Overlay Left Content */}
+                    <div className="overlay-panel overlay-left">
+                      <h1 style={{ fontSize: '2.2rem', marginBottom: '10px' }}>{t[lang].welcomeBack}</h1>
+                      <p style={{ fontSize: '1rem', opacity: 0.9 }}>{t[lang].welcomeDesc}</p>
+                      <button className="ghost-btn" onClick={() => { setIsSignUp(false); setError(''); }}>{t[lang].slideBtnSignIn}</button>
+                    </div>
+                    {/* Overlay Right Content */}
+                    <div className="overlay-panel overlay-right">
+                      <h1 style={{ fontSize: '2.2rem', marginBottom: '10px' }}>{t[lang].helloFriend}</h1>
+                      <p style={{ fontSize: '1rem', opacity: 0.9 }}>{t[lang].helloDesc}</p>
+                      <button className="ghost-btn" onClick={() => { setIsSignUp(true); setError(''); }}>{t[lang].slideBtnSignUp}</button>
+                    </div>
+                  </div>
+                </div>
+
+                {/* OTP VERIFICATION LOCK SCREEN (Overrides Desktop View when active) */}
+                {step === 'otp' && (
+                  <div style={{ position: 'absolute', inset: 0, zIndex: 200, background: 'rgba(30, 41, 59, 0.95)', backdropFilter: 'blur(10px)', display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center', padding: '40px' }}>
+                     <div style={{ fontSize: '4rem', color: '#10b981', marginBottom: '10px' }}><i className='bx bx-check-shield'></i></div>
+                     <h2 style={{ color: '#fff', fontSize: '2rem', marginBottom: '10px', fontFamily: 'inherit' }}>{t[lang].verifyOtp}</h2>
+                     <p style={{ color: '#94a3b8', marginBottom: '30px', textAlign: 'center' }}>{t[lang].otpSentTo} <strong style={{ color: '#38bdf8' }}>{email}</strong></p>
+                     {error && <p style={{ color: '#ef4444', marginBottom: '15px' }}>{error}</p>}
+                     <form onSubmit={handleVerifyOtp} style={{ width: '100%', maxWidth: '400px' }}>
+                        <input type="text" maxLength="6" className="input-field" placeholder="••••••" value={otp} onChange={(e)=>setOtp(e.target.value)} required dir="ltr" style={{ fontSize: '2.5rem', textAlign: 'center', letterSpacing: '15px', fontWeight: 'bold', padding: '20px' }} />
+                        <button className="auth-btn" type="submit" disabled={loading} style={{ background: '#10b981', marginTop: '10px' }}>{loading ? <i className='bx bx-loader-alt bx-spin'></i> : t[lang].verifyOtp}</button>
+                        <button type="button" onClick={() => { setStep('form'); setOtp(''); setError(''); }} style={{ width: '100%', background: 'transparent', color: '#94a3b8', border: '1px solid #475569', padding: '12px', borderRadius: '8px', marginTop: '15px', cursor: 'pointer' }}>{t[lang].changeEmail}</button>
+                     </form>
+                  </div>
+                )}
+            </div>
+
           </div>
-
-          {isComplete && (
-            <div className="profile-card" style={{ padding: '20px' }}>
-              <h2 style={{ color: '#f59e0b', marginBottom: '10px' }}><i className='bx bx-notepad'></i> Digital Diary / Notes</h2>
-              <textarea className="input-field" rows="5" value={formData.personal_notes} onChange={handleChange} name="personal_notes" style={{ background: '#0f172a' }}></textarea>
-              <button onClick={handleSaveNotes} className="btn-primary" style={{ background: '#f59e0b', color: '#0f172a', marginTop: '10px' }} disabled={savingNotes}>{savingNotes ? 'Saving...' : 'Save Notes'}</button>
-            </div>
-          )}
-
         </main>
       </div>
     </ErrorBoundary>
