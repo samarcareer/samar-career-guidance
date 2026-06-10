@@ -15,19 +15,19 @@ class ErrorBoundary extends Component {
 const t = {
   en: {
     brand: "Samar Guidance", doctor: "Dr. Ashfaque Umar", navHome: "Home", navAbout: "About Us", navAssess: "Career Assessment", navProfile: "My Profile",
-    profileTitle: "Student Dashboard", profileSub: "Complete your profile to unlock the career assessment.",
+    profileTitle: "Student Dashboard", profileSub: "Manage your career profile and personal notes.",
     step1: "Basic Details", step2: "Academic Info", step3: "Career Goals",
     fullName: "Full Name", phone: "WhatsApp / Phone Number", gender: "Gender", city: "City / Town", photo: "Profile Photo (Optional)",
     eduLevel: "Current Education Level", stream: "Current Stream (If 11th/12th)", college: "School / College Name",
     goal: "Target Career Goal", struggle: "What is your main struggle in career selection?",
-    saveBtn: "Save & Continue", saving: "Saving...", nextBtn: "Next Step", prevBtn: "Previous",
+    saveBtn: "Save Profile", saving: "Saving...", nextBtn: "Next Step", prevBtn: "Previous",
     assessmentCardTitle: "Diagnostic Career Assessment", assessmentCardSubLocked: "Please complete your profile to 100% to unlock your test.",
     assessmentCardSubUnlocked: "Your profile is fully verified! You can now take the AI-powered career test.",
     takeTestBtn: "Take Assessment Now", lockedBtn: "Profile Incomplete", selectOption: "-- Select Option --"
   },
   ur: {
     brand: "ثمر گائیڈنس", doctor: "ڈاکٹر اشفاق عمر", navHome: "ہوم", navAbout: "ہمارے بارے میں", navAssess: "کیریئر اسسمنٹ", navProfile: "میری پروفائل",
-    profileTitle: "طالب علم ڈیش بورڈ", profileSub: "کیریئر اسسمنٹ انلاک کرنے کے لیے اپنی پروفائل مکمل کریں۔",
+    profileTitle: "طالب علم ڈیش بورڈ", profileSub: "اپنی کیریئر پروفائل اور ذاتی نوٹس کا انتظام کریں۔",
     step1: "بنیادی تفصیلات", step2: "تعلیمی معلومات", step3: "کیریئر کے اہداف",
     fullName: "پورا نام", phone: "واٹس ایپ / فون نمبر", gender: "جنس", city: "شہر / قصبہ", photo: "پروفائل فوٹو (اختیاری)",
     eduLevel: "موجودہ تعلیمی قابلیت", stream: "موجودہ شعبہ (اگر 11ویں/12ویں میں ہیں)", college: "اسکول / کالج کا نام",
@@ -48,6 +48,7 @@ export default function StudentProfile() {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [savingNotes, setSavingNotes] = useState(false);
   
   const [currentStep, setCurrentStep] = useState(1);
   const [isComplete, setIsComplete] = useState(false);
@@ -55,7 +56,7 @@ export default function StudentProfile() {
   const [formData, setFormData] = useState({
     full_name: '', phone: '', gender: '', city: '',
     education_level: '', stream: '', college_name: '',
-    career_goal: '', main_struggle: '', photo_url: ''
+    career_goal: '', main_struggle: '', photo_url: '', personal_notes: ''
   });
 
   useEffect(() => {
@@ -74,7 +75,7 @@ export default function StudentProfile() {
           full_name: profileData.full_name || '', phone: profileData.phone || '', gender: profileData.gender || '',
           city: profileData.city || '', education_level: profileData.education_level || '', stream: profileData.stream || '',
           college_name: profileData.college_name || '', career_goal: profileData.career_goal || '', main_struggle: profileData.main_struggle || '',
-          photo_url: profileData.photo_url || ''
+          photo_url: profileData.photo_url || '', personal_notes: profileData.personal_notes || ''
         });
         setIsComplete(profileData.is_complete || false);
       }
@@ -88,13 +89,26 @@ export default function StudentProfile() {
   const toggleLanguage = () => setLang(prev => prev === 'en' ? 'ur' : 'en');
   const handleChange = (e) => setFormData({ ...formData, [e.target.name]: e.target.value });
 
-  // CONVERT PHOTO TO BASE64 FOR SAVING
+  // IMAGE COMPRESSOR (Prevents App Crash)
   const handlePhotoChange = (e) => {
     const file = e.target.files[0];
     if (file) {
-      if (file.size > 2000000) { alert("Photo size should be less than 2MB"); return; }
       const reader = new FileReader();
-      reader.onloadend = () => setFormData({ ...formData, photo_url: reader.result });
+      reader.onload = (event) => {
+        const img = new Image();
+        img.onload = () => {
+          const canvas = document.createElement('canvas');
+          const MAX_WIDTH = 250; // Compressed small size
+          const scaleSize = MAX_WIDTH / img.width;
+          canvas.width = MAX_WIDTH;
+          canvas.height = img.height * scaleSize;
+          const ctx = canvas.getContext('2d');
+          ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+          const compressedBase64 = canvas.toDataURL('image/jpeg', 0.6); // 60% quality
+          setFormData({ ...formData, photo_url: compressedBase64 });
+        };
+        img.src = event.target.result;
+      };
       reader.readAsDataURL(file);
     }
   };
@@ -118,7 +132,17 @@ export default function StudentProfile() {
     const payload = { id: user.id, email: user.email, ...formData, is_complete: isFullyFilled };
     const { error } = await supabase.from('student_profiles').upsert([payload]);
     setSaving(false);
-    if (!error) setIsComplete(isFullyFilled); else alert("Error saving profile.");
+    if (!error) {
+      setIsComplete(isFullyFilled);
+      window.scrollTo(0,0);
+    } else alert("Error saving profile.");
+  };
+
+  const handleSaveNotes = async () => {
+    setSavingNotes(true);
+    const { error } = await supabase.from('student_profiles').update({ personal_notes: formData.personal_notes }).eq('id', user.id);
+    setSavingNotes(false);
+    if(!error) alert("Personal notes saved securely!");
   };
 
   const handleLogout = async () => { await supabase.auth.signOut(); router.push('/login'); };
@@ -291,7 +315,7 @@ export default function StudentProfile() {
           )}
 
           {/* ACTION CTA: TAKE ASSESSMENT */}
-          <div className={`profile-card cta-card ${!isComplete ? 'locked' : ''}`} style={{ padding: '40px 20px', maxWidth: isComplete ? '600px' : '800px' }}>
+          <div className={`profile-card cta-card ${!isComplete ? 'locked' : ''}`} style={{ padding: '40px 20px', maxWidth: isComplete ? '800px' : '800px' }}>
             <div style={{ fontSize: '5rem', marginBottom: '15px', color: isComplete ? '#10b981' : '#ef4444' }}>
               <i className={isComplete ? 'bx bx-rocket' : 'bx bxs-lock'}></i>
             </div>
@@ -310,10 +334,40 @@ export default function StudentProfile() {
             
             {isComplete && (
               <div style={{ marginTop: '20px' }}>
-                <button onClick={() => setIsComplete(false)} style={{ background: 'transparent', border: 'none', color: '#38bdf8', cursor: 'pointer', textDecoration: 'underline' }}>Edit My Profile</button>
+                <button onClick={() => setIsComplete(false)} style={{ background: 'transparent', border: 'none', color: '#38bdf8', cursor: 'pointer', textDecoration: 'underline' }}>Edit My Profile Info</button>
               </div>
             )}
           </div>
+
+          {/* NEW SECTION: DIGITAL SCRATCHPAD / NOTES (Visible only when profile is complete) */}
+          {isComplete && (
+            <div className="profile-card" style={{ padding: '30px' }}>
+              <h2 style={{ color: '#f59e0b', marginBottom: '10px', display: 'flex', alignItems: 'center', gap: '10px' }}>
+                <i className='bx bx-notepad'></i> My Personal Diary & Bookmarks
+              </h2>
+              <p style={{ color: '#94a3b8', fontSize: '0.9rem', marginBottom: '15px' }}>
+                Found an interesting course? Need to save a link or write down a career idea? Paste it here. Only you can see this.
+              </p>
+              <textarea 
+                className="input-field" 
+                rows="6" 
+                placeholder="Paste course names, career ideas, or important links here..."
+                value={formData.personal_notes}
+                onChange={handleChange}
+                name="personal_notes"
+                style={{ background: '#0f172a', border: '1px solid #475569' }}
+              ></textarea>
+              <button 
+                onClick={handleSaveNotes} 
+                className="btn-primary" 
+                style={{ marginTop: '15px', background: '#f59e0b', color: '#0f172a' }}
+                disabled={savingNotes}
+              >
+                {savingNotes ? <><i className='bx bx-loader-alt bx-spin'></i> Saving...</> : <><i className='bx bx-save'></i> Save My Notes</>}
+              </button>
+            </div>
+          )}
+
         </main>
       </div>
     </ErrorBoundary>
