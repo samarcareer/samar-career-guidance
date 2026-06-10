@@ -225,15 +225,6 @@ export default function StudentProfile() {
             )}
             {isComplete && <div style={{ marginTop: '20px' }}><button onClick={() => setIsComplete(false)} style={{ background: 'transparent', border: 'none', color: '#38bdf8', cursor: 'pointer', textDecoration: 'underline' }}>Edit My Info</button></div>}
           </div>
-
-          {isComplete && (
-            <div className="profile-card" style={{ padding: '20px' }}>
-              <h2 style={{ color: '#f59e0b', marginBottom: '10px' }}><i className='bx bx-notepad'></i> Digital Diary / Notes</h2>
-              <textarea className="input-field" rows="5" value={formData.personal_notes} onChange={handleChange} name="personal_notes" style={{ background: '#0f172a' }}></textarea>
-              <button onClick={handleSaveNotes} className="btn-primary" style={{ background: '#f59e0b', color: '#0f172a', marginTop: '10px' }} disabled={savingNotes}>{savingNotes ? 'Saving...' : 'Save Notes'}</button>
-            </div>
-          )}
-
         </main>
       </div>
     </ErrorBoundary>
