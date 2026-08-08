@@ -1,16 +1,19 @@
-import { createClient } from '@supabase/supabase-js';
+import { createBrowserClient } from '@supabase/ssr';
 
-// Ultimate Bulletproof Check: 
-// Yeh check karega ki Vercel se aane wala URL sach mein 'http' se shuru hota hai ya nahi.
-// Agar nahi (ya khali hai), toh yeh turant placeholder use kar lega taaki build crash na ho.
-const rawUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || '';
-const supabaseUrl = rawUrl.startsWith('http') ? rawUrl : 'https://placeholder.supabase.co';
+// Strict Environment Verification (Zero-Trust Protocol)
+const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
 
-const rawKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || '';
-const supabaseAnonKey = rawKey !== '' ? rawKey : 'placeholder-key';
-
-if (supabaseUrl === 'https://placeholder.supabase.co') {
-  console.warn("⚠️ Warning: Using Supabase placeholder. Valid URL not found during build.");
+// Agar Vercel par keys missing hongi, toh system securely crash hoga (No silent failures!)
+if (!supabaseUrl || !supabaseAnonKey) {
+  throw new Error("🚨 CRITICAL SECURITY HALT: Supabase Environment Variables are missing! Check your .env file or Vercel settings.");
 }
 
-export const supabase = createClient(supabaseUrl, supabaseAnonKey);
+// Next.js 14 Client-Side Engine (Safe from Session Leaks)
+export const supabase = createBrowserClient(supabaseUrl, supabaseAnonKey, {
+  auth: {
+    persistSession: true,
+    autoRefreshToken: true,
+    detectSessionInUrl: true
+  }
+});
