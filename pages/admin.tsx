@@ -17,7 +17,7 @@ interface MatrixRecord { id: string; stream_key: string; title_en: string; title
 export default function AdminDashboard() {
   const router = useRouter();
   const [adminUser, setAdminUser] = useState<any>(null);
-  const [activeTab, setActiveTab] = useState('profiles');
+  const [activeTab, setActiveTab] = useState('matrix');
   
   const [profiles, setProfiles] = useState<StudentProfile[]>([]);
   const [assessments, setAssessments] = useState<AssessmentRecord[]>([]);
@@ -29,10 +29,10 @@ export default function AdminDashboard() {
   const [viewMatrixData, setViewMatrixData] = useState<MatrixRecord | null>(null);
   const [viewStudentData, setViewStudentData] = useState<StudentProfile | null>(null);
 
-  // CRM Status State (Strictly Dropdown, No Text Input)
   const [crmStatus, setCrmStatus] = useState('');
   const [isSavingCrm, setIsSavingCrm] = useState(false);
 
+  // 🔴 RESTORED ALL CMS FORM FIELDS
   const [cmsForm, setCmsForm] = useState({
       stream_key: '', title_en: '', title_ur: '', scope_en: '', scope_ur: '', duration_en: '', duration_ur: '', courses_en: '', courses_ur: '', details_en: '', details_ur: ''
   });
@@ -69,7 +69,6 @@ export default function AdminDashboard() {
       if (!viewStudentData) return;
       setIsSavingCrm(true);
       try {
-          // Sending only the dropdown status
           const payload = { id: viewStudentData.id, lead_status: crmStatus };
           const res = await fetch('/api/admin-data', { 
               method: 'POST', headers: { 'Content-Type': 'application/json' }, 
@@ -127,18 +126,38 @@ export default function AdminDashboard() {
         </>
       )}
 
-      {/* MATRIX CMS VIEW */}
+      {/* MATRIX CMS VIEW - FULL FIELDS RESTORED */}
       {activeTab === 'matrix' && (
         <>
           <div className="v-card" style={{ padding: '24px', marginBottom: '32px' }}>
-            <h3 style={{ fontSize: '1.2rem', marginBottom: '24px', fontWeight: 700, color: '#38bdf8' }}><i className='bx bx-plus-circle'></i> Add Matrix</h3>
-            <form onSubmit={handleCmsSubmit} style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px' }}>
-              <div style={{ gridColumn: '1 / -1' }}><label className="v-label">Stream Key *</label><input required className="v-input" type="text" value={cmsForm.stream_key} onChange={e => setCmsForm({...cmsForm, stream_key: e.target.value})} /></div>
+            <h3 style={{ fontSize: '1.1rem', marginBottom: '20px', fontWeight: 700, color: '#38bdf8' }}><i className='bx bx-plus-circle'></i> Add Full Bilingual Matrix Entry</h3>
+            <form onSubmit={handleCmsSubmit} style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
+              
+              <div style={{ gridColumn: '1 / -1' }}>
+                <label className="v-label">Stream Key (URL Slug, e.g., 12th-science) *</label>
+                <input required className="v-input" type="text" value={cmsForm.stream_key} onChange={e => setCmsForm({...cmsForm, stream_key: e.target.value})} placeholder="e.g. 12th-science" />
+              </div>
+              
               <div><label className="v-label">English Title *</label><input required className="v-input" type="text" value={cmsForm.title_en} onChange={e => setCmsForm({...cmsForm, title_en: e.target.value})} /></div>
-              <div><label className="v-label">Urdu Title *</label><input required className="v-input ur-input" dir="rtl" type="text" value={cmsForm.title_ur} onChange={e => setCmsForm({...cmsForm, title_ur: e.target.value})} /></div>
-              <div><label className="v-label">Courses EN *</label><textarea required className="v-input" value={cmsForm.courses_en} onChange={e => setCmsForm({...cmsForm, courses_en: e.target.value})}></textarea></div>
-              <div><label className="v-label">Courses UR *</label><textarea required className="v-input ur-input" dir="rtl" value={cmsForm.courses_ur} onChange={e => setCmsForm({...cmsForm, courses_ur: e.target.value})}></textarea></div>
-              <div style={{ gridColumn: '1 / -1' }}><button type="submit" disabled={isSubmitting} className="v-button v-btn-primary" style={{width:'100%', padding:'12px'}}>{isSubmitting ? 'Uploading...' : 'Push to Database 🚀'}</button></div>
+              <div><label className="v-label">Urdu Title *</label><input required className="v-input ur-input" dir="rtl" type="text" style={{fontFamily: "'Jameel Noori Nastaleeq', serif", fontSize: '1.1rem'}} value={cmsForm.title_ur} onChange={e => setCmsForm({...cmsForm, title_ur: e.target.value})} /></div>
+              
+              <div><label className="v-label">English Scope</label><textarea className="v-input" style={{height:'70px', resize:'vertical'}} value={cmsForm.scope_en} onChange={e => setCmsForm({...cmsForm, scope_en: e.target.value})}></textarea></div>
+              <div><label className="v-label">Urdu Scope</label><textarea className="v-input ur-input" dir="rtl" style={{height:'70px', resize:'vertical', fontFamily: "'Jameel Noori Nastaleeq', serif", fontSize: '1.1rem'}} value={cmsForm.scope_ur} onChange={e => setCmsForm({...cmsForm, scope_ur: e.target.value})}></textarea></div>
+
+              <div><label className="v-label">Duration (EN)</label><input className="v-input" type="text" value={cmsForm.duration_en} onChange={e => setCmsForm({...cmsForm, duration_en: e.target.value})} placeholder="e.g. 4 Years" /></div>
+              <div><label className="v-label">Duration (UR)</label><input className="v-input ur-input" dir="rtl" type="text" style={{fontFamily: "'Jameel Noori Nastaleeq', serif", fontSize: '1.1rem'}} value={cmsForm.duration_ur} onChange={e => setCmsForm({...cmsForm, duration_ur: e.target.value})} placeholder="4 سال" /></div>
+
+              <div><label className="v-label">Courses EN (Comma separated) *</label><textarea required className="v-input" style={{height:'80px', resize:'vertical'}} value={cmsForm.courses_en} placeholder="BSc Physics, BSc Math" onChange={e => setCmsForm({...cmsForm, courses_en: e.target.value})}></textarea></div>
+              <div><label className="v-label">Courses UR (Comma separated) *</label><textarea required className="v-input ur-input" dir="rtl" style={{height:'80px', resize:'vertical', fontFamily: "'Jameel Noori Nastaleeq', serif", fontSize: '1.1rem'}} value={cmsForm.courses_ur} placeholder="بی ایس سی فزکس, بی ایس سی میتھ" onChange={e => setCmsForm({...cmsForm, courses_ur: e.target.value})}></textarea></div>
+
+              <div><label className="v-label">Detailed Info (EN)</label><textarea className="v-input" style={{height:'90px', resize:'vertical'}} value={cmsForm.details_en} onChange={e => setCmsForm({...cmsForm, details_en: e.target.value})}></textarea></div>
+              <div><label className="v-label">Detailed Info (UR)</label><textarea className="v-input ur-input" dir="rtl" style={{height:'90px', resize:'vertical', fontFamily: "'Jameel Noori Nastaleeq', serif", fontSize: '1.1rem'}} value={cmsForm.details_ur} onChange={e => setCmsForm({...cmsForm, details_ur: e.target.value})}></textarea></div>
+
+              <div style={{ gridColumn: '1 / -1', marginTop: '5px' }}>
+                <button type="submit" disabled={isSubmitting} className="v-button v-btn-primary" style={{ width: '100%', justifyContent: 'center', padding: '10px' }}>
+                    {isSubmitting ? 'Uploading to Database...' : 'Push to Database 🚀'}
+                </button>
+              </div>
             </form>
           </div>
 
@@ -148,10 +167,15 @@ export default function AdminDashboard() {
               <tbody>
                 {matrixContent.map(m => (
                   <tr key={m.id}>
-                    <td style={{color:'#38bdf8'}}>{m.stream_key}</td><td>{m.title_en}</td><td dir="rtl">{m.title_ur}</td>
+                    <td style={{fontFamily:'monospace', color:'#38bdf8', fontWeight: 'bold'}}>{m.stream_key}</td>
+                    <td>{m.title_en}</td><td dir="rtl" style={{fontFamily: "'Jameel Noori Nastaleeq', serif", fontSize: '1.1rem'}}>{m.title_ur}</td>
                     <td style={{textAlign: 'right'}}>
-                        <button className="v-button v-btn-secondary" onClick={() => setViewMatrixData(m)} style={{marginRight: '8px'}}><i className='bx bx-show'></i></button>
-                        <button className="v-button v-btn-danger" onClick={() => handleDeleteCourse(m.id)}>{actionLoading === m.id ? '...' : <i className='bx bx-trash'></i>}</button>
+                        <button className="v-button v-btn-secondary" onClick={() => setViewMatrixData(m)} style={{marginRight: '6px'}} title="View Details">
+                            <i className='bx bx-show'></i>
+                        </button>
+                        <button className="v-button v-btn-danger" onClick={() => handleDeleteCourse(m.id)} title="Delete Matrix">
+                            {actionLoading === m.id ? <i className='bx bx-loader-alt bx-spin'></i> : <i className='bx bx-trash'></i>}
+                        </button>
                     </td>
                   </tr>
                 ))}
@@ -164,7 +188,7 @@ export default function AdminDashboard() {
       {/* PROFILES VIEW */}
       {activeTab === 'profiles' && (
         <>
-          <div className="kpi-grid" style={{ gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))' }}>
+          <div className="kpi-grid" style={{ gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))' }}>
             <div className="kpi-box" style={{ borderTopColor: '#3b82f6' }}><div className="kpi-info"><h4>Total Registered</h4><h2>{profiles.length}</h2></div><div className="kpi-icon" style={{color: '#3b82f6', background: 'rgba(59, 130, 246, 0.1)'}}><i className='bx bx-user-pin'></i></div></div>
             <div className="kpi-box" style={{ borderTopColor: '#10b981' }}><div className="kpi-info"><h4>Active</h4><h2>{profiles.filter(p => p.is_complete).length}</h2></div><div className="kpi-icon" style={{color: '#10b981', background: 'rgba(16, 185, 129, 0.1)'}}><i className='bx bx-user-check'></i></div></div>
             <div className="kpi-box" style={{ borderTopColor: '#f59e0b' }}><div className="kpi-info"><h4>Leads Contacted</h4><h2>{profiles.filter(p => p.lead_status === 'Contacted').length}</h2></div><div className="kpi-icon" style={{color: '#f59e0b', background: 'rgba(245, 158, 11, 0.1)'}}><i className='bx bx-phone-call'></i></div></div>
@@ -201,7 +225,7 @@ export default function AdminDashboard() {
                   <td style={{color:'#94a3b8'}}>{new Date(a.created_at).toLocaleDateString()}</td>
                   <td style={{fontWeight: 'bold'}}>{a.email}</td>
                   <td><span style={{color: '#38bdf8', background: 'rgba(56,189,248,0.1)', padding:'4px 10px', borderRadius:'12px', fontWeight:'bold', fontSize:'0.8rem'}}>{a.interest_area}</span></td>
-                  <td><span style={{color: '#10b981', fontSize:'0.75rem', padding:'4px 10px', background:'rgba(16,185,129,0.1)', borderRadius:'12px', fontWeight:'bold'}}>{a.status}</span></td>
+                  <td><span style={{color: '#10b981', fontSize:'0.75rem', padding:'4px 10px', background: 'rgba(16,185,129,0.1)', borderRadius:'12px', fontWeight:'bold'}}>{a.status}</span></td>
                 </tr>
               ))}
               {assessments.length === 0 && <tr><td colSpan={4} style={{textAlign: 'center', padding: '30px', color: '#64748b'}}>No assessments found.</td></tr>}
@@ -210,7 +234,7 @@ export default function AdminDashboard() {
         </div>
       )}
 
-      {/* --- STUDENT CRM MODAL (NOW 100% TEXT-INPUT FREE) --- */}
+      {/* --- STUDENT CRM MODAL --- */}
       {viewStudentData && (
         <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.8)', backdropFilter: 'blur(8px)', display: 'flex', justifyContent: 'center', alignItems: 'center', zIndex: 1000, padding: '20px' }}>
             <div style={{ background: '#1e293b', border: '1px solid #38bdf8', borderRadius: '12px', padding: '30px', width: '100%', maxWidth: '900px', maxHeight: '90vh', overflowY: 'auto', position: 'relative' }}>
@@ -249,11 +273,10 @@ export default function AdminDashboard() {
                             </div>
                         </div>
 
-                        {/* STRICT STATUS UPDATE - NO TEXT AREA */}
                         <div style={{ background: 'rgba(56, 189, 248, 0.05)', padding: '20px', borderRadius: '12px', border: '1px solid rgba(56, 189, 248, 0.3)' }}>
                             <h4 style={{ color: '#38bdf8', textTransform: 'uppercase', fontSize: '0.8rem', marginBottom: '15px' }}><i className='bx bx-headphone'></i> Office Tracking Status</h4>
                             
-                            <label className="v-label">Lead Status (Verified Options Only)</label>
+                            <label className="v-label">Lead Status</label>
                             <select className="v-input" style={{ marginBottom: '15px', appearance: 'auto' }} value={crmStatus} onChange={e => setCrmStatus(e.target.value)}>
                                 <option value="New">New Lead</option>
                                 <option value="Contacted">Contacted</option>
@@ -272,14 +295,45 @@ export default function AdminDashboard() {
         </div>
       )}
 
+      {/* --- MATRIX X-RAY MODAL --- */}
       {viewMatrixData && (
-          <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.8)', backdropFilter: 'blur(8px)', display: 'flex', justifyContent: 'center', alignItems: 'center', zIndex: 1000, padding: '20px' }}>
-              <div style={{ background: '#1e293b', border: '1px solid #38bdf8', borderRadius: '12px', padding: '30px', width: '100%', maxWidth: '800px' }}>
-                  <button onClick={() => setViewMatrixData(null)} className="v-button v-btn-danger">Close Matrix View</button>
-                  <h3 style={{marginTop: '20px'}}>{viewMatrixData.title_en}</h3>
-                  <p>{viewMatrixData.courses_en.join(', ')}</p>
-              </div>
-          </div>
+        <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.8)', backdropFilter: 'blur(8px)', display: 'flex', justifyContent: 'center', alignItems: 'center', zIndex: 1000, padding: '20px' }}>
+            <div style={{ background: '#1e293b', border: '1px solid #38bdf8', borderRadius: '12px', padding: '30px', width: '100%', maxWidth: '800px', maxHeight: '90vh', overflowY: 'auto', position: 'relative' }}>
+                <button onClick={() => setViewMatrixData(null)} style={{ position: 'absolute', top: '20px', right: '20px', background: 'transparent', border: 'none', color: '#ef4444', fontSize: '1.5rem', cursor: 'pointer' }}><i className='bx bx-x'></i></button>
+                
+                <h2 style={{ color: '#38bdf8', marginBottom: '20px', borderBottom: '1px solid #334155', paddingBottom: '10px' }}>Matrix X-Ray: {viewMatrixData.stream_key}</h2>
+                
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '30px' }}>
+                    <div>
+                        <h4 style={{color: '#94a3b8', textTransform: 'uppercase', fontSize: '0.8rem', marginBottom: '5px'}}>English Data</h4>
+                        <p style={{background: '#0f172a', padding: '10px', borderRadius: '6px', marginBottom: '15px'}}><strong>Title:</strong> {viewMatrixData.title_en}</p>
+                        <p style={{background: '#0f172a', padding: '10px', borderRadius: '6px', marginBottom: '15px'}}><strong>Scope:</strong> {viewMatrixData.scope_en || '-'}</p>
+                        <p style={{background: '#0f172a', padding: '10px', borderRadius: '6px', marginBottom: '15px'}}><strong>Duration:</strong> {viewMatrixData.duration_en || '-'}</p>
+                        <div style={{background: '#0f172a', padding: '10px', borderRadius: '6px', marginBottom: '15px'}}>
+                            <strong>Courses:</strong>
+                            <ul style={{marginLeft: '20px', marginTop: '5px'}}>
+                                {viewMatrixData.courses_en?.map((c, i) => <li key={i}>{c}</li>)}
+                            </ul>
+                        </div>
+                        <p style={{background: '#0f172a', padding: '10px', borderRadius: '6px', whiteSpace: 'pre-wrap'}}><strong>Details:</strong><br/>{viewMatrixData.details_en || '-'}</p>
+                    </div>
+
+                    <div dir="rtl" style={{fontFamily: "'Jameel Noori Nastaleeq', serif", fontSize: '1.1rem'}}>
+                        <h4 style={{color: '#94a3b8', textTransform: 'uppercase', fontSize: '0.8rem', marginBottom: '5px', fontFamily: "'Segoe UI', sans-serif"}} dir="ltr">Urdu Data</h4>
+                        <p style={{background: '#0f172a', padding: '10px', borderRadius: '6px', marginBottom: '15px'}}><strong>عنوان:</strong> {viewMatrixData.title_ur}</p>
+                        <p style={{background: '#0f172a', padding: '10px', borderRadius: '6px', marginBottom: '15px'}}><strong>دائرہ کار:</strong> {viewMatrixData.scope_ur || '-'}</p>
+                        <p style={{background: '#0f172a', padding: '10px', borderRadius: '6px', marginBottom: '15px'}}><strong>مدت:</strong> {viewMatrixData.duration_ur || '-'}</p>
+                        <div style={{background: '#0f172a', padding: '10px', borderRadius: '6px', marginBottom: '15px'}}>
+                            <strong>کورسز:</strong>
+                            <ul style={{marginRight: '20px', marginTop: '5px'}}>
+                                {viewMatrixData.courses_ur?.map((c, i) => <li key={i}>{c}</li>)}
+                            </ul>
+                        </div>
+                        <p style={{background: '#0f172a', padding: '10px', borderRadius: '6px', whiteSpace: 'pre-wrap'}}><strong>تفصیلات:</strong><br/>{viewMatrixData.details_ur || '-'}</p>
+                    </div>
+                </div>
+            </div>
+        </div>
       )}
     </AdminLayout>
   );
