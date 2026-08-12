@@ -58,8 +58,14 @@ export default function AdminDashboard() {
       try {
         const { data: { session } } = await supabase.auth.getSession();
         
-        // 🔴 STRICT ADMIN CHECK (Coupled with Middleware & RLS)
-        if (!session || session.user.email !== 'samarfoundationmalegaon@gmail.com') { // Replace with actual admin email
+        // 🔴 STRICT ADMIN CHECK (Using Vercel Env Variable - Zero Hardcoding)
+        const adminEmail = process.env.NEXT_PUBLIC_ADMIN_EMAIL;
+        
+        if (!adminEmail) {
+          console.error("🚨 SECURITY ALERT: NEXT_PUBLIC_ADMIN_EMAIL is missing in Vercel Env!");
+        }
+
+        if (!session || session.user.email !== adminEmail) {
           router.push('/');
           return;
         }
@@ -104,8 +110,6 @@ export default function AdminDashboard() {
     setActionLoading(id);
     setErrorMsg('');
     try {
-      // Execute deletions concurrently. 
-      // *DBA NOTE: For true atomicity, Supabase DB should have 'ON DELETE CASCADE' on foreign keys.
       const [delProf, delAssess] = await Promise.all([
         supabase.from('student_profiles').delete().eq('email', email),
         supabase.from('user_assessments').delete().eq('email', email)
