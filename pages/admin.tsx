@@ -1,10 +1,8 @@
-import React, { useState, Component, ReactNode } from 'react';
+// pages/admin.tsx
+import React, { useState, useEffect, Component, ReactNode } from 'react';
 import { useRouter } from 'next/router';
 import Head from 'next/head';
-import { supabase as clientSupabase } from '../utils/supabase'; // Only for Logout now
-import { createClient } from '@supabase/supabase-js'; // For Server-Side Master Key
-import { createServerClient, type CookieOptions } from '@supabase/ssr'; // For Session check
-import { GetServerSidePropsContext } from 'next';
+import { supabase as clientSupabase } from '../utils/supabase';
 import { User } from '@supabase/supabase-js';
 
 // --- STRICT TS INTERFACES ---
@@ -19,12 +17,6 @@ interface AssessmentRecord {
   id: string; email: string; interest_area: string; status: string; created_at: string;
 }
 
-interface AdminProps {
-  adminUser: User;
-  initialProfiles: StudentProfile[];
-  initialAssessments: AssessmentRecord[];
-}
-
 type TabState = 'profiles' | 'assessments';
 
 // --- ERROR BOUNDARY ---
@@ -32,71 +24,74 @@ class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundaryState> {
   constructor(props: ErrorBoundaryProps) { super(props); this.state = { hasError: false }; }
   static getDerivedStateFromError(): ErrorBoundaryState { return { hasError: true }; }
   render() {
-    if (this.state.hasError) return <div style={{color:'white', background:'#0f172a', padding:'50px', textAlign:'center'}}>Admin Engine Error. Refresh required.</div>;
+    if (this.state.hasError) return <div style={{color:'white', background:'#0f172a', padding:'50px', textAlign:'center'}}>Admin UI Error. Refresh required.</div>;
     return this.props.children;
   }
 }
 
-// 🔴 THE SERVER-SIDE GOD MODE VAULT (Zero Hardcoding, Service Role Active)
-export const getServerSideProps = async (context: GetServerSidePropsContext) => {
-  // 1. Verify User Session Securely (Normal Client)
-  const supabaseSessionClient = createServerClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-    { cookies: { get(name: string) { return context.req.cookies[name]; } } }
-  );
+export default function AdminDashboard() {
+  const router = useRouter();
+  const [adminUser, setAdminUser] = useState<User | null>(null);
+  
+  // Data States
+  const [activeTab, setActiveTab] = useState<TabState>('profiles');
+  const [profiles, setProfiles] = useState<StudentProfile[]>([]);
+  const [assessments, setAssessments] = useState<AssessmentRecord[]>([]);
+  
+  // UI States
+  const [loading, setLoading] = useState<boolean>(true);
+  const [errorMsg, setErrorMsg] = useState<string>('');
 
-  const { data: { session } } = await supabaseSessionClient.auth.getSession();
-  const adminEmail = process.env.ADMIN_EMAIL;
+  useEffect(() => {
+    const initAdmin = async () => {
+      try {
+        const { data: { session } } = await clientSupabase.auth.getSession();
+        
+        if (!session) {
+          router.push('/');
+          return;
+        }
+        setAdminUser(session.user);
+        await fetchDashboardData();
+      } catch (err: any) {
+        setErrorMsg("Authentication check failed.");
+        setLoading(false);
+      }
+    };
+    initAdmin();
+  }, [router]);
 
-  if (!adminEmail) {
-    console.error("🚨 CRITICAL: ADMIN_EMAIL is missing in Server Environment Variables!");
-    return { redirect: { destination: '/', permanent: false } };
-  }
+  const fetchDashboardData = async () => {
+    setLoading(true);
+    setErrorMsg('');
+    try {
+      // ⚡ Calling the isolated backend API (No direct DB queries here)
+      const res = await fetch('/api/admin-data');
+      
+      if (!res.ok) {
+        if (res.status === 401 || res.status === 403) {
+            router.push('/'); // Boot non-admins immediately
+            return;
+        }
+        throw new Error('Failed to fetch data securely');
+      }
 
-  if (!session || session.user.email !== adminEmail) {
-    return { redirect: { destination: '/', permanent: false } };
-  }
-
-  // 2. ⚡ MASTER KEY ACTIVATION (Only runs on Vercel Server, NEVER in browser)
-  const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
-  if (!serviceRoleKey) {
-    console.error("🚨 CRITICAL: SUPABASE_SERVICE_ROLE_KEY is missing!");
-    return { props: { adminUser: session.user, initialProfiles: [], initialAssessments: [] } };
-  }
-
-  // Create an Admin-Level Supabase client to bypass RLS and fetch all data
-  const supabaseAdmin = createClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    serviceRoleKey,
-    { auth: { persistSession: false, autoRefreshToken: false } }
-  );
-
-  // 3. Fetch Data securely using Master Key
-  const [profilesRes, assessmentsRes] = await Promise.all([
-    supabaseAdmin.from('student_profiles').select('*').order('created_at', { ascending: false }),
-    supabaseAdmin.from('user_assessments').select('*').order('created_at', { ascending: false })
-  ]);
-
-  return {
-    props: {
-      adminUser: session.user,
-      initialProfiles: profilesRes.data || [],
-      initialAssessments: assessmentsRes.data || []
+      const data = await res.json();
+      setProfiles(data.profiles || []);
+      setAssessments(data.assessments || []);
+    } catch (err: any) {
+      setErrorMsg("Failed to sync with backend. Check logs.");
+      console.error(err);
+    } finally {
+      setLoading(false);
     }
   };
-};
-
-export default function AdminDashboard({ adminUser, initialProfiles, initialAssessments }: AdminProps) {
-  const router = useRouter();
-  
-  const [activeTab, setActiveTab] = useState<TabState>('profiles');
-  const [profiles, setProfiles] = useState<StudentProfile[]>(initialProfiles);
-  const [assessments, setAssessments] = useState<AssessmentRecord[]>(initialAssessments);
 
   const handleDeleteRecord = async (email: string, id: string) => {
-    alert("⚠️ Security Update: Direct deletion from browser is disabled to protect the Master Key. Please use the Vercel/Supabase DB Dashboard for manual deletions.");
+    alert("⚠️ Security Update: Direct deletion from browser is disabled to protect DB Integrity. Please use the backend for deletions.");
   };
+
+  if (loading && !profiles.length) return <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh', background: '#0f172a', color: '#10b981' }}><h2><i className='bx bx-check-shield bx-tada'></i> Verifying Credentials & Fetching Data...</h2></div>;
 
   return (
     <ErrorBoundary>
@@ -119,7 +114,6 @@ export default function AdminDashboard({ adminUser, initialProfiles, initialAsse
           .badge-red { background: rgba(239, 68, 68, 0.2); color: #ef4444; border: 1px solid #ef4444; }
           .action-btn { background: transparent; color: #ef4444; border: 1px solid #ef4444; padding: 6px 12px; border-radius: 6px; cursor: pointer; transition: 0.3s; }
           .action-btn:hover:not(:disabled) { background: #ef4444; color: #fff; }
-          .action-btn:disabled { opacity: 0.5; cursor: not-allowed; }
           .tab-btn { padding: 12px 25px; background: transparent; color: #94a3b8; border: none; border-bottom: 2px solid transparent; cursor: pointer; font-weight: bold; font-size: 1rem; transition: 0.3s; }
           .tab-btn.active { color: #10b981; border-bottom: 2px solid #10b981; background: rgba(16, 185, 129, 0.1); }
         `}} />
@@ -144,8 +138,8 @@ export default function AdminDashboard({ adminUser, initialProfiles, initialAsse
             <button className={`tab-btn ${activeTab === 'assessments' ? 'active' : ''}`} onClick={() => setActiveTab('assessments')}>
               <i className='bx bx-brain'></i> Assessment Records ({assessments.length})
             </button>
-            <button onClick={() => router.reload()} style={{ marginLeft: 'auto', background: 'transparent', color: '#38bdf8', border: '1px solid #38bdf8', borderRadius: '6px', padding: '0 15px', cursor: 'pointer' }}>
-              <i className='bx bx-refresh'></i> Refresh Data
+            <button onClick={fetchDashboardData} style={{ marginLeft: 'auto', background: 'transparent', color: '#38bdf8', border: '1px solid #38bdf8', borderRadius: '6px', padding: '0 15px', cursor: 'pointer' }}>
+              <i className={loading ? 'bx bx-refresh bx-spin' : 'bx bx-refresh'}></i> Refresh Data
             </button>
           </div>
 
@@ -173,7 +167,7 @@ export default function AdminDashboard({ adminUser, initialProfiles, initialAsse
                       </td>
                     </tr>
                   ))}
-                  {profiles.length === 0 && <tr><td colSpan={7} style={{textAlign: 'center', padding: '30px', color: '#64748b'}}>No profiles found.</td></tr>}
+                  {profiles.length === 0 && !loading && <tr><td colSpan={7} style={{textAlign: 'center', padding: '30px', color: '#64748b'}}>No profiles found.</td></tr>}
                 </tbody>
               </table>
             </div>
@@ -202,7 +196,7 @@ export default function AdminDashboard({ adminUser, initialProfiles, initialAsse
                       </td>
                     </tr>
                   ))}
-                  {assessments.length === 0 && <tr><td colSpan={5} style={{textAlign: 'center', padding: '30px', color: '#64748b'}}>No assessments recorded.</td></tr>}
+                  {assessments.length === 0 && !loading && <tr><td colSpan={5} style={{textAlign: 'center', padding: '30px', color: '#64748b'}}>No assessments recorded.</td></tr>}
                 </tbody>
               </table>
             </div>
