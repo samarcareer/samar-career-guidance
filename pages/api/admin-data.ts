@@ -48,7 +48,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       return res.status(200).json({ profiles: profilesRes.data, assessments: assessmentsRes.data, matrixContent: matrixRes.data });
     }
 
-    // --- HANDLE POST (Add Course & Update Student CRM) ---
+    // --- HANDLE POST (Add Course & Strict CRM Status) ---
     if (req.method === 'POST') {
         const { action, payload } = req.body;
         
@@ -58,11 +58,11 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
             return res.status(200).json({ success: true, data });
         }
         
-        // NEW: Update Student CRM
+        // 🔴 ULTRA-SECURE: Only lead_status is accepted now. Text injection is impossible.
         if (action === 'UPDATE_STUDENT_CRM') {
-            const { id, lead_status, personal_notes } = payload;
+            const { id, lead_status } = payload;
             const { error } = await supabaseAdmin.from('student_profiles')
-                .update({ lead_status, personal_notes, updated_at: new Date().toISOString() })
+                .update({ lead_status, updated_at: new Date().toISOString() })
                 .eq('id', id);
             
             if (error) throw error;
