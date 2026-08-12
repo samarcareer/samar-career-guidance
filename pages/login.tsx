@@ -74,11 +74,12 @@ export default function StudentLogin() {
     const msg = errMessage.toLowerCase();
     if (msg.includes('rate limit')) return "Security Lock: Too many attempts. Please wait a minute.";
     if (msg.includes('invalid') || msg.includes('expired')) return "Invalid or Expired OTP. Please check and try again.";
+    if (msg.includes('signups not allowed') || msg.includes('not found') || msg.includes('unable to validate')) return "Account not found. Please Sign Up first!";
     if (msg.includes('format')) return "Invalid Email format.";
-    return "Secure connection failed. Please try again.";
+    return errMessage || "Secure connection failed. Please try again.";
   };
 
-  // --- SECURE OTP AUTHENTICATION ---
+  // --- SECURE OTP AUTHENTICATION WITH ANTI-AUTO-SIGNUP ---
   const handleSendOtp = async (e: React.FormEvent) => {
     e.preventDefault();
     if (cooldown > 0) return;
@@ -88,7 +89,15 @@ export default function StudentLogin() {
     const cleanEmail = email.trim().toLowerCase();
 
     try {
-      const authOptions = isSignUp ? { data: { full_name: fullName } } : {};
+      const authOptions: any = {};
+      
+      if (isSignUp) {
+        authOptions.data = { full_name: fullName };
+        authOptions.shouldCreateUser = true; // Allow registration on Sign Up tab
+      } else {
+        authOptions.shouldCreateUser = false; // 🔒 BLOCK auto-registration on Sign In tab
+      }
+
       const { error: otpError } = await supabase.auth.signInWithOtp({ 
         email: cleanEmail,
         options: authOptions
@@ -122,11 +131,9 @@ export default function StudentLogin() {
       if (verifyError) throw verifyError;
       
       if (data?.session) {
-        // Fetch authorized admin list from env or fallback list
         const adminEmailsString = process.env.NEXT_PUBLIC_ADMIN_EMAIL || 'samarfoundationmalegaon@gmail.com,mohammedjunaid5463@gmail.com,ashfaqueumar@gmail.com,ashfaqueumarsir@gmail.com';
         const authorizedAdmins = adminEmailsString.split(',').map(e => e.trim().toLowerCase());
         
-        // Smart Routing: If user is admin, take them to /admin. Otherwise /profile.
         if (authorizedAdmins.includes(cleanEmail)) {
           router.push('/admin');
         } else {
