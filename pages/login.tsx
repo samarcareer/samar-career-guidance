@@ -81,7 +81,7 @@ export default function StudentLogin() {
   // --- SECURE OTP AUTHENTICATION ---
   const handleSendOtp = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (cooldown > 0) return; // Hard block for spam
+    if (cooldown > 0) return;
 
     setError('');
     setLoading(true);
@@ -97,7 +97,7 @@ export default function StudentLogin() {
       if (otpError) throw otpError;
       
       setStep('otp'); 
-      setCooldown(60); // Rule 3: Enforce 60-second DB spam protection
+      setCooldown(60);
     } catch (err: any) {
       setError(sanitizeError(err.message || ""));
     } finally {
@@ -105,21 +105,34 @@ export default function StudentLogin() {
     }
   };
 
+  // --- SMART REDIRECT ROUTING (ADMIN VS STUDENT) ---
   const handleVerifyOtp = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
     setLoading(true);
+    const cleanEmail = email.trim().toLowerCase();
+
     try {
       const { data, error: verifyError } = await supabase.auth.verifyOtp({
-        email: email.trim().toLowerCase(),
+        email: cleanEmail,
         token: otp,
         type: 'email'
       });
       
       if (verifyError) throw verifyError;
       
-      // Middleware handles the true lock, this is just Optimistic Routing
-      if (data?.session) router.push('/profile');
+      if (data?.session) {
+        // Fetch authorized admin list from env or fallback list
+        const adminEmailsString = process.env.NEXT_PUBLIC_ADMIN_EMAIL || 'samarfoundationmalegaon@gmail.com,mohammedjunaid5463@gmail.com,ashfaqueumar@gmail.com,ashfaqueumarsir@gmail.com';
+        const authorizedAdmins = adminEmailsString.split(',').map(e => e.trim().toLowerCase());
+        
+        // Smart Routing: If user is admin, take them to /admin. Otherwise /profile.
+        if (authorizedAdmins.includes(cleanEmail)) {
+          router.push('/admin');
+        } else {
+          router.push('/profile');
+        }
+      }
       
     } catch (err: any) {
       setError(sanitizeError(err.message || ""));
@@ -232,9 +245,7 @@ export default function StudentLogin() {
         <main style={{ flex: 1, display: 'flex', justifyContent: 'center', alignItems: 'center', padding: '20px' }}>
           <div className="auth-container">
             
-            {/* =========================================
-                MOBILE VIEW (Stacked Cards)
-            ========================================== */}
+            {/* MOBILE VIEW */}
             <div className="mobile-view">
                {step === 'form' ? (
                  <>
@@ -280,9 +291,7 @@ export default function StudentLogin() {
                )}
             </div>
 
-            {/* =========================================
-                DESKTOP VIEW (Double Slider)
-            ========================================== */}
+            {/* DESKTOP VIEW */}
             <div className="desktop-view">
                 <div className="form-container sign-up-container">
                   <h2 style={{ color: '#fff', fontSize: '2.5rem', marginBottom: '20px', fontFamily: 'inherit' }}>{t[lang].signUp}</h2>
@@ -322,7 +331,6 @@ export default function StudentLogin() {
                   </div>
                 </div>
 
-                {/* OTP VERIFICATION LOCK SCREEN */}
                 {step === 'otp' && (
                   <div style={{ position: 'absolute', inset: 0, zIndex: 200, background: 'rgba(30, 41, 59, 0.95)', backdropFilter: 'blur(10px)', display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center', padding: '40px' }}>
                      <div style={{ fontSize: '4rem', color: '#10b981', marginBottom: '10px' }}><i className='bx bx-check-shield'></i></div>
