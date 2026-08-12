@@ -1,7 +1,9 @@
-import React, { useState, useEffect, Component, ReactNode } from 'react';
+import React, { useState, Component, ReactNode } from 'react';
 import { useRouter } from 'next/router';
 import Head from 'next/head';
-import { supabase } from '../utils/supabase';
+import { supabase as clientSupabase } from '../utils/supabase';
+import { createServerClient, type CookieOptions } from '@supabase/ssr';
+import { GetServerSidePropsContext } from 'next';
 import { User } from '@supabase/supabase-js';
 
 // --- STRICT TS INTERFACES ---
@@ -9,22 +11,17 @@ interface ErrorBoundaryProps { children: ReactNode; }
 interface ErrorBoundaryState { hasError: boolean; }
 
 interface StudentProfile {
-  id: string;
-  full_name: string;
-  email: string;
-  phone: string;
-  education_level: string;
-  career_goal: string;
-  is_complete: boolean;
-  created_at: string;
+  id: string; full_name: string; email: string; phone: string; education_level: string; career_goal: string; is_complete: boolean; created_at: string;
 }
 
 interface AssessmentRecord {
-  id: string;
-  email: string;
-  interest_area: string;
-  status: string;
-  created_at: string;
+  id: string; email: string; interest_area: string; status: string; created_at: string;
+}
+
+interface AdminProps {
+  adminUser: User;
+  initialProfiles: StudentProfile[];
+  initialAssessments: AssessmentRecord[];
 }
 
 type TabState = 'profiles' | 'assessments';
@@ -39,71 +36,60 @@ class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundaryState> {
   }
 }
 
-export default function AdminDashboard() {
+// 🔴 THE SERVER-SIDE VAULT (Rule 1 & 2: Zero-Trust Backend Execution)
+export const getServerSideProps = async (context: GetServerSidePropsContext) => {
+  // 1. Initialize SSR Supabase Client securely
+  const supabaseServer = createServerClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+    {
+      cookies: {
+        get(name: string) { return context.req.cookies[name]; },
+      },
+    }
+  );
+
+  // 2. Fetch Session & Validate strictly against Server-Only Env Variable
+  const { data: { session } } = await supabaseServer.auth.getSession();
+  const adminEmail = process.env.ADMIN_EMAIL; // 🔒 Hidden from Browser
+
+  if (!adminEmail) {
+    console.error("🚨 CRITICAL: ADMIN_EMAIL is missing in Server Environment Variables!");
+  }
+
+  // If no session or email mismatch, boot them back to home instantly before page even loads
+  if (!session || session.user.email !== adminEmail) {
+    return { redirect: { destination: '/', permanent: false } };
+  }
+
+  // 3. Fetch Data securely on the server
+  const [profilesRes, assessmentsRes] = await Promise.all([
+    supabaseServer.from('student_profiles').select('*').order('created_at', { ascending: false }),
+    supabaseServer.from('user_assessments').select('*').order('created_at', { ascending: false })
+  ]);
+
+  return {
+    props: {
+      adminUser: session.user,
+      initialProfiles: profilesRes.data || [],
+      initialAssessments: assessmentsRes.data || []
+    }
+  };
+};
+
+export default function AdminDashboard({ adminUser, initialProfiles, initialAssessments }: AdminProps) {
   const router = useRouter();
-  const [adminUser, setAdminUser] = useState<User | null>(null);
   
-  // Data States
+  // Data States initialized with Server Props (No loading spinners needed!)
   const [activeTab, setActiveTab] = useState<TabState>('profiles');
-  const [profiles, setProfiles] = useState<StudentProfile[]>([]);
-  const [assessments, setAssessments] = useState<AssessmentRecord[]>([]);
+  const [profiles, setProfiles] = useState<StudentProfile[]>(initialProfiles);
+  const [assessments, setAssessments] = useState<AssessmentRecord[]>(initialAssessments);
   
   // UI States
-  const [loading, setLoading] = useState<boolean>(true);
   const [actionLoading, setActionLoading] = useState<string | null>(null);
   const [errorMsg, setErrorMsg] = useState<string>('');
 
-  useEffect(() => {
-    const initAdmin = async () => {
-      try {
-        const { data: { session } } = await supabase.auth.getSession();
-        
-        // 🔴 STRICT ADMIN CHECK (Using Vercel Env Variable - Zero Hardcoding)
-        const adminEmail = process.env.NEXT_PUBLIC_ADMIN_EMAIL;
-        
-        if (!adminEmail) {
-          console.error("🚨 SECURITY ALERT: NEXT_PUBLIC_ADMIN_EMAIL is missing in Vercel Env!");
-        }
-
-        if (!session || session.user.email !== adminEmail) {
-          router.push('/');
-          return;
-        }
-        setAdminUser(session.user);
-        await fetchDashboardData();
-      } catch (err: any) {
-        setErrorMsg("Authentication failed securely.");
-      } finally {
-        setLoading(false);
-      }
-    };
-    initAdmin();
-  }, [router]);
-
-  const fetchDashboardData = async () => {
-    setLoading(true);
-    setErrorMsg('');
-    try {
-      // Parallel Fetching for Ultimate Speed (Cache Mastery)
-      const [profilesRes, assessmentsRes] = await Promise.all([
-        supabase.from('student_profiles').select('*').order('created_at', { ascending: false }),
-        supabase.from('user_assessments').select('*').order('created_at', { ascending: false })
-      ]);
-
-      if (profilesRes.error) throw profilesRes.error;
-      if (assessmentsRes.error) throw assessmentsRes.error;
-
-      setProfiles(profilesRes.data as StudentProfile[]);
-      setAssessments(assessmentsRes.data as AssessmentRecord[]);
-    } catch (err: any) {
-      setErrorMsg("Failed to sync database. Check your connection or DB RLS policies.");
-      console.error(err);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  // 🔴 RULE 4: ATOMIC DATA DELETION (Preventing Orphaned Data)
+  // Client-Side deletion logic (Using client Supabase instance)
   const handleDeleteRecord = async (email: string, id: string) => {
     if (!window.confirm(`⚠️ WARNING: Are you sure you want to completely erase data for ${email}? This action is irreversible.`)) return;
     
@@ -111,26 +97,23 @@ export default function AdminDashboard() {
     setErrorMsg('');
     try {
       const [delProf, delAssess] = await Promise.all([
-        supabase.from('student_profiles').delete().eq('email', email),
-        supabase.from('user_assessments').delete().eq('email', email)
+        clientSupabase.from('student_profiles').delete().eq('email', email),
+        clientSupabase.from('user_assessments').delete().eq('email', email)
       ]);
 
       if (delProf.error) throw delProf.error;
       if (delAssess.error) throw delAssess.error;
 
-      // Optimistic UI Update
       setProfiles(prev => prev.filter(p => p.email !== email));
       setAssessments(prev => prev.filter(a => a.email !== email));
       
       alert(`✅ Data for ${email} securely erased.`);
     } catch (err: any) {
-      setErrorMsg(`Deletion failed for ${email}. Rollback initiated.`);
+      setErrorMsg(`Deletion failed for ${email}. Check DB logs.`);
     } finally {
       setActionLoading(null);
     }
   };
-
-  if (loading && !adminUser) return <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh', background: '#0f172a', color: '#10b981' }}><h2><i className='bx bx-check-shield bx-tada'></i> Verifying Admin Credentials...</h2></div>;
 
   return (
     <ErrorBoundary>
@@ -141,7 +124,6 @@ export default function AdminDashboard() {
           <title>Admin Command Center | Samar</title>
         </Head>
 
-        {/* --- STRICT UI ISOLATION --- */}
         <style dangerouslySetInnerHTML={{__html: `
           * { box-sizing: border-box; margin: 0; padding: 0; }
           .admin-header { display: flex; justify-content: space-between; align-items: center; padding: 20px 5%; background: rgba(15, 23, 42, 0.95); border-bottom: 1px solid #10b981; position: sticky; top: 0; z-index: 100; }
@@ -166,7 +148,7 @@ export default function AdminDashboard() {
           </div>
           <div style={{ display: 'flex', gap: '15px', alignItems: 'center' }}>
             <span style={{ color: '#94a3b8', fontSize: '0.9rem' }}><i className='bx bx-user-circle'></i> {adminUser?.email}</span>
-            <button onClick={async () => { await supabase.auth.signOut(); router.push('/login'); }} style={{ background: '#ef4444', color: '#fff', border: 'none', padding: '8px 15px', borderRadius: '6px', cursor: 'pointer', fontWeight: 'bold' }}>Logout</button>
+            <button onClick={async () => { await clientSupabase.auth.signOut(); router.push('/login'); }} style={{ background: '#ef4444', color: '#fff', border: 'none', padding: '8px 15px', borderRadius: '6px', cursor: 'pointer', fontWeight: 'bold' }}>Logout</button>
           </div>
         </header>
 
@@ -179,8 +161,8 @@ export default function AdminDashboard() {
             <button className={`tab-btn ${activeTab === 'assessments' ? 'active' : ''}`} onClick={() => setActiveTab('assessments')}>
               <i className='bx bx-brain'></i> Assessment Records ({assessments.length})
             </button>
-            <button onClick={fetchDashboardData} style={{ marginLeft: 'auto', background: 'transparent', color: '#38bdf8', border: '1px solid #38bdf8', borderRadius: '6px', padding: '0 15px', cursor: 'pointer' }}>
-              <i className={loading ? 'bx bx-refresh bx-spin' : 'bx bx-refresh'}></i> Refresh
+            <button onClick={() => router.reload()} style={{ marginLeft: 'auto', background: 'transparent', color: '#38bdf8', border: '1px solid #38bdf8', borderRadius: '6px', padding: '0 15px', cursor: 'pointer' }}>
+              <i className='bx bx-refresh'></i> Refresh Data
             </button>
           </div>
 
@@ -192,13 +174,7 @@ export default function AdminDashboard() {
               <table className="data-table">
                 <thead>
                   <tr>
-                    <th>Date</th>
-                    <th>Name</th>
-                    <th>Email</th>
-                    <th>Phone</th>
-                    <th>Education / Goal</th>
-                    <th>Status</th>
-                    <th>Actions</th>
+                    <th>Date</th><th>Name</th><th>Email</th><th>Phone</th><th>Education / Goal</th><th>Status</th><th>Actions</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -206,8 +182,7 @@ export default function AdminDashboard() {
                     <tr key={p.id}>
                       <td style={{ color: '#94a3b8' }}>{new Date(p.created_at).toLocaleDateString()}</td>
                       <td style={{ fontWeight: 'bold' }}>{p.full_name || 'N/A'}</td>
-                      <td>{p.email}</td>
-                      <td>{p.phone || 'N/A'}</td>
+                      <td>{p.email}</td><td>{p.phone || 'N/A'}</td>
                       <td><span style={{color: '#38bdf8'}}>{p.education_level || '-'}</span> <br/> {p.career_goal || '-'}</td>
                       <td><span className={`badge ${p.is_complete ? 'badge-green' : 'badge-red'}`}>{p.is_complete ? 'Complete' : 'Pending'}</span></td>
                       <td>
@@ -217,7 +192,7 @@ export default function AdminDashboard() {
                       </td>
                     </tr>
                   ))}
-                  {profiles.length === 0 && !loading && <tr><td colSpan={7} style={{textAlign: 'center', padding: '30px', color: '#64748b'}}>No profiles found in the database.</td></tr>}
+                  {profiles.length === 0 && <tr><td colSpan={7} style={{textAlign: 'center', padding: '30px', color: '#64748b'}}>No profiles found.</td></tr>}
                 </tbody>
               </table>
             </div>
@@ -229,11 +204,7 @@ export default function AdminDashboard() {
               <table className="data-table">
                 <thead>
                   <tr>
-                    <th>Date</th>
-                    <th>Email</th>
-                    <th>Target Stream (AI Result)</th>
-                    <th>Status</th>
-                    <th>Actions</th>
+                    <th>Date</th><th>Email</th><th>Target Stream (AI Result)</th><th>Status</th><th>Actions</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -250,12 +221,11 @@ export default function AdminDashboard() {
                       </td>
                     </tr>
                   ))}
-                  {assessments.length === 0 && !loading && <tr><td colSpan={5} style={{textAlign: 'center', padding: '30px', color: '#64748b'}}>No assessments recorded yet.</td></tr>}
+                  {assessments.length === 0 && <tr><td colSpan={5} style={{textAlign: 'center', padding: '30px', color: '#64748b'}}>No assessments recorded.</td></tr>}
                 </tbody>
               </table>
             </div>
           )}
-
         </main>
       </div>
     </ErrorBoundary>
