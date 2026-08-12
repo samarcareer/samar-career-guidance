@@ -5,7 +5,6 @@ import { createClient } from '@supabase/supabase-js';
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   try {
-    // 1. Verify Session Securely via Cookies
     const supabaseSessionClient = createServerClient(
       process.env.NEXT_PUBLIC_SUPABASE_URL!,
       process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
@@ -15,7 +14,6 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     const { data: { session }, error: sessionError } = await supabaseSessionClient.auth.getSession();
     if (sessionError || !session) return res.status(401).json({ error: 'Unauthorized' });
 
-    // 2. Validate Multi-Admin List
     const adminEmailsString = process.env.ADMIN_EMAIL;
     if (!adminEmailsString) return res.status(500).json({ error: 'Server Config Error' });
 
@@ -26,7 +24,6 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       return res.status(403).json({ error: 'Forbidden' });
     }
 
-    // 3. MASTER KEY ACTIVATION
     const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
     if (!serviceRoleKey) return res.status(500).json({ error: 'Missing Master Key' });
 
@@ -41,21 +38,17 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       const [profilesRes, assessmentsRes, matrixRes] = await Promise.all([
         supabaseAdmin.from('student_profiles').select('*').order('created_at', { ascending: false }),
         supabaseAdmin.from('user_assessments').select('*').order('created_at', { ascending: false }),
-        supabaseAdmin.from('matrix_content').select('*').order('created_at', { ascending: false }) // Fetch Matrix Data
+        supabaseAdmin.from('matrix_content').select('*').order('created_at', { ascending: false })
       ]);
 
       if (profilesRes.error) throw profilesRes.error;
       if (assessmentsRes.error) throw assessmentsRes.error;
       if (matrixRes.error) throw matrixRes.error;
 
-      return res.status(200).json({
-        profiles: profilesRes.data,
-        assessments: assessmentsRes.data,
-        matrixContent: matrixRes.data // New CMS Data
-      });
+      return res.status(200).json({ profiles: profilesRes.data, assessments: assessmentsRes.data, matrixContent: matrixRes.data });
     }
 
-    // --- HANDLE POST (Add New Course) ---
+    // --- HANDLE POST (Add Course & Update Student CRM) ---
     if (req.method === 'POST') {
         const { action, payload } = req.body;
         
@@ -64,10 +57,22 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
             if (error) throw error;
             return res.status(200).json({ success: true, data });
         }
+        
+        // NEW: Update Student CRM
+        if (action === 'UPDATE_STUDENT_CRM') {
+            const { id, lead_status, personal_notes } = payload;
+            const { error } = await supabaseAdmin.from('student_profiles')
+                .update({ lead_status, personal_notes, updated_at: new Date().toISOString() })
+                .eq('id', id);
+            
+            if (error) throw error;
+            return res.status(200).json({ success: true });
+        }
+        
         return res.status(400).json({ error: 'Invalid Action' });
     }
 
-    // --- HANDLE DELETE (Remove Course) ---
+    // --- HANDLE DELETE ---
     if (req.method === 'DELETE') {
         const { id, type } = req.body;
         if (type === 'COURSE') {
