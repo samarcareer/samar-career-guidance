@@ -1,3 +1,4 @@
+// pages/api/admin-data.ts
 import type { NextApiRequest, NextApiResponse } from 'next';
 import { createServerClient } from '@supabase/ssr';
 import { createClient } from '@supabase/supabase-js';
@@ -27,13 +28,25 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       return res.status(401).json({ error: 'Unauthorized: No valid session' });
     }
 
-    // 2. Validate against Hidden Vercel Env Variable
-    const adminEmail = process.env.ADMIN_EMAIL;
-    if (!adminEmail || session.user.email !== adminEmail) {
+    // 2. ⚡ MULTI-ADMIN VALIDATION LOGIC
+    const adminEmailsString = process.env.ADMIN_EMAIL;
+    
+    if (!adminEmailsString) {
+      console.error("🚨 CRITICAL: ADMIN_EMAIL is missing in Server Environment Variables!");
+      return res.status(500).json({ error: 'Server Configuration Error' });
+    }
+
+    // Convert comma-separated string from Vercel into an array and clean up spaces
+    const authorizedAdmins = adminEmailsString.split(',').map(email => email.trim().toLowerCase());
+    const currentUserEmail = session.user.email?.toLowerCase();
+
+    // Check if the current user's email exists in the authorized list
+    if (!currentUserEmail || !authorizedAdmins.includes(currentUserEmail)) {
+      console.warn(`Admin access denied for: ${currentUserEmail}`);
       return res.status(403).json({ error: 'Forbidden: Admin access denied' });
     }
 
-    // 3. ⚡ MASTER KEY ACTIVATION (Runs only on server)
+    // 3. MASTER KEY ACTIVATION (Runs only on server)
     const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
     if (!serviceRoleKey) {
       console.error("🚨 CRITICAL: SUPABASE_SERVICE_ROLE_KEY is missing!");
