@@ -11,7 +11,7 @@ interface MatrixRecord { id: string; stream_key: string; title_en: string; title
 export default function AdminDashboard() {
   const router = useRouter();
   const [adminUser, setAdminUser] = useState<any>(null);
-  const [activeTab, setActiveTab] = useState('dashboard'); // Default to Dashboard now
+  const [activeTab, setActiveTab] = useState('dashboard');
   
   const [profiles, setProfiles] = useState<StudentProfile[]>([]);
   const [assessments, setAssessments] = useState<AssessmentRecord[]>([]);
@@ -82,33 +82,30 @@ export default function AdminDashboard() {
   return (
     <AdminLayout userEmail={adminUser?.email} activeTab={activeTab} setActiveTab={setActiveTab} onRefresh={fetchDashboardData} loading={loading}>
       
-      {/* KPI DASHBOARD BOXES (The ones you requested!) */}
-      <div className="kpi-grid">
-        <div className="kpi-box">
-          <div className="kpi-info"><h4>Total Signups</h4><h2>{profiles.length}</h2></div>
-          <div className="kpi-icon"><i className='bx bxs-user-account'></i></div>
-        </div>
-        <div className="kpi-box">
-          <div className="kpi-info"><h4>Active / Completed</h4><h2>{profiles.filter(p => p.is_complete).length}</h2></div>
-          <div className="kpi-icon" style={{color: '#10b981', background: 'rgba(16, 185, 129, 0.1)'}}><i className='bx bx-check-shield'></i></div>
-        </div>
-        <div className="kpi-box">
-          <div className="kpi-info"><h4>Total Assessments</h4><h2>{assessments.length}</h2></div>
-          <div className="kpi-icon" style={{color: '#f59e0b', background: 'rgba(245, 158, 11, 0.1)'}}><i className='bx bx-brain'></i></div>
-        </div>
-        <div className="kpi-box">
-          <div className="kpi-info"><h4>Live Course Matrix</h4><h2>{matrixContent.length}</h2></div>
-          <div className="kpi-icon" style={{color: '#8b5cf6', background: 'rgba(139, 92, 246, 0.1)'}}><i className='bx bx-data'></i></div>
-        </div>
-      </div>
-
-      {/* DASHBOARD TAB (Quick Overview) */}
+      {/* DASHBOARD TAB (Global Overview Only) */}
       {activeTab === 'dashboard' && (
-        <div className="v-card" style={{ padding: '40px', textAlign: 'center' }}>
-            <i className='bx bx-bar-chart-alt-2' style={{ fontSize: '4rem', color: '#334155', marginBottom: '20px' }}></i>
-            <h2 style={{ fontSize: '1.5rem', marginBottom: '10px' }}>System Active & Secure</h2>
-            <p style={{ color: '#94a3b8' }}>Use the sidebar to manage database records, students, and CMS content.</p>
-        </div>
+        <>
+          <div className="kpi-grid">
+            <div className="kpi-box">
+              <div className="kpi-info"><h4>Total Platform Signups</h4><h2>{profiles.length}</h2></div>
+              <div className="kpi-icon"><i className='bx bxs-user-account'></i></div>
+            </div>
+            <div className="kpi-box">
+              <div className="kpi-info"><h4>Total AI Assessments</h4><h2>{assessments.length}</h2></div>
+              <div className="kpi-icon" style={{color: '#f59e0b', background: 'rgba(245, 158, 11, 0.1)'}}><i className='bx bx-brain'></i></div>
+            </div>
+            <div className="kpi-box">
+              <div className="kpi-info"><h4>Live Course Matrix</h4><h2>{matrixContent.length}</h2></div>
+              <div className="kpi-icon" style={{color: '#8b5cf6', background: 'rgba(139, 92, 246, 0.1)'}}><i className='bx bx-data'></i></div>
+            </div>
+          </div>
+
+          <div className="v-card" style={{ padding: '60px 40px', textAlign: 'center', borderTop: '4px solid #38bdf8' }}>
+              <i className='bx bxs-shield-check' style={{ fontSize: '5rem', color: '#10b981', marginBottom: '20px' }}></i>
+              <h2 style={{ fontSize: '1.8rem', marginBottom: '10px', color: '#fff' }}>Samar Engine Active & Secure</h2>
+              <p style={{ color: '#94a3b8', fontSize: '1.1rem' }}>All layers protected. Use the sidebar to navigate the command center.</p>
+          </div>
+        </>
       )}
 
       {/* MATRIX CMS VIEW */}
@@ -166,25 +163,42 @@ export default function AdminDashboard() {
         </>
       )}
 
-      {/* PROFILES VIEW */}
+      {/* PROFILES VIEW (WITH CONTEXTUAL KPIs) */}
       {activeTab === 'profiles' && (
-        <div className="v-card">
-          <table className="v-table">
-            <thead><tr><th>Date</th><th>Name</th><th>Email</th><th>Phone</th><th>Status</th></tr></thead>
-            <tbody>
-              {profiles.map(p => (
-                <tr key={p.id}>
-                  <td style={{color:'#94a3b8'}}>{new Date(p.created_at).toLocaleDateString()}</td>
-                  <td style={{fontWeight: 'bold'}}>{p.full_name || '-'}</td>
-                  <td>{p.email}</td>
-                  <td>{p.phone || '-'}</td>
-                  <td><span style={{color: p.is_complete ? '#10b981' : '#ef4444', fontSize:'0.75rem', padding:'4px 10px', background: p.is_complete ? 'rgba(16,185,129,0.1)' : 'rgba(239,68,68,0.1)', borderRadius:'12px', fontWeight:'bold'}}>{p.is_complete ? 'Active' : 'Pending'}</span></td>
-                </tr>
-              ))}
-              {profiles.length === 0 && <tr><td colSpan={5} style={{textAlign: 'center', padding: '30px', color: '#64748b'}}>No students found.</td></tr>}
-            </tbody>
-          </table>
-        </div>
+        <>
+          <div className="kpi-grid" style={{ gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))' }}>
+            <div className="kpi-box" style={{ borderTopColor: '#3b82f6' }}>
+              <div className="kpi-info"><h4>Total Registered</h4><h2>{profiles.length}</h2></div>
+              <div className="kpi-icon" style={{color: '#3b82f6', background: 'rgba(59, 130, 246, 0.1)'}}><i className='bx bx-user-pin'></i></div>
+            </div>
+            <div className="kpi-box" style={{ borderTopColor: '#10b981' }}>
+              <div className="kpi-info"><h4>Active (Setup Done)</h4><h2>{profiles.filter(p => p.is_complete).length}</h2></div>
+              <div className="kpi-icon" style={{color: '#10b981', background: 'rgba(16, 185, 129, 0.1)'}}><i className='bx bx-user-check'></i></div>
+            </div>
+            <div className="kpi-box" style={{ borderTopColor: '#ef4444' }}>
+              <div className="kpi-info"><h4>Pending Setup</h4><h2>{profiles.filter(p => !p.is_complete).length}</h2></div>
+              <div className="kpi-icon" style={{color: '#ef4444', background: 'rgba(239, 68, 68, 0.1)'}}><i className='bx bx-user-x'></i></div>
+            </div>
+          </div>
+
+          <div className="v-card">
+            <table className="v-table">
+              <thead><tr><th>Date</th><th>Name</th><th>Email</th><th>Phone</th><th>Status</th></tr></thead>
+              <tbody>
+                {profiles.map(p => (
+                  <tr key={p.id}>
+                    <td style={{color:'#94a3b8'}}>{new Date(p.created_at).toLocaleDateString()}</td>
+                    <td style={{fontWeight: 'bold'}}>{p.full_name || '-'}</td>
+                    <td>{p.email}</td>
+                    <td>{p.phone || '-'}</td>
+                    <td><span style={{color: p.is_complete ? '#10b981' : '#ef4444', fontSize:'0.75rem', padding:'4px 10px', background: p.is_complete ? 'rgba(16,185,129,0.1)' : 'rgba(239,68,68,0.1)', borderRadius:'12px', fontWeight:'bold'}}>{p.is_complete ? 'Active' : 'Pending'}</span></td>
+                  </tr>
+                ))}
+                {profiles.length === 0 && <tr><td colSpan={5} style={{textAlign: 'center', padding: '30px', color: '#64748b'}}>No students found.</td></tr>}
+              </tbody>
+            </table>
+          </div>
+        </>
       )}
 
       {/* ASSESSMENTS VIEW */}
